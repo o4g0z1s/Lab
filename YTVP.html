@@ -1,0 +1,52 @@
+<!DOCTYPE html>  
+<html lang="ja">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>YTVP</title>  
+    <style>  
+        body {  
+            font-family: mono;  
+            text-align: center;  
+            margin-top: 50px;  
+	    background-color: black;
+        }  
+        iframe {  
+            width: 560px;  
+            height: 315px;  
+            border: none;  
+        }  
+    </style>  
+</head>  
+<body>  
+    <h1 style="color: white; font-size: 70px; margin: none; padding: none;">𝚈𝚘𝚞𝚃𝚞𝚋𝚎 𝚅𝚒𝚍𝚎𝚘 𝙿𝚕𝚊𝚢𝚎𝚛</h1>  
+    <button onclick="getYouTubeURL()" style="font-family: mono; color: white; background-color: red; border: none; margin-bottom: 50px; border-radius: 50px; padding: 15px; font-size: 30px;">&nbsp;𝙴𝚗𝚝𝚎𝚛 𝚝𝚑𝚎 𝚄𝚁𝙻&nbsp;</button>
+　　<br>  
+    <div id="videoContainer"></div>  
+
+    <script>  
+        function getYouTubeURL() {  
+            const url = prompt("Enter the URL");  
+            if (url) {  
+                embedYouTubeVideo(url);  
+            }  
+        }  
+
+        function embedYouTubeVideo(url) {  
+            const videoId = extractVideoID(url);  
+            if (videoId) {  
+                const videoContainer = document.getElementById('videoContainer');  
+                videoContainer.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>`;  
+            } else {  
+                alert("Error");  
+            }  
+        }  
+
+        function extractVideoID(url) {  
+            const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;  
+            const match = url.match(regex);  
+            return match ? match[1] : null;  
+        }  
+    </script>  
+</body>  
+</html>
