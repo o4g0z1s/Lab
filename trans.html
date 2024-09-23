@@ -1,0 +1,317 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+	<head>
+		<meta charset="utf-8"/>
+		<title>ヲゐゑヶ゙ゐ ふぉンゃㇰ！</title>
+		<meta name="viewport" content="width=device-width"/>
+		<script>
+
+			var charactersCollection =
+			[
+                
+			 ['あ', 'ぁ', 'ァ', 'ｧ'],
+			 ['い', 'ゐ', 'ぃ', 'ィ', 'ｨ'],
+			 ['う', 'ｩ', 'ぅ', 'ゥ'],
+			 ['え', 'ゑ', 'ぇ', 'ェ', 'ｪ'],
+			 ['お', 'ヲ', 'を', 'ぉ', 'ォ', 'ｫ'],
+
+			 ['ぁ', 'ｧ'],
+			 ['ぃ', 'ｨ'],
+			 ['ぅ', 'ｩ'],
+			 ['ぇ', 'ｪ'],
+			 ['ぉ', 'ぉをぉ', 'ｫ'],
+
+			 ['か', 'ヵ', 'くｧ', 'くぁ'],
+			 ['き', 'ｷ', 'くｨ'],
+			 ['く', 'ㇰ'],
+			 ['け', 'ヶ'],
+			 ['こ', 'ｺ'],
+
+			 ['が', 'ヵ゙'],
+			 ['ぎ', 'ｷ゙'],
+			 ['ぐ', 'ㇰ゙','〲'],
+			 ['げ', 'ヶ゙'],
+			 ['ご', 'ｺ゙'],
+
+			 ['さ', 'すぁ'],
+			 ['し', 'ㇱ', 'すぃ'],
+			 ['す', 'ㇲ'],
+			 ['せ', 'すぇ'],
+			 ['そ', 'すォ'],
+
+			 ['ざ', 'づぁ'],
+			 ['じ', 'ぢ', 'ㇱ゙'],
+			 ['ず', 'づ', 'ㇲ゙'],
+			 ['ぜ', 'づぇ'],
+			 ['ぞ', 'づォ'],
+
+			 ['た', 'ﾀ', 'つぁ'],
+			 ['ち', 'ち', 'てィ'],
+			 ['つ', 'っ', 'ッ'],
+			 ['て', 'つぇ'],
+			 ['と', 'ㇳ'],
+
+			 ['だ', 'だ', 'ﾀ゙', 'づｧ'],
+			 ['ぢ', 'でｨ'],
+			 ['づ', 'っ゙', 'ッ゙', 'ず'],
+			 ['で', 'で', 'づぇ'],
+			 ['ど', 'ど', 'ㇳ゙'],
+
+			 ['な', 'ぬゎ'],
+			 ['に', 'ぬィ'],
+			 ['ぬ', 'ぬゅ'],
+			 ['ね', 'ね', 'ぬぇ'],
+			 ['の', 'ぬォ'],
+
+			 ['は', 'ㇵ', 'ふぁ'],
+			 ['ひ', 'ㇶ', 'ふぃ'],
+			 ['ふ', 'ㇷ'],
+			 ['へ', 'ㇸ', 'ふぇ'],
+			 ['ほ', 'ふぉ', 'ㇹ'],
+
+			 ['ば', 'ゔｧ','ㇵ゙'],
+			 ['び', 'ゔｨ','ㇶ゙'],
+			 ['ぶ', 'ゔ', 'ㇷ゙'],
+			 ['べ', 'ゔｪ','ㇸ゙'],
+			 ['ぼ', 'ゔｫ','ㇹ゙'],
+
+			 ['ぱ', 'ㇵ゚', 'ぷｧ'],
+			 ['ぴ', 'ㇶ゚', 'ぷｨ'],
+			 ['ぷ', 'ㇷ゚'],
+			 ['ぺ', 'ㇸ゚', 'ぷｪ'],
+			 ['ぽ', 'ㇹ゚', 'ぷｫ'],
+
+			 ['ま', 'ま', 'むぁ'],
+			 ['み', 'み', 'むぃ'],
+			 ['む', 'ㇺ', 'むゅ'],
+			 ['め', 'めゅ', 'むぇ'],
+			 ['も', 'も', 'むォ'],
+
+			 ['や', 'ゃ', 'ャ'],
+			 null,
+			 ['ゆ', 'ゅ', 'ュ'],
+			 null,
+			 ['よ', 'ょ', 'ョ'],
+
+			 ['ら', 'ㇻ', 'るｧ'],
+			 ['り', 'ㇼ', 'るｨ'],
+			 ['る', 'ㇽ', 'るゅ'],
+			 ['れ', 'ㇾ', 'るｪ'],
+			 ['ろ', 'ㇿ', 'るｫ'],
+
+			 ['わ', 'ゎ', 'ヮ'],
+			 ['ゐ', 'ヰ'],
+			 ['ゔ', 'ゔゅ'],
+			 ['ゑ', 'ヱ'],
+			 ['を', 'ヲ', 'ｦ'],
+
+			 ['ん', 'ン', 'ﾝ', 'ｍ'],
+			 ['っ', 'っっっっっ', 'ッッッッッ', 'ｯｯｯｯｯ'],
+			 ['ゎ', 'ヮ'],
+			 ['！', 'ー〜ーｯｳ゙!!!', 'ーーッッッ、ー！ー!ゔ！', 'ーーーッッッ、ーーー！！!、！ー!！！', '〜〜〜〜〜〜〜〜〜〜！！！！！！！！！！'],
+			 ['ー', 'ー〜ー', 'ー〜ー〜ー〜ー〜ー〜ー'],
+
+			 ['ア', 'ァ', 'ぁ', 'ｧ'],
+			 ['イ', 'ゐ', 'ぃ', 'ィ', 'ｨ'],
+			 ['ウ', 'ｩ', 'ぅ', 'ゥ'],
+			 ['エ', 'ゑ', 'ぇ', 'ェ', 'ｪ'],
+			 ['オ', 'ヲ', 'を', 'ぉ', 'ォ', 'ｫ'],
+
+			 ['ァ', 'ｧ'],
+			 ['ィ', 'ｨ'],
+			 ['ゥ', 'ｩ'],
+			 ['ェ', 'ｪ'],
+			 ['ォ', 'ｫ'],
+
+			 ['カ', 'ヵ', 'くｧ', 'くぁ'],
+			 ['キ', 'ｷ', 'くｨ'],
+			 ['ク', 'ㇰ'],
+			 ['ケ', 'ヶ'],
+			 ['コ', 'ｺ'],
+
+			 ['ガ', 'ヵ゙'],
+			 ['ギ', 'ｷ゙'],
+			 ['グ', 'ㇰ゙','〲'],
+			 ['ゲ', 'ヶ゙'],
+			 ['ゴ', 'ｺ゙'],
+
+			 ['サ', 'スぁ'],
+			 ['シ', 'ㇱ', 'すｨ'],
+			 ['ス', 'ㇲ'],
+			 ['セ', 'スぇ'],
+			 ['ソ', 'スｫ'],
+
+			 ['ザ', 'ヅｧ'],
+			 ['ジ', 'ヂ', 'ㇱ゙'],
+			 ['ズ', 'ヅ', 'ㇲ゙'],
+			 ['ゼ', 'ヅぇ'],
+			 ['ゾ', 'ヅｫ'],
+
+			 ['タ', 'ﾀ', 'つｧ'],
+			 ['チ', 'テｨ'],
+			 ['ツ', 'ッ', 'っ'],
+			 ['テ', 'ツぇ'],
+			 ['ト', 'ㇳ'],
+
+			 ['ダ', 'ﾀ゙', 'づｧ'],
+			 ['ヂ', 'デｨ'],
+			 ['ヅ', 'ッ゙', 'っ゙', 'ズ'],
+			 ['デ', 'づぇ'],
+			 ['ド', 'ㇳ゙'],
+
+			 ['ナ', 'ヌｧ'],
+			 ['ニ', 'ヌぃ'],
+			 ['ヌ', 'ヌゅ'],
+			 ['ネ', 'ヌぇ'],
+			 ['ノ', 'ヌｫ'],
+
+			 ['ハ', 'ㇵ', 'ふｧ'],
+			 ['ヒ', 'ㇶ', 'ふｨ'],
+			 ['フ', 'ㇷ'],
+			 ['ヘ', 'ㇸ', 'ふｪ'],
+			 ['ホ', 'ㇹ', 'ふｫ'],
+
+			 ['バ', 'ゔｧ','ㇵ゙'],
+			 ['ビ', 'ゔｨ','ㇶ゙'],
+			 ['ブ', 'ゔ', 'ㇷ゙'],
+			 ['ベ', 'ゔｪ','ㇸ゙'],
+			 ['ボ', 'ゔｫ','ㇹ゙'],
+
+			 ['パ', 'ㇵ゚', 'ぷｧ'],
+			 ['ピ', 'ㇶ゚', 'ぷｨ'],
+			 ['プ', 'ㇷ゚'],
+			 ['ペ', 'ㇸ゚', 'ぷｪ'],
+			 ['ポ', 'ㇹ゚', 'ぷｫ'],
+
+			 ['マ', 'むｧ'],
+			 ['ミ', 'むｨ'],
+			 ['ム', 'ㇺ', 'むゅ'],
+			 ['メ', 'めゅ', 'むｪ'],
+			 ['モ', 'むｫ'],
+
+			 ['ヤ', 'ャ', 'ゃ'],
+			 null,
+			 ['ユ', 'ュ', 'ゅ'],
+			 null,
+			 ['ヨ', 'ョ', 'ょ'],
+
+			 ['ャ', 'ｬ'],
+			 null,
+			 ['ュ', 'ｭ'],
+			 null,
+			 ['ョ', 'ｮ'],
+
+			 ['ラ', 'ㇻ', 'ルｧ'],
+			 ['リ', 'ㇼ', 'ルｨ'],
+			 ['ル', 'ㇽ', 'るゅ'],
+			 ['レ', 'ㇾ', 'ルｪ'],
+			 ['ロ', 'ㇿ', 'ルｫ'],
+
+			 ['ワ', 'ゎ', 'ヮ'],
+			 ['ヰ', 'ヰ'],
+			 ['ヴ', 'ゔゅ'],
+			 ['ヱ', 'ヱ'],
+			 ['ヲ', 'ヲ', 'ｦ'],
+
+			 ['ン', 'ン', 'ｍ'],
+			 ['ッ', 'ッッッッッ', 'っっっっっ', 'ｯｯｯｯｯ'],
+			 ['？', '？？？', 'ー？？、ー？、？？', '？！？！？'],
+			 ['、', '、', '、、、、、、、、、、'],
+			 ['。', '。', '。。。。。。。。。。'],
+
+			];
+
+			var translation = {};
+			for (var index in charactersCollection) {
+				var characters = charactersCollection[index];
+				if (characters) {
+					translation[characters[0]] = characters[1];
+				}
+				if (characters) {
+					var charactersSet = {};
+					for (var character of characters) {
+						if (charactersSet[character]) {
+							console.log(characters);
+						}
+						charactersSet[character] = true;
+					}
+				}
+			}
+
+			function translate(character) {
+				return translation[character] || character;
+			}
+
+			function run() {
+				var input = document.getElementById('input');
+				var text = input.value || input.placeholder;
+				text = text.replace(/./g, translate);
+				document.getElementById('output').value = text;
+			}
+
+			var buffer = null;
+			function empty() {
+				var input = document.getElementById('input');
+				if (input.value) {
+					buffer = input.value;
+					input.value = '';
+					input.focus();
+				} else {
+					input.value = buffer || '';
+					buffer = null;
+				}
+				document.getElementById('output').value = '';
+			}
+
+			window.onload = function () {
+				function createSelect(characters) {
+					var select = document.createElement('select');
+					for (var index in characters) {
+						var option = document.createElement('option');
+						option.textContent = characters[index];
+						option.value = characters[index];
+						option.selected = index == 1;
+						select.appendChild(option);
+					}
+					select.onchange = function() {
+						translation[characters[0]] = select.value;
+					}
+					return select;
+				}
+				var selects = document.getElementById('selects');
+				for (var index in charactersCollection) {
+					var characters = charactersCollection[index];
+					if (characters) {
+						selects.appendChild(createSelect(characters));
+					}
+					if (index % 5 == 4) {
+						selects.appendChild(document.createElement('br'));
+					}
+				}
+				if (window.location.search) {
+					document.getElementById('debug').style.display = 'inline';
+				}
+			}
+
+		</script>
+	</head>
+	<body style="text-align: center;">
+	<h1 style="font-size: 50px;">ヲゐゑヶ゙ゐ<br>ふぉンゃㇰ！</h1>
+        <p style="margin-left: 10%; margin-right: 10%;">ねゑねゑ、みンぬゎｧー〜ーｯｳ゙!!!ぁぬォね、みンぬゎヵ゙、だ〜ゐㇲｷぬゎ、ヲゐゑヶ゙ゐぬィ、ㇲㇰ゙ぬィ、ふぉンゃㇰでｷㇽ、ㇷ゚ㇿㇰ゙ㇻㇺヵ゙、でｷちゃっっっっっﾀょｫ〜ーーッッッ、ー！ー!ゔ！、ㇲｺ゙ゐでㇱょｫーーーッッッ、ーーー！！!、！ー!！！、ね、みンぬゎ、っヵっっっっっつぇみつぇねｪ〜ーーーッッッ、ーーー！！!、！ー!！！ーーッッッ、ー！ー!ゔ！ぁぬォね、っヵｩㇳｷぬィㇵ、ｩゑぬォ、ㇳｺぬィ、ヵゐつぇねー〜ーｯｳ゙!!!、すォㇾで、みｷ゙ぬォ、ゔｫﾀンヲ、ヲㇱﾀㇻ、ㇱﾀぬィ、でつぇㇰㇽょぉをぉーーッッッ、ー！ー!ゔ！すォㇾでね、すぁㇻぬィㇱﾀぬォ、ㇸンヵンㇶょｩで、ㇲｷぬゎぬォヲ、ゑㇻゔｪㇽょーーーッッッ、ーーー！！!、！ー!！！、みンぬゎで、ぬィふぉンｺ゙ヲ、ゔっっっっっｺゎㇱつぇみょｩー〜ーｯｳ゙!!!</p><p style="font-size: 15px; margin-left: 10%; margin-right: 10%; margin-bottom: 30px;">（ねえねえ、みんなぁ！あのね、みんなが、だーいすきな、おいえげいに、すぐに、ほんやくできる、プログラムが、できちゃったよぉー！、すごいでしょぉ！、ね、みんな、つかってみてねぇー！！あのね、つかうときには、うえの、とこに、かいてね！、それで、みぎの、ボタンを、おしたら、したに、でてくるよぉ！それでね、さらにしたの、へんかんひょうで、すきなのを、えらべるよ！、みんなで、にほんごを、ぶっこわしてみよう！）</p>
+		<div class="page">
+			<form onSubmit="return false">
+				<textarea rows="15" cols="75" id="input" placeholder="&#10;ｺｺぬィ、ゔンㇱょｩヲ、&#10;ヵゐつぇねーーッッッ、ー！ー!ゔ！" style="padding: 20px; padding-left: 50px; padding-right: 50px; font-size: 30px; max-width: 70%; max-height: 300px; border-radius: 50px; resize: none; background: #cccccc; border: none; text-align: center; vertical-align: middle;"></textarea><br>
+				<input style="margin: 30px; padding: 10px; padding-left: 50px; padding-right: 50px; font-size: 25px; color: white; max-width: 70%; max-height: 50%; border-radius: 50px; background: #555555; border: none; text-align: center; vertical-align: middle;" type="button" value="づぇンゔ、ヶㇲ!！!!！" onClick="empty();"/>
+				<input style="margin: 30px; padding: 10px; padding-left: 50px; padding-right: 50px; font-size: 25px; color: white; max-width: 70%; max-height: 50%; border-radius: 50px; background: #555555; border: none; text-align: center; vertical-align: middle;" type="button" value="ㇸﾝくぁン！!ー、!！" onClick="run();"/>
+				<br>
+				<textarea rows="15" cols="75" id="output" style="padding: 20px; padding-left: 50px; padding-right: 50px; font-size: 30px; max-width: 70%; max-height: 300px; border-radius: 50px; resize: none; background: #cccccc; border: none; text-align: center; vertical-align: middle;" readonly></textarea>
+				<details>
+					<summary style="margin: 30px; padding: 15px; font-size: 30px; color: white;  border-radius: 50px; background: #555555; border: none;">ㇸンヵンㇶょｩ！</summary>
+					<span id="selects" style="margin: 10px; padding: 10px; font-size: 30px; max-width: 70%; max-height: 50%; border-radius: 50px; border: none; text-align: center; vertical-align: middle;"></span>
+				</details>
+			</form>
+			<br>
+		</div>
+	</body>
+</html>
