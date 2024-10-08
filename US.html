@@ -24,7 +24,7 @@
     <textarea id="output" style="padding: 20px; padding-left: 50px; padding-right: 50px; font-size: 30px; width: 70%; height: 300px; border-radius: 50px; resize: none; background: #cccccc; border: none; text-align: center;" readonly></textarea>
     <script>
         document.getElementById('sortButton').addEventListener('click', function() {
-            const input = document.getElementById('inputText').value;
+            const input = document.getElementById('inputText').value.replace(/\s+/g, '');
             const sortedChars = Array.from(input)
                 .sort((a, b) => a.charCodeAt(0) - b.charCodeAt(0))
                 .join('');
