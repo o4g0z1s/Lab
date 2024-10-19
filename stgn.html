@@ -1,0 +1,318 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+	<head>
+		<meta charset="utf-8"/>
+		<title>ㇲッェヵ゙ㇴヮ ㇸㇺヵㇺ！</title>
+		<meta name="viewport" content="width=device-width"/>
+        <link rel="icon" href="https://emojigraph.org/media/joypixels/flag-ghana_1f1ec-1f1ed.png">
+		<script>
+
+			var charactersCollection =
+			[
+
+
+			 ['あ', 'ァ'],
+			 ['い', 'ィ'],
+			 ['う', 'ゥ'],
+			 ['え', 'ェ'],
+			 ['お', 'ォ'],
+
+			 ['ぁ', 'ァ'],
+			 ['ぃ', 'ィ'],
+			 ['ぅ', 'ゥ'],
+			 ['ぇ', 'ェ'],
+			 ['ぉ', 'ォ'],
+
+			 ['か', 'ヵ'],
+			 ['き', 'ㇰィ'],
+			 ['く', 'ㇰ'],
+			 ['け', 'ヶ'],
+			 ['こ', 'ㇰォ'],
+
+			 ['が', 'ヵ゙'],
+			 ['ぎ', 'ㇰ゙ィ'],
+			 ['ぐ', 'ㇰ゙'],
+			 ['げ', 'ヶ゙'],
+			 ['ご', 'ㇰ゙ォ'],
+
+			 ['さ', 'ㇲヮ'],
+			 ['し', 'ㇱ'],
+			 ['す', 'ㇲ'],
+			 ['せ', 'ㇲェ'],
+			 ['そ', 'ㇲォ'],
+
+			 ['ざ', 'ㇲ゙ヮ'],
+			 ['じ', 'ㇱ゙'],
+			 ['ず', 'ㇲ゙'],
+			 ['ぜ', 'ㇲ゙ェ'],
+			 ['ぞ', 'ㇲ゙ォ'],
+
+			 ['た', 'ㇳヮ'],
+			 ['ち', 'ッィ'],
+			 ['つ', 'ッ'],
+			 ['て', 'ッェ'],
+			 ['と', 'ㇳ'],
+
+			 ['だ', 'ㇳ゙ヮ'],
+			 ['ぢ', 'ッ゙ィ'],
+			 ['づ', 'ッ゙'],
+			 ['で', 'ッ゙ェ'],
+			 ['ど', 'ㇳ゙'],
+
+			 ['な', 'ㇴヮ'],
+			 ['に', 'ㇴィ'],
+			 ['ぬ', 'ㇴ'],
+			 ['ね', 'ㇴェ'],
+			 ['の', 'ㇴォ'],
+
+			 ['は', 'ㇵ'],
+			 ['ひ', 'ㇶ'],
+			 ['ふ', 'ㇷ'],
+			 ['へ', 'ㇸ'],
+			 ['ほ', 'ㇹ'],
+
+			 ['ば', 'ㇵ゙'],
+			 ['び', 'ㇶ゙'],
+			 ['ぶ', 'ㇷ゙'],
+			 ['べ', 'ㇸ゙'],
+			 ['ぼ', 'ㇹ゙'],
+
+			 ['ぱ', 'ㇵ゚'],
+			 ['ぴ', 'ㇶ゚'],
+			 ['ぷ', 'ㇷ゚'],
+			 ['ぺ', 'ㇸ゚'],
+			 ['ぽ', 'ㇹ゚'],
+
+			 ['ま', 'ㇺヮ'],
+			 ['み', 'ㇺィ'],
+			 ['む', 'ㇺ'],
+			 ['め', 'ㇺェ'],
+			 ['も', 'ㇺォ'],
+
+			 ['や', 'ャ'],
+			 null,
+			 ['ゆ', 'ュ'],
+			 null,
+			 ['よ', 'ョ'],
+            
+			 ['ゃ', 'ャ'],
+			 null,
+			 ['ゅ', 'ュ'],
+			 null,
+			 ['ょ', 'ョ'],
+
+			 ['ら', 'ㇻ'],
+			 ['り', 'ㇼ'],
+			 ['る', 'ㇽ'],
+			 ['れ', 'ㇾ'],
+			 ['ろ', 'ㇿ'],
+
+			 ['わ', 'ヮ'],
+			 ['ゐ', 'ィ'],
+			 ['ゔ', 'ゥ゙'],
+			 ['ゑ', 'ェ'],
+			 ['を', 'ォ'],
+
+			 ['ん', 'ㇺ'],
+			 ['っ', 'ッ'],
+			 ['ゎ', 'ヮ'],
+             null,
+             null,
+
+			 ['ア', 'ァ'],
+			 ['イ', 'ィ'],
+			 ['ウ', 'ゥ'],
+			 ['エ', 'ェ'],
+			 ['オ', 'ォ'],
+
+			 ['カ', 'ヵ'],
+			 ['キ', 'ㇰィ'],
+			 ['ク', 'ㇰ'],
+			 ['ケ', 'ヶ'],
+			 ['コ', 'ㇰォ'],
+
+			 ['ガ', 'ヵ゙'],
+			 ['ギ', 'ㇰ゙ィ'],
+			 ['グ', 'ㇰ゙'],
+			 ['ゲ', 'ヶ゙'],
+			 ['ゴ', 'ㇰ゙ォ'],
+
+			 ['サ', 'ㇲヮ'],
+			 ['シ', 'ㇱ'],
+			 ['ス', 'ㇲ'],
+			 ['セ', 'ㇲェ'],
+			 ['ソ', 'ㇲォ'],
+
+			 ['ザ', 'ㇲ゙ヮ'],
+			 ['ジ', 'ㇱ゙'],
+			 ['ズ', 'ㇲ゙'],
+			 ['ゼ', 'ㇲ゙ェ'],
+			 ['ゾ', 'ㇲ゙ォ'],
+
+			 ['タ', 'ㇳヮ'],
+			 ['チ', 'ッィ'],
+			 ['ツ', 'ッ'],
+			 ['テ', 'ㇳェ'],
+			 ['ト', 'ㇳ'],
+
+			 ['ダ', 'ㇳ゙ヮ'],
+			 ['ヂ', 'ッィ'],
+			 ['ヅ', 'ッ'],
+			 ['デ', 'ㇳ゙ェ'],
+			 ['ド', 'ㇳ゙'],
+
+			 ['ナ', 'ㇴヮ'],
+			 ['ニ', 'ㇴィ'],
+			 ['ヌ', 'ㇴ'],
+			 ['ネ', 'ㇴェ'],
+			 ['ノ', 'ㇴォ'],
+
+			 ['ハ', 'ㇵ'],
+			 ['ヒ', 'ㇶ'],
+			 ['フ', 'ㇷ'],
+			 ['ヘ', 'ㇸ'],
+			 ['ホ', 'ㇹ'],
+
+			 ['バ', 'ㇵ゙'],
+			 ['ビ', 'ㇶ゙'],
+			 ['ブ', 'ㇷ゙'],
+			 ['ベ', 'ㇸ゙'],
+			 ['ボ', 'ㇹ゙'],
+
+			 ['パ', 'ㇵ゚'],
+			 ['ピ', 'ㇶ゚'],
+			 ['プ', 'ㇷ゚'],
+			 ['ペ', 'ㇸ゚'],
+			 ['ポ', 'ㇹ゚'],
+
+			 ['マ', 'ㇺヮ'],
+			 ['ミ', 'ㇺィ'],
+			 ['ム', 'ㇺ'],
+			 ['メ', 'ㇺェ'],
+			 ['モ', 'ㇺォ'],
+
+			 ['ヤ', 'ャ'],
+			 null,
+			 ['ユ', 'ュ'],
+			 null,
+			 ['ヨ', 'ョ'],
+
+			 ['ラ', 'ㇻ'],
+			 ['リ', 'ㇼ'],
+			 ['ル', 'ㇽ'],
+			 ['レ', 'ㇾ'],
+			 ['ロ', 'ㇿ'],
+
+			 ['ワ', 'ヮ'],
+			 ['ヰ', 'ィ'],
+			 ['ヴ', 'ゥ゙'],
+			 ['ヱ', 'ェ'],
+			 ['ヲ', 'ォ'],
+
+			 ['ン', 'ㇺ'],
+			 null,
+			 null,
+             null,
+             null,
+                
+			];
+
+			var translation = {};
+			for (var index in charactersCollection) {
+				var characters = charactersCollection[index];
+				if (characters) {
+					translation[characters[0]] = characters[1];
+				}
+				if (characters) {
+					var charactersSet = {};
+					for (var character of characters) {
+						if (charactersSet[character]) {
+							console.log(characters);
+						}
+						charactersSet[character] = true;
+					}
+				}
+			}
+
+			function translate(character) {
+				return translation[character] || character;
+			}
+
+			function run() {
+				var input = document.getElementById('input');
+				var text = input.value || input.placeholder;
+				text = text.replace(/./g, translate);
+				document.getElementById('output').value = text;
+			}
+
+			var buffer = null;
+			function empty() {
+				var input = document.getElementById('input');
+				if (input.value) {
+					buffer = input.value;
+					input.value = '';
+					input.focus();
+				} else {
+					input.value = buffer || '';
+					buffer = null;
+				}
+				document.getElementById('output').value = '';
+			}
+
+			window.onload = function () {
+				function createSelect(characters) {
+					var select = document.createElement('select');
+					for (var index in characters) {
+						var option = document.createElement('option');
+						option.textContent = characters[index];
+						option.value = characters[index];
+						option.selected = index == 1;
+						select.appendChild(option);
+					}
+					select.onchange = function() {
+						translation[characters[0]] = select.value;
+					}
+					return select;
+				}
+				var selects = document.getElementById('selects');
+				for (var index in charactersCollection) {
+					var characters = charactersCollection[index];
+					if (characters) {
+						selects.appendChild(createSelect(characters));
+					}
+					if (index % 5 == 4) {
+						selects.appendChild(document.createElement('br'));
+					}
+				}
+				if (window.location.search) {
+					document.getElementById('debug').style.display = 'inline';
+				}
+			}
+
+		</script>
+	</head>
+	<body style="text-align: center; font-family: Helvetica,sans-serif; background-color: #fff555;">
+	<h1 style="font-size: 50px; margin-top: 50px;">ㇲッェヵ゙ㇴヮ<br>ㇸㇺヵㇺ！</h1>
+        <p style="margin-left: 10%; margin-right: 10%;">ㇴェェㇴェェ、ㇺィㇺㇴヮァ！ァㇴォㇴェ、ㇺィㇺㇴヮヵ゙、ㇳ゙ヮーィㇲㇰィㇴヮ、ㇲッェヵ゙ㇴヮㇴィ、ㇲㇰ゙ㇴィ、ㇸㇺヵㇺッ゙ェㇰィㇽ、ㇷ゚ㇿㇰ゙ㇻㇺヵ゙、ッ゙ェㇰィッィャッㇳヮョォー！、ㇲㇰ゙ォィッ゙ェㇱョォ！、ㇴェ、ㇺィㇺㇴヮ、ッヵッッェㇺィッェㇴェェー！！ァㇴォㇴェ、ッヵゥㇳㇰィㇴィㇵ、ゥェㇴォ、ㇳㇰォㇴィ、ヵィッェㇴェ！、ㇲォㇾッ゙ェ、ㇲォㇴォㇱㇳヮㇴォ、ㇹ゙ㇳヮㇺォ、ォㇱㇳヮㇻ、ㇱㇳヮㇴィ、ッ゙ェッェㇰㇽョォ！、ㇺィㇺㇴヮッ゙ェ、ㇴィㇹㇺㇰ゙ォォ、ヵヮィㇰㇱッェㇺィョゥ！</p><p style="font-size: 15px; margin-left: 10%; margin-right: 10%; margin-bottom: 50px;">（ねえねえ、みんなぁ！あのね、みんなが、だーいすきな、すてがなに、すぐに、へんかんできる、プログラムが、できちゃったよぉー！、すごいでしょぉ！、ね、みんな、つかってみてねぇー！！あのね、つかうときには、うえの、とこに、かいてね！、それで、そのしたの、ボタンを、おしたら、したに、でてくるよぉ！、みんなで、にほんごを、かわいくしてみよう！）</p>
+		<div class="page">
+			<form onSubmit="return false">
+				<textarea rows="15" cols="75" id="input" placeholder="&#10;ㇰォㇰォㇴィ、&#10;ㇷ゙ㇺㇱョゥォ、&#10;ヵィッェㇴェ！" style="color: white; padding: 20px; padding-left: 50px; padding-right: 50px; font-size: 30px; max-width: 70%; max-height: 300px; border-radius: 50px; resize: none; background: #111111; border: none; text-align: center; vertical-align: middle;"></textarea><br>
+				
+				<button style="margin: 50px; padding: 10px; padding-left: 50px; padding-right: 50px; font-size: 25px; color: white; max-width: 70%; max-height: 50%; border-radius: 50px; background: #c70a0a; border: none; text-align: center; vertical-align: middle;" onClick="run();">ㇸㇺヵㇺ！</button>
+				<br>
+				<textarea rows="15" cols="75" id="output" style="color: white; padding: 20px; padding-left: 50px; padding-right: 50px; font-size: 30px; max-width: 70%; max-height: 300px; border-radius: 50px; resize: none; background: #111111; border: none; text-align: center; vertical-align: middle;" readonly></textarea><br>
+                <button style="margin: 50px; padding: 10px; padding-left: 50px; padding-right: 50px; font-size: 25px; color: white; max-width: 70%; max-height: 50%; border-radius: 50px; background: #1c6905; border: none; text-align: center; vertical-align: middle;" onClick="cp();">ㇰォㇶ゚ー！</button><br>
+                <script>
+                function cp(){
+                  var txt = document.getElementById("output");
+                  txt.select();
+                  document.execCommand("Copy");
+                }
+                </script>
+                <button style="margin-top: 0px; margin-bottom: 50px; padding: 10px; padding-left: 50px; padding-right: 50px; font-size: 25px; color: white; max-width: 70%; max-height: 50%; border-radius: 50px; background: #1c6905; border: none; text-align: center; vertical-align: middle;" onClick="empty();">ㇲ゙ェㇺㇷ゙、ヶㇲ！</button>
+			</form>
+			<br>
+		</div>
+	</body>
+</html>
