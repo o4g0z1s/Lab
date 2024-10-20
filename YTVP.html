@@ -9,51 +9,61 @@
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500&display=swap" rel="stylesheet">
     <title>YTVP</title>
     <style>
-        
-        body {  
-            font-family: "Oswald";  
-            text-align: center;  
-            margin-top: 30px;  
+
+        body {
+            font-family: "Oswald";
+            text-align: center;
+            margin-top: 30px;
 	        background-color: black;
+            overflow-x: hidden;
         }
-        
-        iframe {  
-            width: 560px;  
-            height: 315px;  
-            border: none;  
-        }  
-        
-    </style>  
-</head>  
-<body>  
-    <p style="color: white; font-size: 90px; margin: none; padding: none;">YouTube Video Player</p>  
-    <button onclick="getYouTubeURL()" style="font-family: 'Oswald'; color: white; background-color: red; border: none; margin-bottom: 50px; border-radius: 50px; padding: 15px; font-size: 30px;">&emsp;Enter The URL&emsp;</button>
+
+        iframe {
+            width: 560px;
+            height: 315px;
+            border: none;
+        }
+
+        @media only screen and (max-width:500px) 
+        {
+        iframe {
+            width: 280px;
+            height: 157.5px;
+            border: none;
+        }	
+        }
+
+    </style>
+</head>
+<body>
+    <p style="color: white; font-size: 90px; margin: none; padding: none;">YouTube Video Player</p>
+    <button onclick="getYouTubeURL()" style="font-family: 'Oswald'; color: white; background-color: red; border: none; margin-top: 0px; margin-bottom: 70px; border-radius: 50px; padding: 15px; font-size: 30px;">&emsp;Enter The URL&emsp;</button>
     <br><br>
-    <div id="videoContainer"></div>  
+    <div id="videoContainer"></div>
 
-    <script>  
-        function getYouTubeURL() {  
-            const url = prompt("Enter the URL");  
-            if (url) {  
-                embedYouTubeVideo(url);  
-            }  
-        }  
+    <script>
+        function getYouTubeURL() {
+            const url = prompt("Enter the URL");
+            if (url) {
+                embedYouTubeVideo(url);
+            }
+        }
 
-        function embedYouTubeVideo(url) {  
-            const videoId = extractVideoID(url);  
-            if (videoId) {  
-                const videoContainer = document.getElementById('videoContainer');  
-                videoContainer.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen></iframe>`;  
-            } else {  
-                alert("Error");  
-            }  
-        }  
+        function embedYouTubeVideo(url) {
+            const videoId = extractVideoID(url);
+            if (videoId) {
+                const videoContainer = document.getElementById('videoContainer');
+                videoContainer.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}" style="margin-bottom: 120px;" allowfullscreen></iframe>`;
+            } else {
+                alert("Error");
+            }
+        }
 
-        function extractVideoID(url) {  
-            const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;  
-            const match = url.match(regex);  
-            return match ? match[1] : null;  
-        }  
-    </script>  
-</body>  
+        function extractVideoID(url) {
+            const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+            const match = url.match(regex);
+            return match ? match[1] : null;
+        }
+    </script>
+</body>
 </html>

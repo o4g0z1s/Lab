@@ -1,0 +1,203 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+	<head>
+		<meta charset="utf-8"/>
+		<title>∈𝑛𝟗!𝒊𝟓𝒉+𝜋𝜽+𝛭𝛼𝜋𝒉𝜖𝜇𝛼𝜋𝒊𝑐𝛼!+𝛤𝜽√𝜇𝜐!𝛼𝟓</title>
+		<meta name="viewport" content="width=device-width"/>
+		<script>
+
+			var charactersCollection =
+			[
+
+
+			 ['0', '₀'],
+			 ['1', '₁'],
+			 ['2', '²'],
+			 ['3', '³'],
+			 ['4', '⁴'],
+
+			 ['5', '⁵'],
+			 ['6', '⁶'],
+			 ['7', '⁷'],
+			 ['8', '∞'],
+			 ['9', '⁹'],
+
+			 ['A', '𝛥'],
+			 ['B', '𝟑'],
+			 ['C', '⊂'],
+			 ['D', '⊃'],
+			 ['E', '∈'],
+
+			 ['F', '𝛤'],
+			 ['G', '𝟔'],
+			 ['H', '𝛱'],
+			 ['I', '𝟏'],
+			 ['J', '𝐽'],
+
+			 ['K', '<'],
+			 ['L', '∠'],
+			 ['M', '𝛭'],
+			 ['N', '𝛮'],
+			 ['O', '𝟎'],
+
+			 ['P', '𝛲'],
+			 ['Q', '𝛺'],
+			 ['R', '𝑅'],
+			 ['S', '∫'],
+			 ['T', '⊤'],
+
+			 ['U', '∪'],
+			 ['V', '∨'],
+			 ['W', '𝑊'],
+			 ['X', '𝑋'],
+			 ['Y', '𝛹'],
+
+			 ['Z', '𝛴'],
+			 ['&', '𝟖'],
+			 ['%', '⅔'],
+			 ['-', '→'],
+			 [';', '∴'],
+
+			 ['a', '𝛼'],
+			 ['b', '𝛽'],
+			 ['c', '𝑐'],
+			 ['d', '𝑑'],
+			 ['e', '𝜖'],
+
+			 ['f', '𝑓'],
+			 ['g', '𝟗'],
+			 ['h', '𝒉'],
+			 ['i', '𝒊'],
+			 ['j', '𝒋'],
+
+			 ['k', '<'],
+			 ['l', '!'],
+			 ['m', '𝜇'],
+			 ['n', '𝑛'],
+			 ['o', '𝜽'],
+
+			 ['p', '𝜌'],
+			 ['q', '𝓆'],
+			 ['r', '√'],
+			 ['s', '𝟓'],
+			 ['t', '𝜋'],
+
+			 ['u', '𝜐'],
+			 ['v', '𝜈'],
+			 ['w', '𝜔'],
+			 ['x', '𝑥'],
+			 ['y', '𝑦'],
+
+			 ['z', '𝟐'],
+			 [' ', '+'],
+			 ['.', '='],
+			 [',', '-'],
+			 ['?', '𝟕'],
+
+			 ["'", '°'],
+			 ['"', '|'],
+			 ['(', '{'],
+			 [')', '}'],
+			 null,
+                
+			];
+
+			var translation = {};
+			for (var index in charactersCollection) {
+				var characters = charactersCollection[index];
+				if (characters) {
+					translation[characters[0]] = characters[1];
+				}
+				if (characters) {
+					var charactersSet = {};
+					for (var character of characters) {
+						if (charactersSet[character]) {
+							console.log(characters);
+						}
+						charactersSet[character] = true;
+					}
+				}
+			}
+
+			function translate(character) {
+				return translation[character] || character;
+			}
+
+			function run() {
+				var input = document.getElementById('input');
+				var text = input.value || input.placeholder;
+				text = text.replace(/./g, translate);
+				document.getElementById('output').value = text;
+			}
+
+			var buffer = null;
+			function empty() {
+				var input = document.getElementById('input');
+				if (input.value) {
+					buffer = input.value;
+					input.value = '';
+					input.focus();
+				} else {
+					input.value = buffer || '';
+					buffer = null;
+				}
+				document.getElementById('output').value = '';
+			}
+
+			window.onload = function () {
+				function createSelect(characters) {
+					var select = document.createElement('select');
+					for (var index in characters) {
+						var option = document.createElement('option');
+						option.textContent = characters[index];
+						option.value = characters[index];
+						option.selected = index == 1;
+						select.appendChild(option);
+					}
+					select.onchange = function() {
+						translation[characters[0]] = select.value;
+					}
+					return select;
+				}
+				var selects = document.getElementById('selects');
+				for (var index in charactersCollection) {
+					var characters = charactersCollection[index];
+					if (characters) {
+						selects.appendChild(createSelect(characters));
+					}
+					if (index % 5 == 4) {
+						selects.appendChild(document.createElement('br'));
+					}
+				}
+				if (window.location.search) {
+					document.getElementById('debug').style.display = 'inline';
+				}
+			}
+
+		</script>
+	</head>
+	<body style="text-align: center; font-family: Helvetica,sans-serif; background-color: #333; color: white; overflow-x: hidden;">
+	<h1 style="font-size: 40px; margin-top: 50px;">∈𝑛𝟗!𝒊𝟓𝒉+𝜋𝜽<br>𝛭𝛼𝜋𝒉𝜖𝜇𝛼𝜋𝒊𝑐𝛼!<br>𝛤𝜽√𝜇𝜐!𝛼𝟓</h1>
+        <p style="margin-left: 10%; margin-right: 10%;">𝛱𝜖𝑦-+𝜖𝜈𝜖√𝑦𝜽𝑛𝜖!<br>𝟏°𝜈𝜖+𝜇𝛼𝑑𝜖+𝛼+𝜌√𝜽𝟗√𝛼𝜇<br>𝜋𝒉𝛼𝜋+𝑐𝛼𝑛+𝒊𝑛𝟓𝜋𝛼𝑛𝜋!𝑦+𝑐𝜽𝑛𝜈𝜖√𝜋+∈𝑛𝟗!𝒊𝟓𝒉+𝟓𝜖𝑛𝜋𝜖𝑛𝑐𝜖𝟓+𝒊𝑛𝜋𝜽+𝜋𝒉𝒊𝑛𝟗𝟓+!𝒊<𝜖+𝑐𝜽𝜇𝜌!𝒊𝑐𝛼𝜋𝜖𝑑+𝜇𝛼𝜋𝒉𝜖𝜇𝛼𝜋𝒊𝑐𝛼!+𝑓𝜽√𝜇𝜐!𝛼𝟓+𝜋𝒉𝛼𝜋+𝜖𝜈𝜖√𝑦𝜽𝑛𝜖+!𝜽𝜈𝜖𝟓!+𝟏𝟓𝑛°𝜋+𝒊𝜋+𝛼𝜇𝛼𝟐𝒊𝑛𝟗𝟕+𝛱𝜖𝑦-+𝜖𝜈𝜖√𝑦𝜽𝑛𝜖-+𝜋√𝑦+𝜐𝟓𝒊𝑛𝟗+𝒊𝜋!<br>𝑊𝒉𝜖𝑛+𝑦𝜽𝜐+𝜐𝟓𝜖+𝒊𝜋-+𝜔√𝒊𝜋𝜖+𝒊𝜋+𝒊𝑛+𝜋𝒉𝜖+𝑐𝜽!𝜐𝜇𝑛+𝛼𝛽𝜽𝜈𝜖!+⊤𝒉𝜖𝑛-+𝜌√𝜖𝟓𝟓+𝜋𝒉𝜖+𝛽𝜐𝜋𝜋𝜽𝑛+𝛽𝜖!𝜽𝜔-+𝛼𝑛𝑑+𝒊𝜋+𝜔𝒊!!+𝛼𝜌𝜌𝜖𝛼√+𝛽𝜖!𝜽𝜔!+∠𝜖𝜋°𝟓+𝛼!!+𝑓𝜖𝜖!+𝟓𝜇𝛼√𝜋!</p><p style="font-size: 15px; margin-left: 10%; margin-right: 10%; margin-bottom: 50px;">（Hey, everyone! I've made a program that can instantly convert English sentences into things like complicated mathematical formulas that everyone loves! Isn't it amazing? Hey, everyone, try using it! When you use it, write it in the column above! Then, press the button below, and it will appear below! Let's all feel smart!）</p>
+		<div class="page">
+			<form onSubmit="return false">
+				<textarea rows="15" cols="75" id="input" placeholder="&#10;∈𝑛𝜋𝜖√+𝛹𝜽𝜐√+⊤𝜖𝑥𝜋+𝛱𝜖√𝜖" style="color: white; padding: 20px; padding-left: 50px; padding-right: 50px; font-size: 30px; max-width: 70%; max-height: 300px; border-radius: 50px; resize: none; background: #111; border: none; text-align: center; vertical-align: middle;"></textarea><br>
+				
+				<button style="margin: 50px; padding: 10px; padding-left: 50px; padding-right: 50px; font-size: 25px; color: white; max-width: 70%; max-height: 50%; border-radius: 50px; background: #555; border: none; text-align: center; vertical-align: middle;" onClick="run();">⊂𝜽𝑛𝜈𝜖√𝜋</button>
+				<br>
+				<textarea rows="15" cols="75" id="output" style="color: white; padding: 20px; padding-left: 50px; padding-right: 50px; font-size: 30px; max-width: 70%; max-height: 300px; border-radius: 50px; resize: none; background: #111; border: none; text-align: center; vertical-align: middle;" readonly></textarea><br>
+                <button style="margin: 50px; padding: 10px; padding-left: 50px; padding-right: 50px; font-size: 25px; color: white; max-width: 70%; max-height: 50%; border-radius: 50px; background: #555; border: none; text-align: center; vertical-align: middle;" onClick="cp();">⊂𝜽𝜌𝑦</button><br>
+                <script>
+                function cp(){
+                  var txt = document.getElementById("output");
+                  txt.select();
+                  document.execCommand("Copy");
+                }
+                </script>
+                <button style="margin-top: 0px; margin-bottom: 50px; padding: 10px; padding-left: 50px; padding-right: 50px; font-size: 25px; color: white; max-width: 70%; max-height: 50%; border-radius: 50px; background: #555; border: none; text-align: center; vertical-align: middle;" onClick="empty();">⊂!𝜖𝛼√</button>
+			</form>
+			<br>
+		</div>
+	</body>
+</html>
