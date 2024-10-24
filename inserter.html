@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <title>Inserter</title>
+    <style>
+        body {
+            font-family: "Ubuntu";
+            text-align: center;
+        }
+
+        p.title {font-size: 150px;}
+        
+        @media only screen and (max-width:500px) 
+        {
+        p.title {
+        font-size: 70px;
+        line-height: 90px;
+        }	
+        }
+    </style>
+</head>
+<body>
+
+<p class="title" style="font-weight: 700; text-decoration: underline; text-decoration-color: #000099; text-decoration-thickness: 20px; margin-top: 70px; margin-bottom: 70px;">Inserter</p>
+    <textarea id="inputString" style="padding: 20px; padding-left: 50px; padding-right: 50px; font-size: 30px; width: 70%; height: 300px; border-radius: 50px; resize: none; background: #cccccc; border: none; text-align: center;"></textarea>
+    <br><br>
+    <textarea id="separatorString" style="padding: 20px; padding-left: 50px; padding-right: 50px; font-size: 30px; width: 30%; border-radius: 50px; resize: none; background: #cccccc; border: none; text-align: center;"></textarea>
+    <br>
+    <button id="processButton" style="font-family:'Ubuntu'; margin: 40px; padding: 20px; padding-left: 50px; padding-right: 50px; font-size: 30px; color: white; max-width: 70%; max-height: 50%; border-radius: 50px; background: #000099; border: none; text-align: center;">&emsp;Insert&emsp;</button>
+    <br>  
+    <textarea id="output" style="padding: 20px; padding-left: 50px; padding-right: 50px; font-size: 30px; width: 70%; height: 300px; border-radius: 50px; resize: none; background: #cccccc; border: none; text-align: center;" readonly></textarea>
+
+    <script>
+        document.getElementById('processButton').addEventListener('click', function() {  
+            const inputString = document.getElementById('inputString').value;  
+            const separatorString = document.getElementById('separatorString').value;  
+
+            if (inputString.length === 0) {  
+                document.getElementById('output');  
+                return;  
+            }  
+
+            const processedString = inputString.split('').join(separatorString);  
+            document.getElementById('output').value = processedString;  
+        });  
+    </script>  
+
+    <br>
+    <button style="font-family:'Ubuntu'; padding: 20px; padding-left: 50px; padding-right: 50px; font-size: 30px; color: white; max-width: 70%; max-height: 50%; border-radius: 50px; background: #000099; border: none; text-align: center; margin-top: 30px; margin-bottom: 70px;" onClick="cp()">&emsp;Copy&emsp;</button>
+    <script>
+        function cp(){
+            var txt = document.getElementById("output");
+            txt.select();
+            document.execCommand("Copy");
+        }
+    </script>
+
+</body>  
+</html>
