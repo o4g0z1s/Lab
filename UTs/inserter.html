@@ -31,21 +31,38 @@
     <br><br>
     <textarea id="separatorString" style="padding: 20px; padding-left: 50px; padding-right: 50px; font-size: 30px; width: 30%; border-radius: 50px; resize: none; background: #cccccc; border: none; text-align: center;"></textarea>
     <br>
+    <input type="range" id="charInterval" min="1" max="20" value="1" style="margin-top: 30px; width: 30%; background-color: #ccc;">
+    <br>
+    <br>
+    <span id="charIntervalValue" style="font-size: 20px; padding: 10px; padding-right: 30px; padding-left: 30px; background-color: #ccc; border-radius: 50px;">1</span>
+    <br>
     <button id="processButton" style="font-family:'Ubuntu'; margin: 40px; padding: 20px; padding-left: 50px; padding-right: 50px; font-size: 30px; color: white; max-width: 70%; max-height: 50%; border-radius: 50px; background: #000099; border: none; text-align: center;">&emsp;Insert&emsp;</button>
     <br>  
     <textarea id="output" style="padding: 20px; padding-left: 50px; padding-right: 50px; font-size: 30px; width: 70%; height: 300px; border-radius: 50px; resize: none; background: #cccccc; border: none; text-align: center;" readonly></textarea>
 
     <script>
+        document.getElementById('charInterval').addEventListener('input', function() {  
+            document.getElementById('charIntervalValue').innerText = this.value;  
+        });  
+
         document.getElementById('processButton').addEventListener('click', function() {  
             const inputString = document.getElementById('inputString').value;  
             const separatorString = document.getElementById('separatorString').value;  
+            const interval = parseInt(document.getElementById('charInterval').value, 10);  
 
             if (inputString.length === 0) {  
-                document.getElementById('output');  
+                document.getElementById('output').value = 'Error';  
                 return;  
+            }
+
+            let processedString = '';  
+            for (let i = 0; i < inputString.length; i++) {  
+                processedString += inputString[i];  
+                if ((i + 1) % interval === 0 && i !== inputString.length - 1) {  
+                    processedString += separatorString;  
+                }  
             }  
 
-            const processedString = inputString.split('').join(separatorString);  
             document.getElementById('output').value = processedString;  
         });  
     </script>  
