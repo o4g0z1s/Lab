@@ -4,17 +4,24 @@
     <meta charset="UTF-8">
     <title>歴史総合テスト対策</title>
     <style>
-        img { width: 50%; margin-top: 30px; }
+        img { width: 50%; margin-top: 70px; }
+        .a { top: 30%; }
+        .b { height: 30%; }
+        @media (orientation: portrait){
+        img { width: 50%; margin-top: 200px; }
+        .a { top: 15%; }
+        .b { height: 15%; }   
+        }
     </style>
 </head>
 <body style="background-color: #fff; margin: 0;">
     <h1 style='text-align: center; margin-top: 70px; font-family: serif; z-index: 5; position: relative;'>歴史総合テスト対策</h1>
     <div style="display: flex; margin-bottom: 2000px;">
-    <img src="blank.png">
-    <img src="answer.png">
+        <img src="blank.png">
+        <img src="answer.png">
     </div>
-    <div style="background-color: #eee; width: 50%; height: 100%; position: fixed; right: 0px; top: 200px;"></div>
-    <div style="background-color: #fefefe; width: 50%; height: 200px; position: fixed; left: 0px; top: 0px;"></div>
-    <hr style="margin: 0; border-color: #999; background-color: #999; width: 100%; position: fixed; top: 200px;" size="3" noshade>
+    <div class="a" style="background-color: #eee; width: 50%; height: 100%; position: fixed; right: 0px;"></div>
+    <div class="b" style="background-color: #fefefe; width: 50%; position: fixed; left: 0px; top: 0px;"></div>
+    <hr class="a" style="margin: 0; border-color: #999; background-color: #999; width: 100%; position: fixed;" size="3" noshade>
 </body>
 </html>

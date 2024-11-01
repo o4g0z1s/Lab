@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="https://d4.alternativeto.net/c9ix1zSGlRdrr8VtfQBjp5_rOHW0VbSuvw7eFKCd6CI/rs:fit:280:280:0/g:ce:0:0/exar:1/YWJzOi8vZGlzdC9pY29ucy9nb29nbGUtd2ViLWZvbnRzXzE4ODQ2NS5wbmc.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <title>Font Converter</title>
+    <style>
+            body {
+            font-family: "Ubuntu";
+            text-align: center;
+            }
+    
+            p.title {font-size: 150px;}
+            
+            @media only screen and (max-width:500px) 
+            {
+            p.title {
+            font-size: 50px;
+            line-height: 90px;
+            }
+            }
+
+            textarea {
+            padding: 20px;
+            padding-left: 50px;
+            padding-right: 50px;
+            font-size: 30px;
+            width: 70%;
+            height: 300px;
+            border-radius: 50px;
+            resize: none;
+            background: #ccc;
+            border: none;
+            text-align: center;
+            }
+
+            button {
+            font-family:'Ubuntu';
+            padding: 20px;
+            padding-left: 50px;
+            padding-right: 50px;
+            font-size: 30px;
+            color: white;
+            max-width: 70%;
+            max-height: 50%;
+            border-radius: 50px;
+            background: #e50;
+            border: none;
+            text-align: center;
+            }
+
+    </style>
+    <script>
+        function replaceStrings() {
+
+            const str1 = ["1","2","3","4","5","6","7","8","9","0","１","２","３","４","５","６","７","８","９","０","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","Ａ","Ｂ","Ｃ","Ｄ","Ｅ","Ｆ","Ｇ","Ｈ","Ｉ","Ｊ","Ｋ","Ｌ","Ｍ","Ｎ","Ｏ","Ｐ","Ｑ","Ｒ","Ｓ","Ｔ","Ｕ","Ｖ","Ｗ","Ｘ","Ｙ","Ｚ","ａ","ｂ","ｃ","ｄ","ｅ","ｆ","ｇ","ｈ","ｉ","ｊ","ｋ","ｌ","ｍ","ｎ","ｏ","ｐ","ｑ","ｒ","ｓ","ｔ","ｕ","ｖ","ｗ","ｘ","ｙ","ｚ","あ","い","う","え","お","か","き","く","け","こ","さ","し","す","せ","そ","た","ち","つ","て","と","な","に","ぬ","ね","の","は","ひ","ふ","へ","ほ","ま","み","む","め","も","や","ゆ","よ","ら","り","る","れ","ろ","わ","ゐ","ゑ","を","ん","ア","イ","ウ","エ","オ","カ","キ","ク","ケ","コ","サ","シ","ス","セ","ソ","タ","チ","ツ","テ","ト","ナ","ニ","ヌ","ネ","ノ","ハ","ヒ","フ","ヘ","ホ","マ","ミ","ム","メ","モ","ヤ","ユ","ヨ","ラ","リ","ル","レ","ロ","ワ","ヰ","ヱ","ヲ","ン","ー","ぁ","ぃ","ぅ","ぇ","ぉ","っ","ゃ","ゅ","ょ","ゎ","ァ","ィ","ゥ","ェ","ォ","ヵ","ㇰ","ヶ","ㇱ","ㇲ","ッ","ㇳ","ㇵ","ㇶ","ㇷ","ㇸ","ㇹ","ャ","ュ","ョ","ㇻ","ㇼ","ㇽ","ㇾ","ㇿ","ヮ","が","ぎ","ぐ","げ","ご","ざ","じ","ず","ぜ","ぞ","だ","ぢ","づ","で","ど","ば","び","ぶ","べ","ぼ","ぱ","ぴ","ぷ","ぺ","ぽ","ガ","ギ","グ","ゲ","ゴ","ザ","ジ","ズ","ゼ","ゾ","ダ","ヂ","ヅ","デ","ド","バ","ビ","ブ","ベ","ボ","パ","ピ","プ","ペ","ポ","ゔ","ヴ"];
+            const str2 = ["1","2","3","4","5","6","7","8","9","0","１","２","３","４","５","６","７","８","９","０","ᗩ","ᗷ","ᑕ","ᗞ","ᕮ","Բ","G","H","I","J","𐊋","L","ᱬ","ᱵ","O","ᕈ","𐊭","ᖇ","ᔑ","T","ᑌ","ᐯ","ᱦ","X","ꚵ","𐋀","ꤤ","ᑲ","ꤍ","ძ","ꤕ","f","ꤞ","ꤖ","i","꤇","k","꤈","ⲙ","ꤛ","꤀","ᑭ","ᑫ","𐊬","𐊖","ⲧ","ꤣ","꤂","ꤗ","א","ꤜ","ꤘ","ᗩ","ᗷ","ᑕ","ᗞ","ᕮ","Բ","G","H","I","J","𐊋","L","ᱬ","ᱵ","O","ᕈ","𐊭","ᖇ","ᔑ","T","ᑌ","ᐯ","ᱦ","X","ꚵ","𐋀","ꤤ","ᑲ","ꤍ","ძ","ꤕ","f","ꤞ","ꤖ","i","꤇","k","꤈","ⲙ","ꤛ","꤀","ᑭ","ᑫ","𐊬","𐊖","ⲧ","ꤣ","꤂","ꤗ","א","ꤜ","ꤘ","あ","い","う","え","お","か","き","く","け","こ","さ","し","す","せ","そ","た","ち","つ","て","と","な","に","ぬ","ね","の","は","ひ","ふ","へ","ほ","ま","み","む","め","も","や","ゆ","よ","ら","り","る","れ","ろ","わ","ゐ","ゑ","を","ん","ア","イ","ウ","エ","オ","カ","キ","ク","ケ","コ","サ","シ","ス","セ","ソ","タ","チ","ツ","テ","ト","ナ","ニ","ヌ","ネ","ノ","ハ","ヒ","フ","ヘ","ホ","マ","ミ","ム","メ","モ","ヤ","ユ","ヨ","ラ","リ","ル","レ","ロ","ワ","ヰ","ヱ","ヲ","ン","ー","ぁ","ぃ","ぅ","ぇ","ぉ","っ","ゃ","ゅ","ょ","ゎ","ァ","ィ","ゥ","ェ","ォ","ヵ","ㇰ","ヶ","ㇱ","ㇲ","ッ","ㇳ","ㇵ","ㇶ","ㇷ","ㇸ","ㇹ","ャ","ュ","ョ","ㇻ","ㇼ","ㇽ","ㇾ","ㇿ","ヮ","が","ぎ","ぐ","げ","ご","ざ","じ","ず","ぜ","ぞ","だ","ぢ","づ","で","ど","ば","び","ぶ","べ","ぼ","ぱ","ぴ","ぷ","ぺ","ぽ","ガ","ギ","グ","ゲ","ゴ","ザ","ジ","ズ","ゼ","ゾ","ダ","ヂ","ヅ","デ","ド","バ","ビ","ブ","ベ","ボ","パ","ピ","プ","ペ","ポ","ゔ","ヴ"];
+
+            const userInput = document.getElementById("input").value;
+            let output = userInput;
+
+            for (let i = 0; i < str1.length; i++) {
+                const charToReplace = str1[i];
+                const replacementChar = str2[i] || '';
+
+                output = output.split(charToReplace).join(replacementChar);
+            }
+
+            document.getElementById("output").value = output;
+        }
+    </script>
+</head>
+<body>
+<p class="title" style="font-weight: 700; text-decoration: underline; text-decoration-color: #e50; text-decoration-thickness: 20px; margin-top: 70px; margin-bottom: 70px;">Font<br>Converter</p>
+    <textarea id="input" placeholder="Enter the Text"></textarea>
+    <br>
+    <button onclick="replaceStrings()" style="margin: 40px;">Convert</button>
+    <br>
+    <textarea id="output" readonly></textarea>
+    <br>
+    <button style="margin-top: 30px; margin-bottom: 32px;" onClick="cp()">Copy</button>
+    <script>
+        function cp(){
+            var txt = document.getElementById("output");
+            txt.select();
+            document.execCommand("Copy");
+        }
+    </script>
+    <br><br><br>
+</body>
+</html>
