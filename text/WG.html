@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ランダム文字列生成</title>
+    <title>Words Generator</title>
     <style>
         #output {
-            border-radius: 50px;
             padding: 10px;
             margin: auto;
-            width: 90%;
-            height: 500px;
+	    position: absolute;
+	    left: 1%;
+	    right: 1%;
+	    top: 1%;
+	    bottom: 1%;
             background-color: #eee;
             border-radius: 20px;
             text-align: center;
@@ -35,14 +37,16 @@
 
             outputDiv.innerHTML = result.join("<br>"); // 結果を改行で結合して表示  
         }  
-    </script>  
-</head>  
+    </script>
+</head>
 <body style="text-align: center;">
     <h1>Words Generator</h1>
     <input type="range" id="stringCount" min="1" max="20" value="5" oninput="this.nextElementSibling.value = this.value">  
     <output>5</output>
     <br>
-    <button onclick="generateRandomStrings()">Generate</button>  
+    <button onclick="generateRandomStrings()">Generate</button>
+    <div style="margin: 0; width: 100%; height: 70%;  position: relative; bottom: 0; background-color: #efe">
     <div id="output"></div>
-</body>  
+    </div>
+</body>
 </html>
