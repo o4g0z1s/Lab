@@ -1,0 +1,42 @@
+<!DOCTYPE html>  
+<html lang="ja">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>RTL文字の抽出</title>  
+    <style>  
+        body {  
+            font-family: Arial, sans-serif;  
+            padding: 20px;  
+        }  
+        #output {  
+            border: 1px solid #ccc;  
+            padding: 10px;  
+            margin-top: 20px;  
+            white-space: pre-wrap; /* Preserve whitespace and new lines */  
+        }  
+    </style>  
+</head>  
+<body>  
+    <h1>右から左に表示される文字の抽出</h1>  
+    <textarea id="inputText" rows="10" cols="50" placeholder="ここにテキストを入力してください..."></textarea>  
+    <br>  
+    <button onclick="extractRTL()">RTL文字を抽出</button>  
+
+    <h2>抽出結果:</h2>  
+    <textarea id="output" rows="10" cols="50" readonly></textarea>  
+
+    <script>  
+        function extractRTL() {  
+            const inputText = document.getElementById('inputText').value;  
+            const rtlRegex = /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF\u0590-\u05FF\uFB1D-\uFB40\u0780-\u07BF\u0700-\u074F\u0860-\u086F\u0840-\u085F\u0800-\u083F\u1E800-\u1E8DF\u07C0-\u07FF\u10D00-\u10D3F\u1E900-\u1E95F\u10800-\u1083F\u10900-\u1091F\u10840-\u1085F\u10A60-\u10A7F\u10B60-\u10B7F\u10B00-10B3F\u10F00-\u10F2F\u10F30-\u10F6F\u10A00-\u10A5F\u10C00-\u10C4F\u10C80-\u10CFF\u10300-\u1032F\u10920-\u1093F]/g;  
+
+            // RTL文字を抽出  
+            const extractedRTL = inputText.match(rtlRegex) || [];  
+
+            // 抽出結果を出力テキストエリアに表示  
+            document.getElementById('output').value = extractedRTL.join('') || "RTL文字が見つかりませんでした";  
+        }  
+    </script>  
+</body>  
+</html>

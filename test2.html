@@ -1,0 +1,135 @@
+<!DOCTYPE html>  
+<html lang="ja">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>検索と置換ツール</title>  
+    <style>  
+        body {  
+            display: grid;  
+            grid-template-rows: repeat(5, 1fr); /* 5段の設定 */  
+            grid-template-columns: repeat(3, 1fr); /* 3分割の設定 */  
+            height: 100vh; /* 全体の高さを100%に設定 */  
+            margin: 0;  
+            font-family: Arial, sans-serif;  
+        }  
+
+        /* 各マスのスタイル */  
+        #header {  
+            grid-column: 1 / 4; /* 見出しは全体の3列を占める */  
+            background-color: #4CAF50;  
+            color: white;  
+            display: flex;  
+            align-items: center;  
+            justify-content: center;  
+            font-size: 24px;  
+        }  
+
+        #textArea {  
+            grid-column: 1 / 4; /* テキストエリアも全体の3列を占める */  
+            margin: 0;  
+            padding: 10px;  
+            resize: none; /* リサイズ禁止 */  
+        }  
+
+        /* 検索、置換欄のスタイル */  
+        .label {  
+            background-color: #f1f1f1;  
+            display: flex;  
+            align-items: center;  
+            justify-content: center;  
+        }  
+        
+        .input-field {  
+            margin: 0; /* マージンをなくす */  
+            padding: 10px;  
+            box-sizing: border-box; /* パディングを含めた計算 */  
+            width: 100%; /* 幅を100%に */  
+        }  
+
+        /* ボタンのスタイル */  
+        .button {  
+            margin: 0;  
+            padding: 10px;  
+            box-sizing: border-box; /* パディングを含めた計算 */  
+            width: 100%; /* 幅を100%に */  
+            cursor: pointer;  
+            background-color: #4CAF50;  
+            color: white;  
+            border: none;  
+            font-size: 16px;  
+        }  
+
+        .button:hover {  
+            background-color: #45a049;  
+        }  
+    </style>  
+</head>  
+<body>  
+
+    <div id="header">検索と置換ツール</div>  
+    
+    <textarea id="textArea" placeholder="ここにテキストを入力してください"></textarea>  
+    
+    <div class="label">検索欄</div> <!-- 一番左 -->  
+    <input type="text" class="input-field" id="searchText1" placeholder="検索する文字列を入力してください"> <!-- 真ん中 -->  
+    <input type="text" class="input-field" id="searchText2" placeholder="別の検索文字列を入力してください"> <!-- 一番右 -->  
+
+    <div class="label">置換欄</div> <!-- 一番左 -->  
+    <input type="text" class="input-field" id="replaceText1" placeholder="置換する文字列を入力してください"> <!-- 真ん中 -->  
+    <input type="text" class="input-field" id="replaceText2" placeholder="別の置換文字列を入力してください"> <!-- 一番右 -->  
+
+    <button class="button" id="removeSpacesButton">スペースと改行を削除</button> <!-- 一番左 -->  
+    <button class="button" id="replaceButton">検索と置換</button> <!-- 真ん中 -->  
+    <button class="button" id="copyButton">内容をコピー</button> <!-- 一番右 -->  
+
+    <script>  
+        // 特殊文字をエスケープする関数  
+        function escapeRegExp(string) {  
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');  
+        }  
+
+        document.getElementById('replaceButton').addEventListener('click', function() {  
+            // テキストエリアの内容を取得  
+            var textArea = document.getElementById('textArea');  
+            var originalText = textArea.value;  
+
+            // 1つ目の検索する文字列と置換する文字列を取得  
+            var searchText1 = document.getElementById('searchText1').value;  
+            var replaceText1 = document.getElementById('replaceText1').value;  
+
+            // 2つ目の検索する文字列と置換する文字列を取得  
+            var searchText2 = document.getElementById('searchText2').value;  
+            var replaceText2 = document.getElementById('replaceText2').value;  
+
+            // 1つ目の置換を行う  
+            var newText = originalText.replace(new RegExp(escapeRegExp(searchText1), 'g'), replaceText1 || "");  
+            // 2つ目の置換を行う  
+            newText = newText.replace(new RegExp(escapeRegExp(searchText2), 'g'), replaceText2 || "");  
+
+            // 結果をテキストエリアに出力  
+            textArea.value = newText;  
+        });  
+
+        document.getElementById('removeSpacesButton').addEventListener('click', function() {  
+            // テキストエリアの内容を取得  
+            var textArea = document.getElementById('textArea');  
+            var originalText = textArea.value;  
+
+            // スペースと改行を削除する  
+            var newText = originalText.replace(/[\s\r\n]+/g, "");  
+
+            // 結果をテキストエリアに出力  
+            textArea.value = newText;  
+        });  
+
+        document.getElementById('copyButton').addEventListener('click', function() {  
+            var textArea = document.getElementById('textArea');  
+            textArea.select();  
+            document.execCommand('copy');  
+            alert('内容がクリップボードにコピーされました！');  
+        });  
+    </script>  
+
+</body>  
+</html>
