@@ -3,7 +3,7 @@
 <head>  
     <meta charset="UTF-8">  
     <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-    <title>検索と置換ツール</title>  
+    <title>Search & Replace Tool</title>  
     <style>  
         body {  
             display: grid;  
@@ -17,34 +17,38 @@
         /* 各マスのスタイル */  
         #header {  
             grid-column: 1 / 4; /* 見出しは全体の3列を占める */  
-            background-color: #4CAF50;  
+            background-color: #555;  
             color: white;  
             display: flex;  
             align-items: center;  
             justify-content: center;  
-            font-size: 24px;  
+            font-size: 30px;
+            font-weight: bold;
         }  
 
         #textArea {  
             grid-column: 1 / 4; /* テキストエリアも全体の3列を占める */  
             margin: 0;  
-            padding: 10px;  
-            resize: none; /* リサイズ禁止 */  
+            padding: 20px;  
+            resize: none;
+            border: none;
         }  
 
         /* 検索、置換欄のスタイル */  
         .label {  
-            background-color: #f1f1f1;  
             display: flex;  
             align-items: center;  
-            justify-content: center;  
+            justify-content: center;
+            font-weight: bold;
         }  
         
         .input-field {  
             margin: 0; /* マージンをなくす */  
             padding: 10px;  
             box-sizing: border-box; /* パディングを含めた計算 */  
-            width: 100%; /* 幅を100%に */  
+            width: 100%;
+            border: none;
+            text-align: center;
         }  
 
         /* ボタンのスタイル */  
@@ -54,34 +58,30 @@
             box-sizing: border-box; /* パディングを含めた計算 */  
             width: 100%; /* 幅を100%に */  
             cursor: pointer;  
-            background-color: #4CAF50;  
+            background-color: #777;  
             color: white;  
             border: none;  
             font-size: 16px;  
-        }  
-
-        .button:hover {  
-            background-color: #45a049;  
         }  
     </style>  
 </head>  
 <body>  
 
-    <div id="header">検索と置換ツール</div>  
+    <div id="header">Search & Replace</div>  
     
-    <textarea id="textArea" placeholder="ここにテキストを入力してください"></textarea>  
+    <textarea id="textArea" placeholder="Enter Your Text Here"></textarea>  
     
-    <div class="label">検索欄</div> <!-- 一番左 -->  
-    <input type="text" class="input-field" id="searchText1" placeholder="検索する文字列を入力してください"> <!-- 真ん中 -->  
-    <input type="text" class="input-field" id="searchText2" placeholder="別の検索文字列を入力してください"> <!-- 一番右 -->  
+    <div class="label" style="background-color: #eee;">Search ‣</div> <!-- 一番左 -->  
+    <input type="text" class="input-field" id="searchText1" placeholder="Search-1" style="background-color: #ddd;">
+    <input type="text" class="input-field" id="searchText2" placeholder="Search-2" style="background-color: #eee;">
 
-    <div class="label">置換欄</div> <!-- 一番左 -->  
-    <input type="text" class="input-field" id="replaceText1" placeholder="置換する文字列を入力してください"> <!-- 真ん中 -->  
-    <input type="text" class="input-field" id="replaceText2" placeholder="別の置換文字列を入力してください"> <!-- 一番右 -->  
+    <div class="label" style="background-color: #ddd;">Replace ‣</div> <!-- 一番左 -->  
+    <input type="text" class="input-field" id="replaceText1" placeholder="Replace-1" style="background-color: #eee;">
+    <input type="text" class="input-field" id="replaceText2" placeholder="Replace-2" style="background-color: #ddd;">
 
-    <button class="button" id="removeSpacesButton">スペースと改行を削除</button> <!-- 一番左 -->  
-    <button class="button" id="replaceButton">検索と置換</button> <!-- 真ん中 -->  
-    <button class="button" id="copyButton">内容をコピー</button> <!-- 一番右 -->  
+    <button class="button" id="removeSpacesButton">Align</button> <!-- 一番左 -->  
+    <button class="button" id="replaceButton" style="background-color: #666;">S & R</button> <!-- 真ん中 -->  
+    <button class="button" id="copyButton">Copy</button> <!-- 一番右 -->  
 
     <script>  
         // 特殊文字をエスケープする関数  
@@ -126,8 +126,7 @@
         document.getElementById('copyButton').addEventListener('click', function() {  
             var textArea = document.getElementById('textArea');  
             textArea.select();  
-            document.execCommand('copy');  
-            alert('内容がクリップボードにコピーされました！');  
+            document.execCommand('copy');    
         });  
     </script>  
 
