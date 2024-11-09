@@ -1,0 +1,96 @@
+<!DOCTYPE html>  
+<html lang="ja">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" href="https://s3.amazonaws.com/static.graphemica.com/glyphs/i500s/000/000/329/original/13080-500x500.png?1275288551">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap" rel="stylesheet">
+    <title>Gaze</title>  
+    <style>
+        body {  
+            font-family: "Noto Sans JP", sans-serif;
+            white-space: pre-wrap;  
+            font-size: 30px;
+            text-align: center;
+            line-height: 0.9938;
+            height: 100dvh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background-color: #ffd;
+            color: #333;
+        }
+    </style>  
+</head>  
+<body>  
+    <div id="output"></div>  
+    <script>  
+        const strings = [  
+            "─│┌┐└┘├┤┬┴┼─│┌┐└┘├┤┬┴┼─│┌┐└┘├┤┬┴┼─│┌┐└┘├┤┬┴┼─│┌┐└┘├┤┬┴┼─│┌┐└┘├┤┬┴┼─│┌┐└┘├┤┬┴┼─│┌┐└┘├┤┬┴┼─│┌┐└┘├┤┬┴┼┼",
+
+"─━│┃┌┍┎┏┐┑┒┓└┕┖┗┘┙┚┛├┝┞┟┠┡┢┣┤┥┦┧┨┩┪┫┬┭┮┯┰┱┲┳┴┵┶┷┸┹┺┻┼┼┼┼┽┾┿╀╁╂╃╄╅╆╇╈╉╊╋═║╒╓╔╕╖╗╘╙╚╛╜╝╞╟╠╡╢╣╤╥╦╧╨╩╪╫╬",
+
+"╭╮╯╰╭╮╯╰╭╮╯╰╭╮╯╰╭╮╯╰╭╮╯╰╭╮╯╰╭╮╯╰╭╮╯╰╭╮╯╰╭╮╯╰╭╮╯╰╭╮╯╰╭╮╯╰╭╮╯╰╭╮╯╰╭╮╯╰╭╮╯╰╭╮╯╰╭╮╯╰╭╮╯╰╭╮╯╰╭╮╯╰╭╮╯╰╭╮╯╰",
+
+"╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╱╲╳╳",
+
+"╲░▒▓╲░▒▓╲░▒▓╲░▒▓╲░▒▓╲░▒▓╲░▒▓╲░▒▓╲░▒▓╲░▒▓╲░▒▓╲░▒▓╲░▒▓╲░▒▓╲░▒▓╲░▒▓╲░▒▓╲░▒▓╲░▒▓╲░▒▓╲░▒▓╲░▒▓╲░▒▓╲░▒▓╲░▒▓",
+
+"⿰⿱⿲⿳⿴⿵⿶⿷⿸⿹⿺⿰⿱⿲⿳⿴⿵⿶⿷⿸⿹⿺⿰⿱⿲⿳⿴⿵⿶⿷⿸⿹⿺⿰⿱⿲⿳⿴⿵⿶⿷⿸⿹⿺⿰⿱⿲⿳⿴⿵⿶⿷⿸⿹⿺⿰⿱⿲⿳⿴⿵⿶⿷⿸⿹⿺⿰⿱⿲⿳⿴⿵⿶⿷⿸⿹⿺⿰⿱⿲⿳⿴⿵⿶⿷⿸⿹⿺⿰⿱⿲⿳⿴⿵⿶⿷⿸⿹⿺⿴",
+
+"■□▣▤▥▦▧▨▩■□▣▤▥▦▧▨▩■□▣▤▥▦▧▨▩■□▣▤▥▦▧▨▩■□▣▤▥▦▧▨▩■□▣▤▥▦▧▨▩■□▣▤▥▦▧▨▩■□▣▤▥▦▧▨▩■□▣▤▥▦▧▨▩■□▣▤▥▦▧▨▩■□▣▤▥▦▧▨▩■",
+
+"●◐◑◒◓●◐◑◒◓●◐◑◒◓●◐◑◒◓●◐◑◒◓●◐◑◒◓●◐◑◒◓●◐◑◒◓●◐◑◒◓●◐◑◒◓●◐◑◒◓●◐◑◒◓●◐◑◒◓●◐◑◒◓●◐◑◒◓●◐◑◒◓●◐◑◒◓●◐◑◒◓●◐◑◒◓●◐◑◒◓",
+
+"▲▶▼◀▲▶▼◀▲▶▼◀▲▶▼◀▲▶▼◀▲▶▼◀▲▶▼◀▲▶▼◀▲▶▼◀▲▶▼◀▲▶▼◀▲▶▼◀▲▶▼◀▲▶▼◀▲▶▼◀▲▶▼◀▲▶▼◀▲▶▼◀▲▶▼◀▲▶▼◀▲▶▼◀▲▶▼◀▲▶▼◀▲▶▼◀▲▶▼◀",
+
+"▲△▶▷▼▽◀◁▲△▶▷▼▽◀◁▲△▶▷▼▽◀◁▲△▶▷▼▽◀◁▲△▶▷▼▽◀◁▲△▶▷▼▽◀◁▲△▶▷▼▽◀◁▲△▶▷▼▽◀◁▲△▶▷▼▽◀◁▲△▶▷▼▽◀◁▲△▶▷▼▽◀◁▲△▶▷▼▽◀◁▲△▶▷",
+
+"←↓↑→←↓↑→←↓↑→←↓↑→←↓↑→←↓↑→←↓↑→←↓↑→←↓↑→←↓↑→←↓↑→←↓↑→←↓↑→←↓↑→←↓↑→←↓↑→←↓↑→←↓↑→←↓↑→←↓↑→←↓↑→←↓↑→←↓↑→←↓↑→←↓↑→",
+
+"▁▏▔▕▁▏▔▕▁▏▔▕▁▏▔▕▁▏▔▕▁▏▔▕▁▏▔▕▁▏▔▕▁▏▔▕▁▏▔▕▁▏▔▕▁▏▔▕▁▏▔▕▁▏▔▕▁▏▔▕▁▏▔▕▁▏▔▕▁▏▔▕▁▏▔▕▁▏▔▕▁▏▔▕▁▏▔▕▁▏▔▕▁▏▔▕▁▏▔▕",
+
+"◢◣◤◥◢◣◤◥◢◣◤◥◢◣◤◥◢◣◤◥◢◣◤◥◢◣◤◥◢◣◤◥◢◣◤◥◢◣◤◥◢◣◤◥◢◣◤◥◢◣◤◥◢◣◤◥◢◣◤◥◢◣◤◥◢◣◤◥◢◣◤◥◢◣◤◥◢◣◤◥◢◣◤◥◢◣◤◥◢◣◤◥◢◣◤◥◢◣◤◥",
+ "▀▄▌▐▙▚▛▜▞▟▀▄▌▐▙▚▛▜▞▟▀▄▌▐▙▚▛▜▞▟▀▄▌▐▙▚▛▜▞▟▀▄▌▐▙▚▛▜▞▟▀▄▌▐▙▚▛▜▞▟▀▄▌▐▙▚▛▜▞▟▀▄▌▐▙▚▛▜▞▟▀▄▌▐▙▚▛▜▞▟▀▄▌▐▙▚▛▜▞▟",
+
+"▀▁▂▃▄▅▆▇█▉▊▋▌▍▎▏▐▔▕▖▗▘▙▚▛▜▝▞▟▀▁▂▃▄▅▆▇█▉▊▋▌▍▎▏▐▔▕▖▗▘▙▚▛▜▝▞▟▀▂▃▄▅▆▇█▉▊▋▌▍▎▐▖▗▘▙▚▛▜▝▞▟▀▄▅▆▇█▉▊▋▌▐▙▚▛▜▞▟" 
+        ];  
+
+        let currentIndex = 0;  
+
+        function shuffleString(str) {  
+            const arr = str.split('');  
+            for (let i = arr.length - 1; i > 0; i--) {  
+                const j = Math.floor(Math.random() * (i + 1));  
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }  
+            return arr.join('');  
+        }  
+
+        function formatOutput(str) {  
+            return str.match(/.{1,10}/g).join('\n');  
+        }  
+
+        function displayRandomString() {  
+            const shuffled = shuffleString(strings[currentIndex]);  
+            const formatted = formatOutput(shuffled);  
+            document.getElementById('output').textContent = formatted;  
+        }  
+
+        function changeString() {  
+            currentIndex = (currentIndex + 1) % strings.length;
+            displayRandomString();  
+        }  
+
+        displayRandomString();  
+
+        setInterval(displayRandomString, 60);  
+
+        document.addEventListener('click', changeString);  
+        document.addEventListener('touchstart', changeString);
+    </script>
+</body>
+</html>
