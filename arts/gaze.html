@@ -80,7 +80,7 @@
             document.getElementById('output').textContent = formatted;  
         }  
 
-        function changeString() {  
+        function changeString() {
             currentIndex = (currentIndex + 1) % strings.length;
             displayRandomString();  
         }  
@@ -90,7 +90,6 @@
         setInterval(displayRandomString, 60);  
 
         document.addEventListener('click', changeString);  
-        document.addEventListener('touchstart', changeString);
     </script>
 </body>
 </html>
