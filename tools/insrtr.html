@@ -14,13 +14,15 @@
         }
 
         p.title {font-size: 150px;}
+        #charInterval {width: 30%;}
         
         @media only screen and (max-width:500px) 
         {
         p.title {
         font-size: 70px;
         line-height: 90px;
-        }	
+        }
+        #charInterval {width: 60%;}
         }
     </style>
 </head>
@@ -31,10 +33,13 @@
     <br><br>
     <textarea id="separatorString" style="padding: 20px; padding-left: 50px; padding-right: 50px; font-size: 30px; width: 30%; border-radius: 50px; resize: none; background: #cccccc; border: none; text-align: center;"></textarea>
     <br>
-    <input type="range" id="charInterval" min="1" max="20" value="1" style="margin-top: 30px; width: 30%;">
+    <input type="range" id="charInterval" min="1" max="30" value="1" style="margin-top: 30px;">
     <br>
     <br>
+    <input type="checkbox" id="checkboxA" style="inline-size: 1.2rem; block-size: 1.2rem;">
+    <span>&#x2008;&emsp;&#x2008;&#x2008;</span>
     <span id="charIntervalValue" style="font-size: 20px; padding: 10px; padding-right: 30px; padding-left: 30px; background-color: #ccc; border-radius: 50px;">1</span>
+　　<input type="checkbox" id="checkboxB" style="inline-size: 1.2rem; block-size: 1.2rem;">
     <br>
     <button id="processButton" style="font-family:'Ubuntu'; margin: 40px; padding: 20px; padding-left: 50px; padding-right: 50px; font-size: 30px; color: white; max-width: 70%; max-height: 50%; border-radius: 50px; background: #000099; border: none; text-align: center;">&emsp;Insert&emsp;</button>
     <br>  
@@ -49,18 +54,29 @@
             const inputString = document.getElementById('inputString').value;  
             const separatorString = document.getElementById('separatorString').value;  
             const interval = parseInt(document.getElementById('charInterval').value, 10);  
+            const addAtStart = document.getElementById('checkboxA').checked;  
+            const addAtEnd = document.getElementById('checkboxB').checked;  
 
             if (inputString.length === 0) {  
-                document.getElementById('output').value = 'Error';  
+                document.getElementById('output').value = '文字列①を入力してください。';  
                 return;  
-            }
+            }  
 
             let processedString = '';  
             for (let i = 0; i < inputString.length; i++) {  
                 processedString += inputString[i];  
+                // 指定した文字数ごとに文字列②を挟む  
                 if ((i + 1) % interval === 0 && i !== inputString.length - 1) {  
                     processedString += separatorString;  
                 }  
+            }  
+
+            // チェックボックスに応じて文字列を追加  
+            if (addAtStart) {  
+                processedString = separatorString + processedString;  
+            }  
+            if (addAtEnd) {  
+                processedString += separatorString;  
             }  
 
             document.getElementById('output').value = processedString;  
