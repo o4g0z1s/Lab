@@ -65,7 +65,7 @@
             color: white;  
             border: none;  
             font-size: 16px;
-	    font-family:'Ubuntu';  
+	        font-family:'Ubuntu';  
         }  
     </style>  
 </head>  
@@ -73,7 +73,7 @@
 
     <div id="header">Search & Replace</div>  
     
-    <textarea id="textArea" placeholder="Enter Your Text Here"></textarea>  
+    <textarea id="textArea" placeholder="Enter Your Text Here"></textarea>
     
     <div class="label" style="background-color: #eee;">Search ‣</div> <!-- 一番左 -->  
     <input type="text" class="input-field" id="searchText1" placeholder="Search-1" style="background-color: #ddd;">
@@ -85,53 +85,73 @@
 
     <button class="button" id="removeSpacesButton">Align</button> <!-- 一番左 -->  
     <button class="button" id="replaceButton" style="background-color: #666;">S & R</button> <!-- 真ん中 -->  
-    <button class="button" id="copyButton">Copy</button> <!-- 一番右 -->  
-
+    <button class="button" id="copyButton">Copy</button> <!-- 一番右 -->
+    <div id="detail" style="grid-column: 1 / 4; text-align: center; background-color: #555; color: #888; font-size: 0.7rem; padding: 5px;">&nbsp;</div>
+    
     <script>  
-        // 特殊文字をエスケープする関数  
-        function escapeRegExp(string) {  
-            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');  
-        }  
-
+        // 検索および置換処理  
         document.getElementById('replaceButton').addEventListener('click', function() {  
-            // テキストエリアの内容を取得  
             var textArea = document.getElementById('textArea');  
             var originalText = textArea.value;  
-
+    
             // 1つ目の検索する文字列と置換する文字列を取得  
             var searchText1 = document.getElementById('searchText1').value;  
-            var replaceText1 = document.getElementById('replaceText1').value;  
-
+            var replaceText1 = document.getElementById('replaceText1').value.replace(/\\n/g, '\n'); // 改行に変換  
+    
             // 2つ目の検索する文字列と置換する文字列を取得  
             var searchText2 = document.getElementById('searchText2').value;  
-            var replaceText2 = document.getElementById('replaceText2').value;  
-
+            var replaceText2 = document.getElementById('replaceText2').value.replace(/\\n/g, '\n'); // 改行に変換  
+    
+            // 改行を検索する場合の処理  
+            searchText1 = searchText1 === '\\n' ? '\n' : searchText1; // 改行の検索用文字列を置き換え  
+            searchText2 = searchText2 === '\\n' ? '\n' : searchText2;  
+    
             // 1つ目の置換を行う  
             var newText = originalText.replace(new RegExp(escapeRegExp(searchText1), 'g'), replaceText1 || "");  
             // 2つ目の置換を行う  
             newText = newText.replace(new RegExp(escapeRegExp(searchText2), 'g'), replaceText2 || "");  
-
+    
             // 結果をテキストエリアに出力  
             textArea.value = newText;  
+            updateDetails(newText); // 文字数と行数を更新  
         });  
-
+    
+        // 改行のエスケープ処理関数  
+        function escapeRegExp(string) {  
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // 特殊文字をエスケープ  
+        }  
+    
+        function updateDetails(text) {  
+            var charCount = text.replace(/\s+/g, '').length; // 空白や改行を除いた文字数  
+            var lineCount = text.split(/\r\n|\r|\n/).length; // 行数  
+    
+            // details divに表示  
+            document.getElementById('detail').innerHTML = `${charCount} characters / ${lineCount} lines`;  
+        }  
+    
         document.getElementById('removeSpacesButton').addEventListener('click', function() {  
             // テキストエリアの内容を取得  
             var textArea = document.getElementById('textArea');  
             var originalText = textArea.value;  
-
+    
             // スペースと改行を削除する  
             var newText = originalText.replace(/[\s\r\n]+/g, "");  
-
+    
             // 結果をテキストエリアに出力  
             textArea.value = newText;  
+            updateDetails(newText); // 文字数と行数を更新  
         });  
-
+    
         document.getElementById('copyButton').addEventListener('click', function() {  
             var textArea = document.getElementById('textArea');  
             textArea.select();  
-            document.execCommand('copy');    
+            document.execCommand('copy');  
         });  
+    
+        // 初期表示のために文字数と行数を更新  
+        document.getElementById('textArea').addEventListener('input', function() {  
+            updateDetails(this.value);  
+        }); 
     </script>  
 
 </body>  
