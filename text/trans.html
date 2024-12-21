@@ -308,7 +308,7 @@
 				var input = document.getElementById('input');
 				var text = input.value || input.placeholder;
 				text = text.replace(/./g, translate);
-				document.getElementById('output').value = text;
+				document.getElementById('input').value = text;
 			}
 
 			var buffer = null;
@@ -322,7 +322,7 @@
 					input.value = buffer || '';
 					buffer = null;
 				}
-				document.getElementById('output').value = '';
+				document.getElementById('input').value = '';
 			}
 
 			window.onload = function () {
@@ -364,13 +364,12 @@
 			<form onSubmit="return false">
 				<textarea rows="15" cols="75" id="input" placeholder="&#10;ｺｺぬィ、ゔンㇱょｩヲ、&#10;ヵゐつぇねーーッッッ、ー！ー!ゔ！" style="padding: 20px; padding-left: 50px; padding-right: 50px; font-size: 30px; max-width: 70%; max-height: 300px; border-radius: 50px; resize: none; background: #cccccc; border: none; text-align: center; vertical-align: middle;"></textarea><br>
 				
-				<button style="margin: 50px; padding: 10px; padding-left: 50px; padding-right: 50px; font-size: 25px; color: white; max-width: 70%; max-height: 50%; border-radius: 50px; background: #555555; border: none; text-align: center; vertical-align: middle;" onClick="run();">ㇸﾝくぁン！!ー、!！</button>
+				<button style="margin: 50px; margin-bottom: 0; padding: 10px; padding-left: 50px; padding-right: 50px; font-size: 25px; color: white; max-width: 70%; max-height: 50%; border-radius: 50px; background: #555555; border: none; text-align: center; vertical-align: middle;" onClick="run();">ㇸﾝくぁン！!ー、!！</button>
 				<br>
-				<textarea rows="15" cols="75" id="output" style="padding: 20px; padding-left: 50px; padding-right: 50px; font-size: 30px; max-width: 70%; max-height: 300px; border-radius: 50px; resize: none; background: #cccccc; border: none; text-align: center; vertical-align: middle;" readonly></textarea><br>
                 <button style="margin: 50px; padding: 10px; padding-left: 50px; padding-right: 50px; font-size: 25px; color: white; max-width: 70%; max-height: 50%; border-radius: 50px; background: #555555; border: none; text-align: center; vertical-align: middle;" onClick="cp();">ｺㇶ゚ｨー〜ーー〜ーｯｳ゙!!!</button><br>
                 <script>
                 function cp(){
-                  var txt = document.getElementById("output");
+                  var txt = document.getElementById("input");
                   txt.select();
                   document.execCommand("Copy");
                 }
