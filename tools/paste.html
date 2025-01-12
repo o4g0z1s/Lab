@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <title>Paste</title>
+    <style>
+        body, html {
+            margin: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column; /* 縦方向にレイアウト */
+            font-family:"Ubuntu";
+        }
+
+        header {
+            background-color: #555; /* ヘッダーの背景色 */
+            color: white; /* ヘッダーの文字色 */
+            padding: 10px 20px; /* ヘッダーの内側の余白 */
+            text-align: center; /* テキストを中央揃え */
+        }
+
+        #output {
+            flex: 1; /* 残りのスペースを占有 */
+            display: flex;
+            flex-wrap: wrap; /* 画像を折り返し表示 */
+            align-items: center;
+            justify-content: center;
+            overflow: auto; /* 内容がはみ出した場合に隠す */
+            position: relative;
+            background-color: #333;
+        }
+
+        img {
+            max-width: calc(100% / 3); /* 画像の幅を全体の三分の一に設定 */
+            max-height: 100%; /* 高さは100%まで */
+            object-fit: contain; /* アスペクト比を保持 */
+            margin: 5px; /* 画像間の隙間 */
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Paste</h1>
+</header>
+
+<div id="output"></div>
+
+<script>
+    const output = document.getElementById('output');
+
+    document.addEventListener('paste', (event) => {
+        const items = event.clipboardData.items;
+
+        for (const item of items) {
+            if (item.type.startsWith('image/')) {
+                const file = item.getAsFile();
+                const reader = new FileReader();
+              
+                reader.onloadend = function() {
+                    const img = document.createElement('img');
+                    img.src = reader.result;
+
+                    output.appendChild(img); // 新しい画像を表示
+                }
+
+                reader.readAsDataURL(file);
+            }
+        }
+    });
+</script>
+</body>
+</html>

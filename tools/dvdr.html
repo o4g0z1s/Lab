@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <title>Divider</title>
+    <style>
+        body {
+            font-family: Ubuntu, sans-serif;
+            margin: 0;
+            height: 100vh;
+            display: grid;
+            grid-template-rows: repeat(4, 1fr); /* スタート画面用グリッド */
+            grid-gap: 0; /* グリッド間の隙間をなくす */
+        }
+
+        textarea {
+            resize: none;
+            text-align: center;
+            padding: 15px;
+            font-size: 1.2em;
+        }
+
+        #title {
+            display: flex;
+            justify-content: center; /* 中央に配置 */
+            align-items: center;
+            font-size: 4em;
+            grid-row: 1; /* 1行目 */
+            background-color: #555;
+            color: white;
+            font-weight: bold;
+        }
+
+        #inputArea {
+            grid-row: 2 / span 2; /* 2行目、3行目を占有 */
+            display: flex;
+            justify-content: center; /* 中央に配置 */
+            align-items: center;
+            margin: 0; /* マージンをなくす */
+        }
+
+        #dataInput {
+            width: 100%; /* 幅をマスいっぱいに */
+            height: 100%; /* 高さを合わせる */
+            box-sizing: border-box; /* パディングやボーダーが含まれるように */
+            margin: 0; /* マージンをなくす */
+            padding-top: 25px;
+        }
+
+        #controls {
+            display: grid; /* 縦に2つに分割 */
+            grid-template-columns: repeat(2, 1fr); /* 左右2等分 */
+            grid-row: 4; /* 4行目 */
+            margin: 0; /* マージンをなくす */
+        }
+
+        #groupCount {
+            width: 100%; /* 幅をマスいっぱいに */
+            margin: 0; /* マージンをなくす */
+            box-sizing: border-box; /* パディングやボーダーが含まれるように */
+            font-family: "Ubuntu";
+            background: #ddd;
+            border: none;
+        }
+
+        #goButton {
+            width: 100%; /* 幅をマスいっぱいに */
+            margin: 0; /* マージンをなくす */
+            box-sizing: border-box; /* パディングやボーダーが含まれるように */
+            font-size: 2em;
+            font-family: "Ubuntu";
+            color: white;
+            background: #888;
+            border: none;
+        }
+
+        #groupingArea {
+            display: none; /* グルーピングエリアは非表示 */
+            grid-template-rows: repeat(6, 1fr); /* 6等分のグリッドレイアウト */
+            height: 100vh; /* 高さを100vhに設定 */
+        }
+
+        #lineDisplay {
+            display: flex;
+            justify-content: center; /* 中央に配置 */
+            align-items: center;
+            grid-row: 1 / span 3; /* 1行目〜3行目を占有 */
+            margin: 0; /* マージンをなくす */
+            height: 100%; /* 高さを維持 */
+            text-align: center;
+            word-break: break-all;
+        }
+
+        .textAreaContainer {
+            display: grid; /* グリッドでテキストエリアを配置 */
+            grid-template-columns: repeat(3, 1fr); /* デフォルトは3列 */
+            grid-row: 4 / span 2; /* 4行目、5行目を占有 */
+            margin: 0; /* マージンをなくす */
+            height: 100%; /* 高さを維持 */
+        }
+
+        .textAreaGroup {
+            width: 100%; /* 幅をマスいっぱいに */
+            height: 100%; /* 高さをマスいっぱいに */
+            box-sizing: border-box; /* パディングやボーダーが含まれるように */
+            margin: 0; /* マージンをなくす */
+            border: none;
+        }
+
+        .copyButton {
+            width: 100%; /* 幅をマスいっぱいに */
+            height: 100%; /* 高さをマスいっぱいに */
+            box-sizing: border-box; /* パディングやボーダーが含まれるように */
+            margin: 0; /* マージンをなくす */
+            font-family: "Ubuntu";
+            color: white;
+            border: none;
+        }
+
+        .copyButtonContainer {
+            display: grid; /* グリッドでコピー用ボタンを配置 */
+            grid-template-columns: repeat(3, 1fr); /* デフォルトは3列 */
+            grid-row: 6; /* 6行目 */
+            height: 100%; /* 高さを維持 */
+            margin: 0; /* マージンをなくす */
+        }
+        .textAreaGroup.dark {
+            background-color: #ddd; /* 濃いグレー */
+        }
+
+        .textAreaGroup.light {
+            background-color: #eee; /* 薄いグレー */
+        }
+
+        .copyButton.dark {
+            background-color: #666; /* 濃いグレー */
+        }
+
+        .copyButton.light {
+            background-color: #777; /* 薄いグレー */
+        }
+
+        #detail {
+            text-align: center;
+            background-color: #555;
+            color: #888;
+            font-size: 0.7rem;
+            padding: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="title">Divider</div>
+    <div id="inputArea">
+        <textarea id="dataInput" rows="10" placeholder="Enter Your Text Here"></textarea>
+    </div>
+    <div id="controls">
+        <input type="number" id="groupCount" min="1" max="9" placeholder="Number of Groups" style="text-align: center;" required>
+        <button id="goButton">GO</button>
+    </div>
+
+    <div id="groupingArea">
+        <div id="lineDisplay"></div>
+        <div class="textAreaContainer"></div>
+        <div class="copyButtonContainer"></div>
+        <div id="detail"></div>
+    </div>
+
+    <script>
+        const goButton = document.getElementById("goButton");
+        const dataInput = document.getElementById("dataInput");
+        const groupCountInput = document.getElementById("groupCount");
+        const groupingArea = document.getElementById("groupingArea");
+        const lineDisplay = document.getElementById("lineDisplay");
+        const textAreasContainer = document.querySelector(".textAreaContainer");
+        const copyButtonContainer = document.querySelector(".copyButtonContainer");
+        const detailDisplay = document.getElementById("detail");
+        const title = document.getElementById("title");
+
+        let inputLines = [];
+        let currentLineIndex = 0;
+
+        goButton.addEventListener("click", function () {
+            // 入力したデータを取得
+            const inputText = dataInput.value.trim();
+            const groupCount = parseInt(groupCountInput.value);
+
+            if (inputText === "" || groupCount < 1 || groupCount > 9) {
+                alert("Error");
+                return;
+            }
+
+            inputLines = inputText.split("\n");
+            currentLineIndex = 0;
+
+            // 入力エリアを非表示にし、タイトルも消す
+            title.style.display = "none"; // タイトルの非表示
+            document.getElementById("inputArea").style.display = "none";
+            document.getElementById("controls").style.display = "none";
+            groupingArea.style.display = "grid"; // グリッドレイアウトを表示
+            lineDisplay.innerText = inputLines[currentLineIndex];
+
+            textAreasContainer.innerHTML = ""; // 初期化
+            copyButtonContainer.innerHTML = ""; // 初期化
+            const textAreas = [];
+
+            // グループ数に応じてテキストエリアとコピー用ボタンを追加
+            const columns = groupCount; // 列数はグループ数に合わせる
+            textAreasContainer.style.gridTemplateColumns = `repeat(${columns}, 1fr)`; // テキストエリアの列数
+            copyButtonContainer.style.gridTemplateColumns = `repeat(${columns}, 1fr)`; // コピー用ボタンの列数
+
+            for (let i = 0; i < groupCount; i++) {
+                const textArea = document.createElement("textarea");
+                textArea.classList.add("textAreaGroup");
+                textArea.rows = 5;
+                textArea.placeholder = `Group ${i + 1}`;
+
+                // クラスの追加
+                if (i % 2 === 0) {
+                    textArea.classList.add("light"); // 薄いグレー
+                } else {
+                    textArea.classList.add("dark"); // 濃いグレー
+                }
+
+                textAreasContainer.appendChild(textArea);
+                textAreas.push(textArea);
+
+                const copyButton = document.createElement("button");
+                copyButton.innerText = "Copy";
+                copyButton.classList.add("copyButton");
+
+                // クラスの追加
+                if (i % 2 === 0) {
+                    copyButton.classList.add("dark"); // 濃いグレー
+                } else {
+                    copyButton.classList.add("light"); // 薄いグレー
+                }
+
+                copyButton.onclick = function () {
+                    textArea.select();
+                    document.execCommand("copy");
+                };
+                copyButtonContainer.appendChild(copyButton);
+            }
+            // 残りの行数を表示
+            updateDetailDisplay();
+            updateLineDisplayFontSize();
+
+            document.addEventListener("keydown", handleKeyPress);
+        });
+
+        function handleKeyPress(event) {
+            // 数字キーが押されたら
+            const keyCode = event.key;
+            if (keyCode >= '1' && keyCode <= '9') {
+                const groupIndex = parseInt(keyCode) - 1;
+
+                if (currentLineIndex < inputLines.length) {
+                    const textAreas = document.querySelectorAll(".textAreaGroup");
+                    if (groupIndex < textAreas.length) {
+                        textAreas[groupIndex].value += inputLines[currentLineIndex] + "\n";
+                        currentLineIndex++; // 次の行に進む
+
+                        // 次の行を表示
+                        if (currentLineIndex < inputLines.length) {
+                            lineDisplay.innerText = inputLines[currentLineIndex];
+                        } else {
+                            lineDisplay.innerText = "Finish"; // 最後の行まで行ったら「Finish」と表示
+                            document.removeEventListener("keydown", handleKeyPress); // 入力イベントを解除
+                        }
+                        // 残りの行数を更新
+                        updateDetailDisplay();
+                        updateLineDisplayFontSize();
+                    }
+                }
+            }
+        }
+
+        function updateDetailDisplay() {
+            const remainingLines = inputLines.length - currentLineIndex;
+            detailDisplay.innerText = `${remainingLines} left`; // 残り行数を表示
+        }
+
+        function updateLineDisplayFontSize() {
+            const text = lineDisplay.innerText;
+            const characterCount = text.length;
+
+            // フォントサイズを計算
+            const fontSize = characterCount > 0 ? `clamp(5vh, ${100 / Math.max(characterCount, 1)}vw, 35vh)` : '0px';
+
+            lineDisplay.style.fontSize = fontSize; // フォントサイズを設定
+        }
+    </script>
+</body>
+</html>
