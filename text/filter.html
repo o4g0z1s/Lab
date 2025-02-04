@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
+    <title>🪺🖐🇬🇭ㇵッヶㇺ！</title>
+    <style>
+        body {
+            font-family:'Noto Color Emoji',sans-serif;
+            margin: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+        }
+        button {
+            margin-top: 10px;
+        }
+        #output {
+            margin-top: 20px;
+            white-space: pre-wrap; /* 行末で の折り返しを考慮 */
+        }
+    </style>
+</head>
+<body>
+    <h1>🪺🖐🇬🇭ㇵッヶㇺ！</h1>
+    <textarea id="input" placeholder="ここに テキストを入力してください..."></textarea>
+    <button onclick="filterLines()">ㇵッヶㇺ！</button>
+    <h2>結果:</h2>
+    <div id="output"></div>
+
+    <script>
+        function filterLines() {
+            const inputText = document.getElementById('input').value;
+            const lines = inputText.split('\n');
+            const filteredLines = lines.filter(line => !/[きこさせそたちてなにねのまみめもをんぎござぜぞだぢでキコサセソタチテナニネノ マミメモヲンギゴザゼゾダヂデ]/.test(line));
+            document.getElementById('output').innerText = filteredLines.join('\n');
+        }
+    </script>
+</body>
+</html>
