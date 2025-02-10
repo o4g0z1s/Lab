@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <title>Text Mixer</title>
+    <style>
+        body {
+            display: grid;
+            grid-template-rows: repeat(5, 1fr); /* 5段の設定 */
+            grid-template-columns: repeat(3, 1fr); /* 3分割の設定 */
+            height: 100dvh; /* 全体の高さを100%に設定 */
+            margin: 0;
+            font-family: "Ubuntu", sans-serif;
+        }
+
+        /* 各マスのスタイル */
+        #header {
+            grid-column: 1 / 4; /* 見出しは全体の3列を占める */
+            background-color: #555;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            font-weight: bold;
+        }
+
+        #textArea {
+            grid-column: 1 / 4; /* テキストエリアも全体の3列を占める */
+            margin: 0;
+            padding: 20px;
+            resize: none;
+            border: none;
+        }
+
+        /* 検索、置換欄のスタイル */
+        .label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+  
+        .input-field {
+            margin: 0; /* マージンをなくす */
+            padding: 10px;
+            box-sizing: border-box; /* パディングを含めた計算 */
+            width: 100%;
+            border: none;
+            text-align: center;
+        }
+
+        /* ボタンのスタイル */
+        .button {
+            margin: 0;
+            padding: 10px;
+            box-sizing: border-box; /* パディングを含めた計算 */
+            width: 100%; /* 幅を100%に */
+            cursor: pointer;
+            background-color: #777;
+            color: white;
+            border: none;
+            font-size: 16px;
+	        font-family:'Ubuntu';
+        }
+    </style>
+</head>
+<body>
+
+    <div id="header">Text Mixer</div>
+
+    <textarea id="textArea" placeholder=""></textarea>
+
+    <input type="text" class="input-field" id="text1" placeholder="Text-1" style="background-color: #eee;"> <!-- 一番左 -->
+    <input type="number" class="input-field" id="num1" placeholder="How many?" style="background-color: #ddd;">
+    <button class="button" id="throwInButton1" style="background-color: #aaa;">Throw in!</button>
+
+    <input type="text" class="input-field" id="text2" placeholder="Text-2" style="background-color: #ddd;"> <!-- 一番左 -->
+    <input type="number" class="input-field" id="num2" placeholder="How many?" style="background-color: #eee;">
+    <button class="button" id="throwInButton2" style="background-color: #999;">Throw in!</button>
+
+    <button class="button" id="removeSpacesButton">Align</button> <!-- 一番左 -->
+    <button class="button" id="mixButton" style="background-color: #666;">MIX</button> <!-- 真ん中 -->
+    <button class="button" id="copyButton">Copy</button> <!-- 一番右 -->
+    <div id="detail" style="grid-column: 1 / 4; text-align: center; background-color: #555; color: #888; font-size: 0.7rem; padding: 5px;">&nbsp;</div>
+
+    <script>
+    document.getElementById('throwInButton1').addEventListener('click', function() {
+        const text = document.getElementById('text1').value;
+        const count = parseInt(document.getElementById('num1').value, 10);
+        const textArea = document.getElementById('textArea');
+  
+        if (text && !isNaN(count) && count > 0) {
+            textArea.value += text.repeat(count);
+        }
+    });
+  
+    document.getElementById('throwInButton2').addEventListener('click', function() {
+        const text = document.getElementById('text2').value;
+        const count = parseInt(document.getElementById('num2').value, 10);
+        const textArea = document.getElementById('textArea');
+  
+        if (text && !isNaN(count) && count > 0) {
+            textArea.value += text.repeat(count);
+        }
+    });
+  
+    document.getElementById('mixButton').addEventListener('click', function() {
+        const textArea = document.getElementById('textArea');
+        const text = textArea.value;
+  
+        // テキストをスペースで分割し、配列にする
+        const words = text.split('');
+        // 配列をシャッフルする
+        const shuffled = words.sort(() => Math.random() - 0.5);
+        // シャッフルされた文字を結合してテキストエリアに返す
+        textArea.value = shuffled.join('');
+    });
+
+    // 改行のエスケープ処理関数
+    function escapeRegExp(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // 特殊文字をエスケープ
+    }
+
+    function updateDetails(text) {
+        var charCount = text.replace(/\s+/g, '').length; // 空白や改行を除いた文字数
+        var lineCount = text.split(/\r\n|\r|\n/).length; // 行数
+  
+        // 単数形/複数形の判定
+        var charLabel = charCount === 1 ? 'character' : 'characters';
+        var lineLabel = lineCount === 1 ? 'line' : 'lines';
+
+        // details divに表示
+        document.getElementById('detail').innerHTML = `${charCount} ${charLabel} / ${lineCount} ${lineLabel}`;
+    }
+
+    document.getElementById('removeSpacesButton').addEventListener('click', function() {
+        // テキストエリアの内容を取得
+        var textArea = document.getElementById('textArea');
+        var originalText = textArea.value;
+
+        // スペースと改行を削除する
+        var newText = originalText.replace(/[\s\r\n]+/g, "");
+
+        // 結果をテキストエリアに出力
+        textArea.value = newText;
+        updateDetails(newText); // 文字数と行数を更新
+    });
+
+    document.getElementById('copyButton').addEventListener('click', function() {
+        var textArea = document.getElementById('textArea');
+        textArea.select();
+        document.execCommand('copy');
+    });
+
+    // 初期表示のために文字数と行数を更新
+    document.getElementById('textArea').addEventListener('input', function() {
+        updateDetails(this.value);
+    }); 
+    </script>
+
+</body>
+</html>
