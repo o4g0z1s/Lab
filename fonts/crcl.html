@@ -12,16 +12,6 @@
             font-family: "Ubuntu";
             text-align: center;
             }
-    
-            p.title {font-size: 150px;}
-            
-            @media only screen and (max-width:500px) 
-            {
-            p.title {
-            font-size: 50px;
-            line-height: 90px;
-            }
-            }
 
             textarea {
             padding: 20px;
@@ -52,6 +42,30 @@
             text-align: center;
             }
 
+            p.title {font-size: 150px;}
+            
+            textarea {
+                width: 70%;
+            }
+    
+            button {
+                font-size: 30px;
+            }
+            
+            @media only screen and (max-width:500px) 
+            {
+            p.title {
+            font-size: 50px;
+            line-height: 90px;
+            }
+            textarea {
+                width: 60%;
+            }
+            button {
+                font-size: 20px;
+            }
+            }
+
     </style>
     <script>
         function replaceStrings() {
@@ -77,7 +91,7 @@
 <p class="title" style="font-weight: 700; text-decoration: underline; text-decoration-color: #e50; text-decoration-thickness: 20px; margin-top: 70px; margin-bottom: 70px;">Ⓒⓘⓡⓒⓛⓔ</p>
     <textarea id="input" placeholder="Ⓔⓝⓣⓔⓡ Ⓣⓗⓔ Ⓣⓔⓧⓣ"></textarea>
     <br>
-    <button onclick="replaceStrings()" style="margin: 40px;">Ⓒⓞⓝⓥⓔⓡⓣ</button>
+    <button onclick="replaceStrings()" style="margin: 40px; padding-left: 30px; padding-right: 30px;">Ⓒⓞⓝⓥⓔⓡⓣ</button>
     <br>
     <textarea id="output" readonly></textarea>
     <br>

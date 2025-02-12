@@ -13,13 +13,20 @@
         }
 
         p.title {font-size: 150px;}
+
+        button {
+            font-size: 30px;
+        }
         
         @media only screen and (max-width:500px) 
         {
         p.title {
-          font-size: 60px;
-          line-height: 90px;
-        }	
+        font-size: 60px;
+        line-height: 90px;
+        }
+        button {
+            font-size: 25px;
+        }
         }
 
         select {
@@ -61,7 +68,7 @@
         <option value="14">アルファベット</option>
     </select>
     <br>
-    <button id="generate" style="font-family:'Ubuntu'; margin: 40px; padding: 20px; padding-left: 50px; padding-right: 50px; font-size: 30px; color: white; max-width: 70%; max-height: 50%; border-radius: 50px; background: #e50; border: none; text-align: center;">Generate</button>
+    <button id="generate" style="font-family:'Ubuntu'; margin: 40px; padding: 20px; padding-left: 50px; padding-right: 50px; color: white; max-width: 70%; max-height: 50%; border-radius: 50px; background: #e50; border: none; text-align: center;">Generate</button>
     <br>
     <textarea id="output" style="padding: 20px; padding-left: 50px; padding-right: 50px; font-size: 30px; width: 70%; height: 300px; border-radius: 50px; resize: none; background: #cccccc; border: none; text-align: center;" readonly></textarea>
 
@@ -110,7 +117,7 @@ function shuffleArray(array) {
     </script>
 
     <br>
-    <button style="font-family:'Ubuntu'; padding: 20px; padding-left: 50px; padding-right: 50px; font-size: 30px; color: white; max-width: 70%; max-height: 50%; border-radius: 50px; background: #e50; border: none; text-align: center; margin-top: 30px; margin-bottom: 70px;" onClick="cp()">&emsp;Copy&emsp;</button>
+    <button style="font-family:'Ubuntu'; padding: 20px; padding-left: 50px; padding-right: 50px; color: white; max-width: 70%; max-height: 50%; border-radius: 50px; background: #e50; border: none; text-align: center; margin-top: 30px; margin-bottom: 70px;" onClick="cp()">&emsp;Copy&emsp;</button>
     <script>
         function cp(){
             var txt = document.getElementById("output");

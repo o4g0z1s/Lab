@@ -16,12 +16,26 @@
 
         p.title {font-size: 150px;}
         
+        textarea {
+            width: 70%;
+        }
+
+        button {
+            font-size: 30px;
+        }
+        
         @media only screen and (max-width:500px) 
         {
         p.title {
         font-size: 70px;
         line-height: 90px;
-        }	
+        }
+        textarea {
+            width: 60%;
+        }
+        button {
+            font-size: 25px;
+        }
         }
     </style>
 </head
@@ -31,9 +45,9 @@
     <p  style="font-family:'Ubuntu'; margin: 0; font-size: 30px; font-weight: bold;">↓</p>
     <input type="text" id="end" placeholder="End" maxlength="5" style="padding: 20px; padding-left: 50px; padding-right: 50px; font-size: 30px; width: 30%; border-radius: 50px; resize: none; background: #cccccc; border: none; text-align: center;"/>
     <br>
-    <button onclick="generateUnicodeString()" style="font-family:'Ubuntu'; margin: 40px; padding: 20px; padding-left: 50px; padding-right: 50px; font-size: 30px; color: white; max-width: 70%; max-height: 50%; border-radius: 50px; background: #000099; border: none; text-align: center;">&emsp;Get&emsp;</button>
+    <button onclick="generateUnicodeString()" style="font-family:'Ubuntu'; margin: 40px; padding: 20px; padding-left: 50px; padding-right: 50px; color: white; max-width: 70%; max-height: 50%; border-radius: 50px; background: #000099; border: none; text-align: center;">&emsp;Get&emsp;</button>
     <br>
-    <textarea id="output" style="padding: 20px; padding-left: 50px; padding-right: 50px; font-size: 30px; width: 70%; height: 300px; border-radius: 50px; resize: none; background: #cccccc; border: none; text-align: center;" readonly></textarea>
+    <textarea id="output" style="padding: 20px; padding-left: 50px; padding-right: 50px; font-size: 30px; height: 300px; border-radius: 50px; resize: none; background: #cccccc; border: none; text-align: center;" readonly></textarea>
     <script>
         function generateUnicodeString() {
             const startInput = document.getElementById('start').value;
@@ -56,7 +70,7 @@
         }
     </script>
     <br>
-    <button style="font-family:'Ubuntu'; padding: 20px; padding-left: 50px; padding-right: 50px; font-size: 30px; color: white; max-width: 70%; max-height: 50%; border-radius: 50px; background: #000099; border: none; text-align: center; margin-top: 30px; margin-bottom: 70px;" onClick="cp()">&emsp;Copy&emsp;</button>
+    <button style="font-family:'Ubuntu'; padding: 20px; padding-left: 50px; padding-right: 50px; color: white; max-width: 70%; max-height: 50%; border-radius: 50px; background: #000099; border: none; text-align: center; margin-top: 30px; margin-bottom: 70px;" onClick="cp()">&emsp;Copy&emsp;</button>
     <script>
         function cp(){
             var txt = document.getElementById("output");
