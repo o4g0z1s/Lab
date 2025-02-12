@@ -2,7 +2,7 @@
 <html lang="ja">  
 <head>  
     <meta charset="UTF-8">  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="icon" href="https://s3.amazonaws.com/static.graphemica.com/glyphs/i500s/000/000/329/original/13080-500x500.png?1275288551">
@@ -14,7 +14,7 @@
             white-space: pre-wrap;  
             font-size: 30px;
             text-align: center;
-            line-height: 0.995;
+            line-height: 0.996;
             height: 100dvh;
             margin: 0;
             display: flex;
@@ -22,6 +22,13 @@
             justify-content: center;
             background-color: #ffd;
             color: #333;
+        }
+
+        @media only screen and (max-width:500px) 
+        {
+        body {
+        line-height: 0.999;
+        }
         }
     </style>  
 </head>  
