@@ -77,7 +77,7 @@
     <input type="number" class="input-field" id="num2" placeholder="How many?" style="background-color: #eee;">
     <button class="button" id="throwInButton2" style="background-color: #999;">Throw in!</button>
 
-    <button class="button" id="removeSpacesButton">Align</button> <!-- 一番左 -->
+    <button class="button" id="clearButton">Clear</button> <!-- 一番左 -->
     <button class="button" id="mixButton" style="background-color: #666;">MIX</button> <!-- 真ん中 -->
     <button class="button" id="copyButton">Copy</button> <!-- 一番右 -->
     <div id="detail" style="grid-column: 1 / 4; text-align: center; background-color: #555; color: #888; font-size: 0.7rem; padding: 5px;">&nbsp;</div>
@@ -132,17 +132,8 @@
         document.getElementById('detail').innerHTML = `${charCount} ${charLabel} / ${lineCount} ${lineLabel}`;
     }
 
-    document.getElementById('removeSpacesButton').addEventListener('click', function() {
-        // テキストエリアの内容を取得
-        var textArea = document.getElementById('textArea');
-        var originalText = textArea.value;
-
-        // スペースと改行を削除する
-        var newText = originalText.replace(/[\s\r\n]+/g, "");
-
-        // 結果をテキストエリアに出力
-        textArea.value = newText;
-        updateDetails(newText); // 文字数と行数を更新
+    document.getElementById('clearButton').addEventListener('click', function() {
+        document.getElementById('textArea').value = '';
     });
 
     document.getElementById('copyButton').addEventListener('click', function() {
@@ -152,9 +143,16 @@
     });
 
     // 初期表示のために文字数と行数を更新
-    document.getElementById('textArea').addEventListener('input', function() {
-        updateDetails(this.value);
-    }); 
+    const elements = ['textArea', 'throwInButton1', 'throwInButton2', 'clearButton'];
+
+    elements.forEach(function(id) {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('click', function() {
+                updateDetails(textArea.value);
+            });
+        }
+    });
     </script>
 
 </body>
