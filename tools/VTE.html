@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <title>Vertical Text Editor</title>
+    <style>
+        body {
+            font-family: "Ubuntu", sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0; /* マージン無し */
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .header {
+            text-align: center;
+            flex: 1;
+            display: flex;
+            border: none;
+            background-color: #555;
+            color: white;
+            justify-content: center; /* 中央揃え */
+            align-items: center; /* 中央揃え */
+        }
+
+        .content {
+            display: flex;
+            flex: 3;
+        }
+
+        .text-area {
+            flex: 1;
+            padding: 20px;
+            margin: 0; /* マージン無し */
+            border: 1px solid #ccc;
+            resize: none; /* サイズ変更を禁止 */
+            border: none;
+            border-radius: 0;
+        }
+
+        .button-container {
+            display: flex;
+            flex: 1; /* 高さを合わせる */
+            margin: 0; /* マージン無し */
+            padding: 0; /* パディング無し */
+        }
+
+        .button {
+            flex: 1; /* 各ボタンを等幅にする */
+            padding: 0; /* パディング無し */
+            margin: 0; /* マージン無し */
+            border: none;
+            cursor: pointer; /* カーソルをポインタに変更 */
+            box-sizing: border-box; /* ボーダーの大きさを含める */
+            color: white;
+            font-family:"Ubuntu";
+            border-radius: 0;
+        }
+
+        .number-input {
+            flex: 1; /* 数字入力も等幅に */
+            padding: 0; /* パディング無し */
+            margin: 0; /* マージン無し */
+            border: none;
+            text-align: center; /* 中央揃え */
+            box-sizing: border-box; /* ボーダーの大きさを含める */
+            width: calc(100vw / 3);
+            font-family:"Ubuntu";
+            border-radius: 0;
+        }
+
+        .footer {
+            display: flex;
+            flex: 1;
+            margin: 0; /* マージン無し */
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Vertical Text Editor</h1>
+        </div>
+
+        <div class="content">
+            <textarea id="leftText" class="text-area" rows="10" wrap="off" style="background-color: #fff;" placeholder="Enter Your Text Here"></textarea>
+            <textarea id="rightText" class="text-area" rows="10" wrap="off" style="background-color: #eee;"></textarea>
+        </div>
+
+        <div class="button-container">
+            <button id="copyLeft" class="button" style="background-color: #888;">Copy</button>
+            <button id="copyRight" class="button" style="background-color: #999;">Copy</button>
+        </div>
+
+        <div class="footer">
+            <button id="separate" class="button" style="background-color: #666;">Separate</button>
+            <input type="number" id="splitIndex" class="number-input" min="1" style="background-color: #ccc;" placeholder="Column to separate">
+            <button id="join" class="button" style="background-color: #666;">Combine</button>
+        </div>
+        <div id="detail" style="grid-column: 1 / 4; text-align: center; background-color: #555; color: #888; font-size: 0.7rem; padding: 5px;">&nbsp;</div>
+    </div>
+
+    <script>
+document.getElementById('separate').onclick = function() {
+    const leftText = document.getElementById('leftText').value.split('\n');
+    const splitIndex = parseInt(document.getElementById('splitIndex').value) - 1; // 0-based index
+
+    let leftOutput = '';
+    let rightOutput = '';
+
+    leftText.forEach(line => {
+        if (line.length > splitIndex) {
+            leftOutput += line.substring(0, splitIndex + 1) + '\n';
+            rightOutput += line.substring(splitIndex + 1) + '\n';
+        } else {
+            leftOutput += line + '\n'; // 左テキストエリアに出力
+            rightOutput += '\n'; // 右テキストエリアには改行を出力
+        }
+    });
+
+    // 先頭に改行を追加する直前に、leftOutputやrightOutputを整理
+    document.getElementById('leftText').value = leftOutput.trimEnd(); // 左テキストエリアに出力
+    document.getElementById('rightText').value = rightOutput.trimEnd(); // 右テキストエリアに出力
+};
+  
+document.getElementById('join').onclick = function() {
+    const leftText = document.getElementById('leftText').value.split('\n');
+    const rightText = document.getElementById('rightText').value.split('\n');
+
+    const maxLength = Math.max(leftText.length, rightText.length);
+    let combinedOutput = '';
+
+    for (let i = 0; i < maxLength; i++) {
+        // 左右の行を取得。存在しない場合は空文字列を設定
+        const leftLine = leftText[i] !== undefined ? leftText[i] : '';
+        const rightLine = rightText[i] !== undefined ? rightText[i] : '';
+
+        // それぞれの行の内容を結合。右の行を前にそのまま追加。
+        combinedOutput += leftLine + rightLine + '\n';
+    }
+
+    document.getElementById('leftText').value = combinedOutput.trimEnd(); // 最終的に出力
+    document.getElementById('rightText').value = ''; // 右のテキストエリアを空にする
+};
+
+        document.getElementById('copyLeft').onclick = function() {
+            navigator.clipboard.writeText(document.getElementById('leftText').value);
+        };
+
+        document.getElementById('copyRight').onclick = function() {
+            navigator.clipboard.writeText(document.getElementById('rightText').value);
+        };
+
+        function updateDetails(text) {
+            var charCount = text.replace(/\s+/g, '').length; // 空白や改行を除いた文字数
+            var lineCount = text.split(/\r\n|\r|\n/).length; // 行数
+  
+            // 単数形/複数形の判定
+            var charLabel = charCount === 1 ? 'character' : 'characters';
+            var lineLabel = lineCount === 1 ? 'line' : 'lines';
+
+            // details divに表示
+            document.getElementById('detail').innerHTML = `${charCount} ${charLabel} / ${lineCount} ${lineLabel}`;
+        }
+        document.getElementById('leftText').addEventListener('input', function() {
+            updateDetails(leftText.value);
+        });
+    </script>
+</body>
+</html>
