@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="https://images.emojiterra.com/microsoft/fluent-emoji/15.1/1024px/1f308_color.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Emoji:wght@300..700&display=swap" rel="stylesheet">
+    <title>𝙴𝚗𝚝𝚛𝚘𝚙𝚢</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: "Noto Emoji", sans-serif;
+        }
+        .text {
+            position: absolute;
+            white-space: nowrap;
+            pointer-events: none; /* クリック認識を無効化 */
+        }
+    </style>
+</head>
+<body>
+<script>
+        // 背景色を白、黒の中からランダムに選ぶ関数
+        function getRandomBackgroundColor() {
+            const colors = ['#ffe', '#000'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+ 
+        // ランダムな色を生成する関数 (文字の色用)
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+ 
+        // ランダムなUnicode文字を取得する関数
+        function getRandomUnicodeChar() {
+            const unicodeRange = [
+                [0x0531, 0x2E42],
+                [0xA000, 0xABF9],
+            ];
+            const range = unicodeRange[Math.floor(Math.random() * unicodeRange.length)];
+            const codePoint = Math.floor(Math.random() * (range[1] - range[0] + 1)) + range[0];
+            return String.fromCharCode(codePoint);
+        }
+ 
+        // ランダムな位置を生成する関数（中心重視）
+        function getRandomPosition() {
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            const maxDistance = Math.min(centerX, centerY);
+ 
+            // 中心からの距離を拡大
+            const radius = Math.random() * maxDistance * 0.7; // 最大半径を70%にする
+            const angle = Math.random() * 2 * Math.PI; // 0～2πの範囲で角度を取得
+ 
+            const x = centerX + radius * Math.cos(angle);
+            const y = centerY + radius * Math.sin(angle);
+ 
+            // 画面端に文字がかからないように調整
+            const adjustedX = Math.max(0, Math.min(window.innerWidth, x)) - 45;
+            const adjustedY = Math.max(0, Math.min(window.innerHeight, y)) - 70;
+ 
+            return { x: adjustedX, y: adjustedY };
+        }
+ 
+        // ランダムな文字を画面に配置する関数
+        function createRandomText() {
+            const textElement = document.createElement('div');
+            textElement.className = 'text';
+            const textChar = getRandomUnicodeChar();
+         
+            // 文字サイズのバリエーションを増やすための修正
+            // 0.0～1.0の範囲を2乗して小さいサイズの割合を増加
+            const sizeFactor = Math.pow(Math.random(), 2); // 小さいほど確率が上がる
+            const fontSize = sizeFactor * 170 + 10; // 10px～180px
+ 
+            const angle = Math.random() * 360; // 0°～360°
+            textElement.style.color = getRandomColor();
+            textElement.style.fontSize = `${fontSize}px`;
+            textElement.style.transform = `rotate(${angle}deg)`;
+ 
+            // 中心重視のランダムな位置を取得
+            const { x, y } = getRandomPosition();
+            textElement.style.left = `${x}px`;
+            textElement.style.top = `${y}px`;
+ 
+            textElement.textContent = textChar;
+            document.body.appendChild(textElement);
+        }
+ 
+        // 一定間隔でランダムな文字を生成する
+        function generateRandomArt() {
+            const numberOfTexts = 350; // 生成する文字の数
+            for (let i = 0; i < numberOfTexts; i++) {
+                createRandomText();
+            }
+        }
+ 
+        // ランダムな背景色を設定
+        document.body.style.backgroundColor = getRandomBackgroundColor();
+ 
+        // ランダムアートを生成
+        generateRandomArt();
+</script>
+</body>
+</html>
