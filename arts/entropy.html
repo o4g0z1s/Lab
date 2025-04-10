@@ -12,12 +12,12 @@
         body {
             margin: 0;
             overflow: hidden;
-            font-family: "Noto Emoji", sans-serif;
+            font-family: "Noto Emoji", Helvetica;
         }
         .text {
             position: absolute;
             white-space: nowrap;
-            pointer-events: none; /* クリック認識を無効化 */
+         /* pointer-events: none;  クリック認識を無効化 */
         }
     </style>
 </head>
@@ -94,7 +94,7 @@
             // 文字サイズのバリエーションを増やすための修正
             // 0.0～1.0の範囲を2乗して小さいサイズの割合を増加
             const sizeFactor = Math.pow(Math.random(), 2); // 小さいほど確率が上がる
-            const fontSize = sizeFactor * 170 + 10; // 10px～180px
+            const fontSize = sizeFactor * 190 + 10; // 10px～200px
  
             const angle = Math.random() * 360; // 0°～360°
             textElement.style.color = getRandomColor();
