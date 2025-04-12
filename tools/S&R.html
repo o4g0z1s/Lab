@@ -91,77 +91,102 @@
     <div id="detail" style="grid-column: 1 / 4; text-align: center; background-color: #555; color: #888; font-size: 0.7rem; padding: 5px;">&nbsp;</div>
 
     <script>
-    // 検索および置換処理
-    document.getElementById('replaceButton').addEventListener('click', function() {
-        var textArea = document.getElementById('textArea');
-        var originalText = textArea.value;
-
-        // 1つ目の検索する文字列と置換する文字列を取得
-        var searchText1 = document.getElementById('searchText1').value;
-        var replaceText1 = document.getElementById('replaceText1').value.replace(/\\n/g, '\n'); // 改行に変換
-
-        // 2つ目の検索する文字列と置換する文字列を取得
-        var searchText2 = document.getElementById('searchText2').value;
-        var replaceText2 = document.getElementById('replaceText2').value.replace(/\\n/g, '\n'); // 改行に変換
-
-        // 改行を検索する場合の処理
-        searchText1 = searchText1.replace(/\\n/g, '\n');
-        searchText2 = searchText2.replace(/\\n/g, '\n');
-
-        // 特殊文字をエスケープして正規表現に変換
-        searchText1 = escapeRegExp(searchText1);
-        searchText2 = escapeRegExp(searchText2);
-
-        // 1つ目の置換を行う
-        var newText = originalText.replace(new RegExp(searchText1, 'g'), replaceText1 || "");
-        // 2つ目の置換を行う
-        newText = newText.replace(new RegExp(searchText2, 'g'), replaceText2 || "");
-
-        // 結果をテキストエリアに出力
-        textArea.value = newText;
-        updateDetails(newText); // 文字数と行数を更新
-    });
-
-    // 改行のエスケープ処理関数
-    function escapeRegExp(string) {
-        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // 特殊文字をエスケープ
-    }
-
-    function updateDetails(text) {
-        var charCount = text.replace(/\s+/g, '').length; // 空白や改行を除いた文字数
-        var lineCount = text.split(/\r\n|\r|\n/).length; // 行数
-    
-        // 単数形/複数形の判定
-        var charLabel = charCount === 1 ? 'character' : 'characters';
-        var lineLabel = lineCount === 1 ? 'line' : 'lines';
-
-        // details divに表示
-        document.getElementById('detail').innerHTML = `${charCount} ${charLabel} / ${lineCount} ${lineLabel}`;
-    }
-
-    document.getElementById('removeSpacesButton').addEventListener('click', function() {
-        // テキストエリアの内容を取得
-        var textArea = document.getElementById('textArea');
-        var originalText = textArea.value;
-
-        // スペースと改行を削除する
-        var newText = originalText.replace(/[\s\r\n]+/g, "");
-
-        // 結果をテキストエリアに出力
-        textArea.value = newText;
-        updateDetails(newText); // 文字数と行数を更新
-    });
-
-    document.getElementById('copyButton').addEventListener('click', function() {
-        var textArea = document.getElementById('textArea');
-        textArea.select();
-        document.execCommand('copy');
-    });
-
-    // 初期表示のために文字数と行数を更新
-    document.getElementById('textArea').addEventListener('input', function() {
-        updateDetails(this.value);
-    }); 
+        // 検索および置換処理
+        document.getElementById('replaceButton').addEventListener('click', function() {
+            var textArea = document.getElementById('textArea');
+            var originalText = textArea.value;
+        
+            // 1つ目の検索する文字列と置換する文字列を取得
+            var searchText1 = document.getElementById('searchText1').value;
+            var replaceText1 = document.getElementById('replaceText1').value.replace(/\\n/g, '\n'); // 改行に変換
+        
+            // 2つ目の検索する文字列と置換する文字列を取得
+            var searchText2 = document.getElementById('searchText2').value;
+            var replaceText2 = document.getElementById('replaceText2').value.replace(/\\n/g, '\n'); // 改行に変換
+        
+            // 読み込みを改行が含まれる場合の処理
+            searchText1 = searchText1.replace(/\\n/g, '\n');
+            searchText2 = searchText2.replace(/\\n/g, '\n');
+        
+            // 特殊文字をエスケープして正規表現に変換
+            searchText1 = escapeRegExp(searchText1);
+            searchText2 = escapeRegExp(searchText2);
+        
+            // 「‣」から始まる文字列に対する処理
+            if (searchText1.startsWith('‣')) {
+                var searchChars1 = searchText1.slice(1).split('');
+                var replaceChars1 = replaceText1.slice(1).split(''); // '‣'を除去して対応する文字列を取得
+                originalText = replaceCharacters(originalText, searchChars1, replaceChars1);
+            } else {
+                // 1つ目の置換を行う
+                originalText = originalText.replace(new RegExp(searchText1, 'g'), replaceText1 || "");
+            }
+        
+            if (searchText2.startsWith('‣')) {
+                var searchChars2 = searchText2.slice(1).split('');
+                var replaceChars2 = replaceText2.slice(1).split(''); // '‣'を除去して対応する文字列を取得
+                originalText = replaceCharacters(originalText, searchChars2, replaceChars2);
+            } else {
+                // 2つ目の置換を行う
+                originalText = originalText.replace(new RegExp(searchText2, 'g'), replaceText2 || "");
+            }
+        
+            // 結果をテキストエリアに出力
+            textArea.value = originalText;
+            updateDetails(originalText); // 文字数と行数を更新
+        });
+        
+        // 文字の置換を行う関数
+        function replaceCharacters(text, searchChars, replaceChars) {
+            for (var i = 0; i < searchChars.length; i++) {
+                var searchChar = escapeRegExp(searchChars[i]);
+                var replaceChar = (replaceChars[i] !== undefined) ? replaceChars[i] : '';
+                // 文字の置換を行う
+                text = text.replace(new RegExp(searchChar, 'g'), replaceChar);
+            }
+            return text;
+        }
+        
+        // 改行のエスケープ処理関数
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // 特殊文字をエスケープ
+        }
+        
+        function updateDetails(text) {
+            var charCount = text.replace(/\s+/g, '').length; // 空白や改行を除いた文字数
+            var lineCount = text.split(/\r\n|\r|\n/).length; // 行数
+        
+            // 単数形/複数形の判定
+            var charLabel = charCount === 1 ? 'character' : 'characters';
+            var lineLabel = lineCount === 1 ? 'line' : 'lines';
+        
+            // details divに表示
+            document.getElementById('detail').innerHTML = `${charCount} ${charLabel} / ${lineCount} ${lineLabel}`;
+        }
+        
+        document.getElementById('removeSpacesButton').addEventListener('click', function() {
+            // テキストエリアの内容を取得
+            var textArea = document.getElementById('textArea');
+            var originalText = textArea.value;
+        
+            // スペースと改行を削除する
+            var newText = originalText.replace(/[\s\r\n]+/g, "");
+        
+            // 結果をテキストエリアに出力
+            textArea.value = newText;
+            updateDetails(newText); // 文字数と行数を更新
+        });
+        
+        document.getElementById('copyButton').addEventListener('click', function() {
+            var textArea = document.getElementById('textArea');
+            textArea.select();
+            document.execCommand('copy');
+        });
+        
+        // 初期表示のために文字数と行数を更新
+        document.getElementById('textArea').addEventListener('input', function() {
+            updateDetails(this.value);
+        });
     </script>
 
 </body>
