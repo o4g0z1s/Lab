@@ -9,14 +9,18 @@
             height: auto;
             padding-left: 1%;
             margin-top: 100px;
-            white-space: nowrap;
             font-size: calc(100dvw / 70);
             font-family: serif;
+            line-height: 2em;
+            overflow: hidden;
         }
         span.a { color: #f00; font-weight: bold; }
         span.b { color: #fff; }
         div.a { top: 30%; }
         div.b { height: 30%; }
+        @media only screen and (max-width:700px){
+        .div { font-size: calc(100dvw / 80); }
+        }
         @media (orientation: portrait){
         .div { margin-top: 200px; }
         div.a { top: 15%; }
