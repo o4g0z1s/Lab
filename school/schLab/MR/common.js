@@ -86,5 +86,9 @@ displayQuestion();
 
 document.getElementById('submitAnswer').addEventListener('click', function() {
 const scrollableDiv = document.getElementById('questionArea');
-scrollableDiv.scrollTop = 0; // スクロール位置を最上部にリセット
+scrollableDiv.scrollTop = 0;
+});
+document.getElementById('retryButton').addEventListener('click', function() {
+const scrollableDiv = document.getElementById('questionArea');
+scrollableDiv.scrollTop = 0;
 });

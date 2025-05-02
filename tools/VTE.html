@@ -155,11 +155,13 @@ document.getElementById('join').onclick = function() {
 };
 
         document.getElementById('copyLeft').onclick = function() {
-            navigator.clipboard.writeText(document.getElementById('leftText').value);
+            document.getElementById('leftText').select();
+            document.execCommand('copy');
         };
 
         document.getElementById('copyRight').onclick = function() {
-            navigator.clipboard.writeText(document.getElementById('rightText').value);
+            document.getElementById('rightText').select();
+            document.execCommand('copy');
         };
 
         function updateDetails(text) {
