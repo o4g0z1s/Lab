@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- Thanks to taptempo.io -->
+<head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-157148757-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-157148757-1');
+    </script>
+
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Tap Tempo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tulpen+One&display=swap" rel="stylesheet">
+
+    <style>
+html {
+    font-family: "Tulpen One", Verdana, "Arial Black", open-sans, sans-serif;
+    background: #000;
+    color: #eee;
+    -webkit-user-select: none; /* Chrome/Safari */        
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE10+ */
+    -o-user-select: none;
+    user-select: none;
+    height: 100dvh;
+}
+
+body {
+    padding: 0;
+    margin: 0 !important;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#content {
+    font-weight: bolder;
+    text-align: center;
+}
+
+#bpm {
+    font-size: 35em;
+    color: #eee;
+    margin: 0px;
+    font-weight: bold;
+    letter-spacing: 0.015em;
+}
+
+.addAnimation {
+  /* width: 100%;
+  height: 100%; */
+  animation: bgAnimate 0.25s;
+}
+
+@keyframes bgAnimate {
+  0% {
+    background-color: #555;
+  }
+  100% {
+    background-color: #000;
+  }
+}
+
+/* Small devices (landscape phones, less than 768px) */
+@media (max-width: 700px) {
+  
+  #bpm {
+    font-size: 30em;
+  }
+
+ }
+
+@media (max-width: 575.98px) {
+
+  #bpm {
+    font-size: 25em;
+  }
+
+}
+    </style>
+</head>
+
+<body>
+    <div id="content">
+        <div class="text">
+            <div id="bpm">0</div>
+        </div>
+        <!-- <div class="circle">
+            <svg height="540" width="540">
+                <circle cx="270" cy="270" r="270" fill="#965FFF" />
+            </svg>
+        </div> -->
+    </div>
+    <script>
+const beat = document.querySelector('html');
+let groundZero = 0;
+let lastTap = 0;
+let counter = 0;
+const bpmDiv = document.getElementById('bpm');
+let tapDiff = 0;
+let avgbpm = 0;
+let previousTap = 0;
+let elapsed = 0;
+// const element = document.getElementsByTagName('body');
+
+// function changeBGColor() {
+//   // document.body.style.background = color;
+//   element.classList.add('element');
+//   console.log(element);
+// }
+
+function tapTempo() {
+  // changeBGColor();
+  const element = document.getElementsByTagName('body');
+  element[0].classList.add('addAnimation');
+  // This function runs when the CSS animation is completed
+  const listener = element[0].addEventListener('animationend', function() {
+    element[0].classList.remove('addAnimation');
+
+    // this removes the listener after it runs so that it doesn't get re-added every time the button is clicked
+    element[0].removeEventListener('animationend', listener);
+  });
+
+  // if first time then record first tap
+  if (lastTap === 0) {
+    groundZero = new Date().getTime();
+    counter = 0;
+  }
+
+  lastTap = new Date().getTime();
+  elapsed = new Date().getTime() - previousTap;
+
+  previousTap = lastTap;
+  tapDiff = lastTap - groundZero;
+  if (tapDiff !== 0) {
+    avgbpm = Math.round((60000 * counter) / tapDiff);
+  }
+  // eslint-disable-next-line no-plusplus
+  counter++;
+  bpmDiv.innerHTML = avgbpm;
+
+  // console.log(`elapsed: ${elapsed} avgbpm: ${avgbpm}`);
+  if (elapsed > 3000) {
+    lastTap = 0;
+  }
+}
+
+beat.addEventListener('click', tapTempo);
+beat.addEventListener('keydown', tapTempo);
+// beat.addEventListener('touchstart', tapTempo);
+
+window.addEventListener('keydown', function(e) {
+  if (e.keyCode === 32 && e.target === document.body) {
+    e.preventDefault();
+  }
+});
+    </script>
+
+</body>
+</html>
