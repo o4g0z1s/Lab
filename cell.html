@@ -24,7 +24,7 @@
         body, html {
             font-family: Roboto, "Roboto", sans-serif;
             background-color: var(--bg-color); color: var(--text-color);
-            height: 100%; margin: 0; overflow: hidden; font-size: 14px;
+            height: 100dvh; margin: 0; overflow: hidden; font-size: 14px;
         }
         .container { display: flex; flex-direction: column; height: 100vh; background-color: var(--bg-secondary-color); }
         h1 { text-align: center; color: var(--main-accent-color); margin: 10px 0; font-size: 1.4em; font-weight: 300; }
@@ -53,7 +53,6 @@
         .controls input[type="number"] { width: 35px; text-align: center; }
         .controls .tempo-control span, .instrument-control, .step-control, .loop-control { color: var(--text-color); display: flex; align-items: center; }
         #stepCountLabel {text-align: center; font-size: 0.85em; }
-        .loop-control input[type="checkbox"] { margin-right: 4px; accent-color: var(--main-accent-color); }
 
         .main-sequencer-area { display: flex; flex-direction: column; flex-grow: 1; overflow: hidden; }
 
@@ -63,6 +62,7 @@
             grid-template-rows: repeat(var(--num-notes, 12), var(--cell-height)); gap: var(--grid-gap);
             position: relative; overflow: auto; flex-grow: 1; height: 100%; padding: var(--grid-gap);
             scrollbar-width: thin; scrollbar-color: #555 #333; z-index: 0;
+            touch-action: none; 
         }
         .cell, .drum-cell { 
             width: var(--cell-width); height: var(--cell-height);
@@ -164,9 +164,8 @@
             <div class="controls-group">
                 <button id="playBtn" class="primary">▶</button>
                 <button id="stopBtn" disabled>■</button>
-                <button id="clearBtn">/</button>
-                <button id="undoBtn" title="Undo (Ctrl+Z)" disabled><</button>
-                <button id="redoBtn" title="Redo (Ctrl+Y)" disabled>></button>
+                <button id="undoBtn" title="Undo (Ctrl+Z)" disabled>Undo</button>
+                <button id="redoBtn" title="Redo (Ctrl+Y)" disabled>Redo</button>
             </div>
             <div class="controls-group">
                 <div class="tempo-control">
@@ -194,10 +193,9 @@
                     <button id="addStepBtn" title="Add Step">+</button>
                     <button id="removeStepBtn" title="Remove Last Step">−</button>
                 <button id="duplicateAppendBtn" title="Duplicate and Append">×</button>
-                <button id="splitCellBtn" title="Split Cell Mode">÷</button>
-                <div class="loop-control">
-                    <input type="checkbox" id="loopToggle" checked> <label for="loopToggle">Loop</label>
-                </div>
+                <button id="splitCellBtn" title="Cell Division Mode">÷</button>
+                <button id="clearBtn">Kill</button>
+                <button id="loopBtn" title="Toggle Loop">Loop</button>
             </div>
             <div class="controls-group">
                 <button id="exportWavBtn">Export</button>
@@ -241,7 +239,7 @@
             const instrumentSelect = document.getElementById('instrumentSelect');
             const addStepBtn = document.getElementById('addStepBtn'); const removeStepBtn = document.getElementById('removeStepBtn');
             const stepCountLabel = document.getElementById('stepCountLabel');
-            const loopToggle = document.getElementById('loopToggle');
+            const loopBtn = document.getElementById('loopBtn'); 
             const duplicateAppendBtn = document.getElementById('duplicateAppendBtn');
             const exportWavBtn = document.getElementById('exportWavBtn');
             const splitCellBtn = document.getElementById('splitCellBtn'); 
@@ -253,15 +251,19 @@
             let drumNotesData = []; 
             let currentStep = 0; let isPlaying = false;
             let intervalId = null; let tempoBPM = 120;
-            let currentNumSteps = initialNumSteps; let shouldLoop = true;
+            let currentNumSteps = initialNumSteps; let shouldLoop = true; 
             let draggingNoteInfo = null; let activeAudioNodes = {};
             let activeDrumAudioNodes = {}; 
             let isSplitCellMode = false; 
 
-            // Undo/Redo
             let undoStack = [];
             let redoStack = [];
             const MAX_HISTORY_SIZE = 50;
+
+            // ADDED: For debouncing touch interactions
+            let noteInteractionDebounceTimer = null;
+            let drumInteractionDebounceTimer = null;
+            const TOUCH_DEBOUNCE_DELAY = 50; // Milliseconds to wait before processing a single touch
 
             function generateNoteNamesAndBaseMidi() { 
                 NOTE_NAMES = []; const topOctave = START_OCTAVE + NUM_OCTAVES - 1; 
@@ -287,12 +289,10 @@
             function createDefaultMelodyCellData() { return { isSplit: false, noteInfo: null }; }
             function createDefaultDrumCellData() { return { isSplit: false, active: false }; }
 
-            // Initializes DOM grid cells for melody - USED FOR init() and DOM reconstruction
             function initializeGridStructure() {
                 Array.from(gridContainer.children).forEach(child => { 
                     if (!child.classList.contains('note-block-layer')) child.remove(); 
                 });
-                // noteBlockLayer.innerHTML = ''; // renderNotes will handle this
 
                 gridContainer.style.setProperty('--current-num-steps', currentNumSteps);
                 gridContainer.style.setProperty('--num-notes', NUM_NOTES);
@@ -314,14 +314,13 @@
                         if (NOTE_NAMES[note].startsWith("C") && !NOTE_NAMES[note].startsWith("C#")) {
                             cell.classList.add('c-octave');
                         }
-                        cell.addEventListener('mousedown', handleInteractionStart);
-                        cell.addEventListener('touchstart', handleInteractionStart, { passive: false });
+                        cell.addEventListener('mousedown', handleInteractionStart); // MODIFIED: Changed from _executeInteractionStart
+                        cell.addEventListener('touchstart', handleInteractionStart, { passive: false }); // MODIFIED: Changed from _executeInteractionStart
                         gridContainer.insertBefore(cell, noteBlockLayer);
                     }
                 }
             }
             
-            // Initializes data for melody - USED FOR init()
             function initializeGridData() {
                 notesData = [];
                 for (let note = 0; note < NUM_NOTES; note++) {
@@ -332,10 +331,9 @@
                 }
             }
 
-            // Initializes DOM grid cells for drums - USED FOR init() and DOM reconstruction
             function initializeDrumGridStructure() {
                 drumGridContainer.innerHTML = ''; 
-                drumLabelsContainer.innerHTML = ''; // Assuming labels are static or need refresh
+                drumLabelsContainer.innerHTML = '';
 
                 drumGridContainer.style.setProperty('--current-num-steps', currentNumSteps);
 
@@ -353,14 +351,13 @@
                         cell.appendChild(subCellPlaceholder1); 
                         cell.appendChild(subCellPlaceholder2);
                         
-                        cell.addEventListener('mousedown', handleDrumInteraction);
-                        cell.addEventListener('touchstart', handleDrumInteraction, { passive: false });
+                        cell.addEventListener('mousedown', handleDrumInteraction); // MODIFIED: Changed from _executeDrumInteraction
+                        cell.addEventListener('touchstart', handleDrumInteraction, { passive: false }); // MODIFIED: Changed from _executeDrumInteraction
                         drumGridContainer.appendChild(cell);
                     }
                 }
             }
 
-            // Initializes data for drums - USED FOR init()
             function initializeDrumGridData() {
                 drumNotesData = [];
                 for (let track = 0; track < NUM_DRUM_TRACKS; track++) {
@@ -374,20 +371,24 @@
             function init() { 
                 generateNoteNamesAndBaseMidi(); 
                 tempoBPM = parseInt(tempoInput.value); 
-                shouldLoop = loopToggle.checked; 
-                currentNumSteps = initialNumSteps; // Reset to initial
+                if (shouldLoop) {
+                    loopBtn.classList.add('active-mode');
+                } else {
+                    loopBtn.classList.remove('active-mode');
+                }
+                currentNumSteps = initialNumSteps;
 
-                initializeGridStructure(); // Builds DOM
-                initializeGridData();      // Initializes notesData
-                renderNotes();             // Renders based on fresh notesData
+                initializeGridStructure(); 
+                initializeGridData();      
+                renderNotes();             
 
-                initializeDrumGridStructure(); // Builds DOM
-                initializeDrumGridData();        // Initializes drumNotesData
-                renderDrumNotes();               // Renders based on fresh drumNotesData
+                initializeDrumGridStructure(); 
+                initializeDrumGridData();        
+                renderDrumNotes();               
                 
                 stepCountLabel.textContent = `${currentNumSteps}`; 
                 updateRemoveStepButtonState();
-                saveStateForUndo(true); // Save initial state
+                saveStateForUndo(true); 
                 updateUndoRedoButtons();
             }
 
@@ -404,9 +405,9 @@
                 });
 
                 for (let note = 0; note < NUM_NOTES; note++) {
-                     if (!notesData[note]) continue; // Ensure row exists
+                     if (!notesData[note]) continue; 
                     for (let step = 0; step < currentNumSteps; step++) {
-                        if (!notesData[note][step]) continue; // Ensure cell data exists
+                        if (!notesData[note][step]) continue; 
                         const cellData = notesData[note][step];
                         if (cellData.isSplit) {
                             if (cellData.subNotes) {
@@ -550,18 +551,64 @@
                 return offsetXInCell < cellRect.width / 2 ? 0 : 1;
             }
 
-            function handleInteractionStart(event) { 
-                if (event.type === 'touchstart') event.preventDefault(); 
+            // ADDED: Helper to shallow clone event for debounced calls
+            function shallowCloneTouchEvent(event) {
+                if (event.type.startsWith('touch') && event.touches && event.touches.length > 0) {
+                    return {
+                        type: event.type,
+                        target: event.target,
+                        touches: [{ clientX: event.touches[0].clientX, clientY: event.touches[0].clientY }],
+                        // Pass dataset directly from original target if needed, or rely on target.closest in execute function
+                        // For simplicity, assume target is sufficient to re-evaluate dataset.
+                    };
+                }
+                return { // For mousedown
+                    type: event.type,
+                    target: event.target,
+                    clientX: event.clientX,
+                    clientY: event.clientY,
+                    button: event.button
+                };
+            }
+
+            // ADDED: Debounce wrapper for handleInteractionStart
+            function handleInteractionStart(event) {
+                if (event.type.startsWith('touch')) {
+                    if (event.touches.length > 1) {
+                        if (noteInteractionDebounceTimer) {
+                            clearTimeout(noteInteractionDebounceTimer);
+                            noteInteractionDebounceTimer = null;
+                        }
+                        return; 
+                    }
+                    event.preventDefault(); 
+
+                    if (noteInteractionDebounceTimer) {
+                        clearTimeout(noteInteractionDebounceTimer);
+                    }
+                    const eventCopy = shallowCloneTouchEvent(event);
+                    noteInteractionDebounceTimer = setTimeout(() => {
+                        noteInteractionDebounceTimer = null;
+                        _executeInteractionStart(eventCopy);
+                    }, TOUCH_DEBOUNCE_DELAY);
+                    return; 
+                }
+                _executeInteractionStart(event); // Mousedown executes immediately
+            }
+            
+            // RENAMED: Original handleInteractionStart is now _executeInteractionStart
+            function _executeInteractionStart(event) { 
+                // Original multi-touch check removed as it's handled by the wrapper or gridContainer
                 if (event.type === 'mousedown' && event.button !== 0) return; 
-                if (event.type === 'touchstart' && event.touches.length > 1) return; 
+                
                 if (!initAudioContext()) return;
                 const targetDomCell = event.target.closest('.cell'); 
                 if (!targetDomCell) return;
                 const step = parseInt(targetDomCell.dataset.step); 
                 const note = parseInt(targetDomCell.dataset.note);
-                if (!notesData[note] || !notesData[note][step]) return; // Data integrity check
+                if (isNaN(note) || isNaN(step) || !notesData[note] || !notesData[note][step]) return; 
                 const cellData = notesData[note][step]; 
-                const clientX = event.type === 'touchstart' ? event.touches[0].clientX : event.clientX;
+                const clientX = event.type.startsWith('touch') ? event.touches[0].clientX : event.clientX;
 
                 if (isSplitCellMode) {
                     if (!cellData.isSplit) {
@@ -652,15 +699,19 @@
                     }
                 }
                 renderNotes();
-                if (event.type === 'mousedown') { 
-                    document.addEventListener('mousemove', handleInteractionMove); 
-                    document.addEventListener('mouseup', handleInteractionEnd); 
-                } else if (event.type === 'touchstart') { 
-                    document.addEventListener('touchmove', handleInteractionMove, { passive: false }); 
-                    document.addEventListener('touchend', handleInteractionEnd); 
-                    document.addEventListener('touchcancel', handleInteractionEnd); 
+                // Register move/end listeners only if a drag is initiated or possible
+                if (draggingNoteInfo) { // ADDED: Ensure draggingNoteInfo is set before adding listeners
+                    if (event.type === 'mousedown') { 
+                        document.addEventListener('mousemove', handleInteractionMove); 
+                        document.addEventListener('mouseup', handleInteractionEnd); 
+                    } else if (event.type === 'touchstart') { 
+                        document.addEventListener('touchmove', handleInteractionMove, { passive: false }); 
+                        document.addEventListener('touchend', handleInteractionEnd); 
+                        document.addEventListener('touchcancel', handleInteractionEnd); 
+                    }
                 }
             }
+
 
             function handleInteractionMove(event) { 
                 if (!draggingNoteInfo) return; 
@@ -668,7 +719,7 @@
                 const note = draggingNoteInfo.note; 
                 const startStep = draggingNoteInfo.startStep; 
                 const startSubStep = draggingNoteInfo.subStep;
-                if (!notesData[note] || !notesData[note][startStep]) return; // Data integrity
+                if (!notesData[note] || !notesData[note][startStep]) return;
 
                 const clientX = event.type === 'touchmove' ? event.touches[0].clientX : event.clientX;
                 const gridRect = gridContainer.getBoundingClientRect(); 
@@ -723,13 +774,19 @@
                 const note = draggingNoteInfo.note; 
                 const step = draggingNoteInfo.startStep; 
                 const subStep = draggingNoteInfo.subStep;
-                if (!notesData[note] || !notesData[note][step]) { // Data integrity
-                     draggingNoteInfo = null; // Clean up
-                     // Remove event listeners defensively
-                    if (event.type === 'mousedown' || event.type === 'mouseup') { // Check if it was mousedown originally
+                
+                // Determine event type for listener removal based on original interaction
+                // This can be tricky if the original event object is not stored with draggingNoteInfo.
+                // A simple check for current event type might suffice for now, assuming it matches.
+                const originalEventType = draggingNoteInfo.initialEventType || (event.type.includes('mouse') ? 'mousedown' : 'touchstart');
+
+
+                if (!notesData[note] || !notesData[note][step]) { 
+                     draggingNoteInfo = null; 
+                    if (originalEventType === 'mousedown') { 
                         document.removeEventListener('mousemove', handleInteractionMove); 
                         document.removeEventListener('mouseup', handleInteractionEnd); 
-                    } else { // touchstart originally
+                    } else { 
                         document.removeEventListener('touchmove', handleInteractionMove); 
                         document.removeEventListener('touchend', handleInteractionEnd); 
                         document.removeEventListener('touchcancel', handleInteractionEnd); 
@@ -740,7 +797,7 @@
                 let stateChanged = false;
                 if (draggingNoteInfo.action === 'maybe_drag_or_delete') { 
                     if (notesData[note][step] && !notesData[note][step].isSplit) { 
-                        if (notesData[note][step].noteInfo) { // Check if a note actually existed to be deleted
+                        if (notesData[note][step].noteInfo) { 
                              notesData[note][step].noteInfo = null; 
                              stateChanged = true;
                         }
@@ -753,8 +810,6 @@
                         }
                     }
                 } else if (draggingNoteInfo.action.includes('drag') || draggingNoteInfo.action.includes('create')) {
-                    // If an action like drag or create happened, assume state changed.
-                    // More precise checking could compare old vs new duration if needed.
                     stateChanged = true;
                 }
 
@@ -762,27 +817,55 @@
                 if (stateChanged) {
                     saveStateForUndo();
                 }
+                
+                const wasMouseDown = originalEventType === 'mousedown'; // Check based on stored type or infer
                 draggingNoteInfo = null;
 
-                if (event.type === 'mousedown' || event.type === 'mouseup') { // Check if it was mousedown originally
+                if (wasMouseDown) { 
                     document.removeEventListener('mousemove', handleInteractionMove); 
                     document.removeEventListener('mouseup', handleInteractionEnd); 
-                } else { // touchstart originally
+                } else { 
                     document.removeEventListener('touchmove', handleInteractionMove); 
                     document.removeEventListener('touchend', handleInteractionEnd); 
                     document.removeEventListener('touchcancel', handleInteractionEnd); 
                 }
             }
 
-            function handleDrumInteraction(event) { 
-                if (event.type === 'touchstart') event.preventDefault(); 
+            // ADDED: Debounce wrapper for handleDrumInteraction
+            function handleDrumInteraction(event) {
+                if (event.type.startsWith('touch')) {
+                    if (event.touches.length > 1) {
+                        if (drumInteractionDebounceTimer) {
+                            clearTimeout(drumInteractionDebounceTimer);
+                            drumInteractionDebounceTimer = null;
+                        }
+                        return; 
+                    }
+                    event.preventDefault(); 
+
+                    if (drumInteractionDebounceTimer) {
+                        clearTimeout(drumInteractionDebounceTimer);
+                    }
+                    const eventCopy = shallowCloneTouchEvent(event);
+                    drumInteractionDebounceTimer = setTimeout(() => {
+                        drumInteractionDebounceTimer = null;
+                        _executeDrumInteraction(eventCopy);
+                    }, TOUCH_DEBOUNCE_DELAY);
+                    return; 
+                }
+                _executeDrumInteraction(event); // Mousedown executes immediately
+            }
+
+
+            // RENAMED: Original handleDrumInteraction is now _executeDrumInteraction
+            function _executeDrumInteraction(event) { 
                 if (event.type === 'mousedown' && event.button !== 0) return; 
                 if (!initAudioContext()) return; 
                 const targetCell = event.target.closest('.drum-cell'); 
                 if (!targetCell) return; 
                 const step = parseInt(targetCell.dataset.step); 
                 const track = parseInt(targetCell.dataset.track); 
-                if (!drumNotesData[track] || !drumNotesData[track][step]) return; // Data integrity check
+                if (isNaN(track) || isNaN(step) || !drumNotesData[track] || !drumNotesData[track][step]) return; 
                 const cellData = drumNotesData[track][step];
 
                 if (isSplitCellMode) { 
@@ -834,21 +917,21 @@
 
             function midiToFrequency(midiNote) { return 440 * Math.pow(2, (midiNote - 69) / 12); }
             function playNoteSound(noteIndex, durationSeconds, startTime, noteKey, contextToUse = audioContext) { const currentAudioContext = contextToUse; const isOfflineContext = currentAudioContext instanceof OfflineAudioContext; if (!currentAudioContext || durationSeconds <= 0) return; const midiNote = BASE_MIDI_NOTE - noteIndex; let freq = midiToFrequency(midiNote); const selectedInstrument = instrumentSelect.value; if (!isOfflineContext && activeAudioNodes[noteKey]) { try { if (activeAudioNodes[noteKey].source && typeof activeAudioNodes[noteKey].source.stop === 'function') { activeAudioNodes[noteKey].source.stop(startTime); } activeAudioNodes[noteKey].nodes.forEach(node => { try { node.disconnect(); } catch (e) { /* ignore */ } }); } catch(e) { console.warn("Error stopping previous note for replacement:", e); } delete activeAudioNodes[noteKey]; } let masterGain = currentAudioContext.createGain(); masterGain.connect(currentAudioContext.destination); let nodesToStore = [masterGain]; let mainOscillator; let longestSoundDuration = durationSeconds; const scheduledStopTime = startTime + durationSeconds; const attackTime = 0.01, releaseTime = 0.05, sustainLevel = 0.7; masterGain.gain.setValueAtTime(0, startTime); switch (selectedInstrument) { case "sine": case "triangle": mainOscillator = currentAudioContext.createOscillator(); mainOscillator.type = selectedInstrument; mainOscillator.frequency.setValueAtTime(freq, startTime); mainOscillator.connect(masterGain); nodesToStore.unshift(mainOscillator); masterGain.gain.linearRampToValueAtTime(sustainLevel, startTime + attackTime); if (durationSeconds > releaseTime) { masterGain.gain.setValueAtTime(sustainLevel, scheduledStopTime - releaseTime); masterGain.gain.linearRampToValueAtTime(0.00001, scheduledStopTime); } else { masterGain.gain.linearRampToValueAtTime(0.00001, scheduledStopTime); } longestSoundDuration = durationSeconds; break; case "piano": let osc1P = currentAudioContext.createOscillator(); osc1P.type = 'triangle'; osc1P.frequency.setValueAtTime(freq, startTime); osc1P.connect(masterGain); nodesToStore.unshift(osc1P); mainOscillator = osc1P; let osc2P = currentAudioContext.createOscillator(); osc2P.type = 'sine'; osc2P.frequency.setValueAtTime(freq * 2, startTime); let gain2P = currentAudioContext.createGain(); gain2P.gain.value = 0.4; osc2P.connect(gain2P).connect(masterGain); nodesToStore.unshift(osc2P, gain2P); osc2P.start(startTime); osc2P.stop(scheduledStopTime + 0.1); const pianoAttack = 0.005; const pianoDecay = durationSeconds * 0.8; const pianoSustain = 0.1; const pianoRelease = 0.2; masterGain.gain.linearRampToValueAtTime(0.6, startTime + pianoAttack); masterGain.gain.exponentialRampToValueAtTime(pianoSustain, startTime + pianoAttack + pianoDecay); if (durationSeconds > pianoRelease) { masterGain.gain.setValueAtTime(pianoSustain, scheduledStopTime - pianoRelease); masterGain.gain.linearRampToValueAtTime(0.00001, scheduledStopTime); } else { masterGain.gain.linearRampToValueAtTime(0.00001, scheduledStopTime); } longestSoundDuration = durationSeconds + Math.max(0.1, pianoRelease); break; case "guitar": mainOscillator = currentAudioContext.createOscillator(); mainOscillator.type = 'sawtooth'; mainOscillator.frequency.setValueAtTime(freq, startTime); let filterG = currentAudioContext.createBiquadFilter(); filterG.type = 'lowpass'; filterG.frequency.setValueAtTime(freq * 5, startTime); filterG.frequency.exponentialRampToValueAtTime(freq * 1.5, startTime + durationSeconds * 0.6); filterG.Q.value = 1; mainOscillator.connect(filterG).connect(masterGain); nodesToStore.unshift(mainOscillator, filterG); const guitarAttack = 0.002; const guitarDecay = Math.min(0.3, durationSeconds * 0.7); masterGain.gain.linearRampToValueAtTime(0.5, startTime + guitarAttack); masterGain.gain.exponentialRampToValueAtTime(0.0001, startTime + guitarAttack + guitarDecay); longestSoundDuration = guitarAttack + guitarDecay + 0.05; break; case "violin": mainOscillator = currentAudioContext.createOscillator(); mainOscillator.type = 'sawtooth'; mainOscillator.frequency.setValueAtTime(freq, startTime); mainOscillator.connect(masterGain); nodesToStore.unshift(mainOscillator); let lfoV = currentAudioContext.createOscillator(); lfoV.type = 'sine'; lfoV.frequency.setValueAtTime(5, startTime); let lfoGainV = currentAudioContext.createGain(); lfoGainV.gain.setValueAtTime(freq * 0.02, startTime); lfoV.connect(lfoGainV).connect(mainOscillator.frequency); nodesToStore.unshift(lfoV, lfoGainV); lfoV.start(startTime); lfoV.stop(scheduledStopTime + 0.1); const violinAttack = 0.05; const violinRelease = 0.1; masterGain.gain.linearRampToValueAtTime(sustainLevel * 0.8, startTime + violinAttack); if (durationSeconds > violinRelease) { masterGain.gain.setValueAtTime(sustainLevel * 0.8, scheduledStopTime - violinRelease); masterGain.gain.linearRampToValueAtTime(0.00001, scheduledStopTime); } else { masterGain.gain.linearRampToValueAtTime(0.00001, scheduledStopTime); } longestSoundDuration = durationSeconds + Math.max(0.1, violinRelease); break; case "brass": mainOscillator = currentAudioContext.createOscillator(); mainOscillator.type = 'sawtooth'; mainOscillator.frequency.setValueAtTime(freq, startTime); let filterB = currentAudioContext.createBiquadFilter(); filterB.type = 'lowpass'; filterB.frequency.setValueAtTime(freq * 1.5, startTime); filterB.frequency.linearRampToValueAtTime(freq * 6, startTime + 0.05); filterB.frequency.exponentialRampToValueAtTime(freq * 2.5, startTime + durationSeconds * 0.6); filterB.Q.value = 2; mainOscillator.connect(filterB).connect(masterGain); nodesToStore.unshift(mainOscillator, filterB); const brassAttack = 0.03; masterGain.gain.linearRampToValueAtTime(sustainLevel, startTime + brassAttack); if (durationSeconds > releaseTime) { masterGain.gain.setValueAtTime(sustainLevel, scheduledStopTime - releaseTime); masterGain.gain.linearRampToValueAtTime(0.00001, scheduledStopTime); } else { masterGain.gain.linearRampToValueAtTime(0.00001, scheduledStopTime); } longestSoundDuration = durationSeconds; break; case "woodwind": mainOscillator = currentAudioContext.createOscillator(); mainOscillator.type = 'triangle'; mainOscillator.frequency.setValueAtTime(freq, startTime); mainOscillator.connect(masterGain); nodesToStore.unshift(mainOscillator); let noiseW = currentAudioContext.createBufferSource(); let bufferSizeW = currentAudioContext.sampleRate * 0.1; let bufferW = currentAudioContext.createBuffer(1, bufferSizeW, currentAudioContext.sampleRate); let dataW = bufferW.getChannelData(0); for (let i = 0; i < bufferSizeW; i++) dataW[i] = Math.random() * 2 - 1; noiseW.buffer = bufferW; noiseW.loop = true; let noiseGainW = currentAudioContext.createGain(); noiseGainW.gain.value = 0.03; noiseW.connect(noiseGainW).connect(masterGain); nodesToStore.unshift(noiseW, noiseGainW); noiseW.start(startTime); noiseW.stop(scheduledStopTime + 0.05); const woodwindAttack = 0.04; const woodwindRelease = 0.08; masterGain.gain.linearRampToValueAtTime(sustainLevel * 0.9, startTime + woodwindAttack); if (durationSeconds > woodwindRelease) { masterGain.gain.setValueAtTime(sustainLevel * 0.9, scheduledStopTime - woodwindRelease); masterGain.gain.linearRampToValueAtTime(0.00001, scheduledStopTime); } else { masterGain.gain.linearRampToValueAtTime(0.00001, scheduledStopTime); } longestSoundDuration = durationSeconds + Math.max(0.05, woodwindRelease); break; case "xylophone": mainOscillator = currentAudioContext.createOscillator(); mainOscillator.type = 'sine'; mainOscillator.frequency.setValueAtTime(freq, startTime); mainOscillator.connect(masterGain); nodesToStore.unshift(mainOscillator); let oscX2 = currentAudioContext.createOscillator(); oscX2.type = 'sine'; oscX2.frequency.setValueAtTime(freq * 2.02, startTime); let gainX2 = currentAudioContext.createGain(); gainX2.gain.value = 0.3; oscX2.connect(gainX2).connect(masterGain); nodesToStore.unshift(oscX2, gainX2); oscX2.start(startTime); const x_secondary_decay = 0.3; oscX2.stop(startTime + x_secondary_decay); const woodAttack = 0.002; const woodDecay = 0.15; masterGain.gain.linearRampToValueAtTime(0.6, startTime + woodAttack); masterGain.gain.exponentialRampToValueAtTime(0.0001, startTime + woodAttack + woodDecay); longestSoundDuration = Math.max(woodAttack + woodDecay, x_secondary_decay) + 0.05; break; case "pluck": mainOscillator = currentAudioContext.createOscillator(); mainOscillator.type = 'triangle'; mainOscillator.frequency.setValueAtTime(freq, startTime); mainOscillator.connect(masterGain); nodesToStore.unshift(mainOscillator); const pluckAttackSimple = 0.001; const pluckDecaySimple = Math.min(0.1, durationSeconds * 0.5); masterGain.gain.linearRampToValueAtTime(0.4, startTime + pluckAttackSimple); masterGain.gain.exponentialRampToValueAtTime(0.0001, startTime + pluckAttackSimple + pluckDecaySimple); longestSoundDuration = pluckAttackSimple + pluckDecaySimple + 0.05; break; case "filteredSaw": mainOscillator = currentAudioContext.createOscillator(); mainOscillator.type = 'sawtooth'; mainOscillator.frequency.setValueAtTime(freq, startTime); let filterFS = currentAudioContext.createBiquadFilter(); filterFS.type = 'lowpass'; filterFS.frequency.setValueAtTime(freq * 0.5, startTime); filterFS.frequency.linearRampToValueAtTime(freq * 8, startTime + 0.03); filterFS.frequency.exponentialRampToValueAtTime(freq * 1.5, startTime + Math.min(0.5, durationSeconds * 0.7)); filterFS.Q.value = 3; mainOscillator.connect(filterFS).connect(masterGain); nodesToStore.unshift(mainOscillator, filterFS); const fsAttack = 0.02; const fsRelease = 0.1; masterGain.gain.linearRampToValueAtTime(sustainLevel * 0.7, startTime + fsAttack); if (durationSeconds > fsRelease) { masterGain.gain.setValueAtTime(sustainLevel * 0.7, scheduledStopTime - fsRelease); masterGain.gain.linearRampToValueAtTime(0.00001, scheduledStopTime); } else { masterGain.gain.linearRampToValueAtTime(0.00001, scheduledStopTime); } longestSoundDuration = durationSeconds + fsRelease; break; default: mainOscillator = currentAudioContext.createOscillator(); mainOscillator.type = 'sine'; mainOscillator.frequency.setValueAtTime(freq, startTime); mainOscillator.connect(masterGain); nodesToStore.unshift(mainOscillator); masterGain.gain.linearRampToValueAtTime(sustainLevel, startTime + attackTime); if (durationSeconds > releaseTime) { masterGain.gain.setValueAtTime(sustainLevel, scheduledStopTime - releaseTime); masterGain.gain.linearRampToValueAtTime(0.00001, scheduledStopTime); } else { masterGain.gain.linearRampToValueAtTime(0.00001, scheduledStopTime); } longestSoundDuration = durationSeconds; break; } if (mainOscillator) { mainOscillator.start(startTime); const effectiveStopTime = startTime + longestSoundDuration + 0.05; mainOscillator.stop(effectiveStopTime); if (!isOfflineContext) { activeAudioNodes[noteKey] = { source: mainOscillator, nodes: nodesToStore, masterGain: masterGain, expectedEndTime: effectiveStopTime }; mainOscillator.onended = () => { if (activeAudioNodes[noteKey] && activeAudioNodes[noteKey].source === mainOscillator && currentAudioContext.currentTime >= activeAudioNodes[noteKey].expectedEndTime - 0.02  ) { activeAudioNodes[noteKey].nodes.forEach(node => { try { node.disconnect(); } catch(e){ /* ignore */ } }); delete activeAudioNodes[noteKey]; } else if (activeAudioNodes[noteKey] && activeAudioNodes[noteKey].source === mainOscillator) { const remainingTime = Math.max(0, activeAudioNodes[noteKey].expectedEndTime - currentAudioContext.currentTime); setTimeout(() => { if (activeAudioNodes[noteKey] && activeAudioNodes[noteKey].source === mainOscillator) { activeAudioNodes[noteKey].nodes.forEach(node => { try { node.disconnect(); } catch(e){ /* ignore */ } }); delete activeAudioNodes[noteKey]; }}, remainingTime * 1000 + 50); }}; } }}
-            function playDrumSound(trackIndex, startTime, drumKey, contextToUse = audioContext) { const currentAudioContext = contextToUse; const isOfflineContext = currentAudioContext instanceof OfflineAudioContext; let source, gain, filter; let duration = 0.15; if (!isOfflineContext && activeDrumAudioNodes[drumKey]) { try { if (activeDrumAudioNodes[drumKey].source && typeof activeDrumAudioNodes[drumKey].source.stop === 'function') { activeDrumAudioNodes[drumKey].source.stop(startTime); } if(activeDrumAudioNodes[drumKey].gain) activeDrumAudioNodes[drumKey].gain.disconnect(); if(activeDrumAudioNodes[drumKey].filter) activeDrumAudioNodes[drumKey].filter.disconnect(); } catch (e) { console.warn("Error stopping previous drum sound:", e); } delete activeDrumAudioNodes[drumKey]; } gain = currentAudioContext.createGain(); gain.connect(currentAudioContext.destination); const drumType = DRUM_TRACK_NAMES[trackIndex]; switch (drumType) { case "Finger Snap": source = currentAudioContext.createBufferSource(); const fsBufferSize = currentAudioContext.sampleRate * 0.2; const fsNoiseBuffer = currentAudioContext.createBuffer(1, fsBufferSize, currentAudioContext.sampleRate); const fsOutput = fsNoiseBuffer.getChannelData(0); for (let i = 0; i < fsBufferSize; i++) { fsOutput[i] = Math.random() * 2 - 1; } source.buffer = fsNoiseBuffer; filter = currentAudioContext.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.setValueAtTime(3000, startTime); filter.Q.setValueAtTime(5, startTime); gain.gain.setValueAtTime(0, startTime); gain.gain.linearRampToValueAtTime(0.9, startTime + 0.005); gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.08); duration = 0.09; source.connect(filter).connect(gain); break; case "Hi-Hat": const bufferSize = currentAudioContext.sampleRate * 0.1; const noiseBuffer = currentAudioContext.createBuffer(1, bufferSize, currentAudioContext.sampleRate); const output = noiseBuffer.getChannelData(0); for (let i = 0; i < bufferSize; i++) { output[i] = Math.random() * 2 - 1; } source = currentAudioContext.createBufferSource(); source.buffer = noiseBuffer; filter = currentAudioContext.createBiquadFilter(); filter.type = 'highpass'; filter.frequency.setValueAtTime(7000, startTime); gain.gain.setValueAtTime(0.6, startTime); gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.05); duration = 0.06; source.connect(filter).connect(gain); break; case "Kick": source = currentAudioContext.createOscillator(); source.type = 'sine'; source.frequency.setValueAtTime(150, startTime); source.frequency.exponentialRampToValueAtTime(50, startTime + 0.1); gain.gain.setValueAtTime(1.5, startTime); /* MODIFIED: Kick volume increased from 1.0 to 1.5 */ gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.15); duration = 0.16; source.connect(gain); break; } if (source) { source.start(startTime); source.stop(startTime + duration + 0.01); if (!isOfflineContext) { activeDrumAudioNodes[drumKey] = { source, gain, filter, expectedEndTime: startTime + duration + 0.01 }; source.onended = () => { if (activeDrumAudioNodes[drumKey] && activeDrumAudioNodes[drumKey].source === source && currentAudioContext.currentTime >= activeDrumAudioNodes[drumKey].expectedEndTime - 0.005) { if (activeDrumAudioNodes[drumKey].gain) activeDrumAudioNodes[drumKey].gain.disconnect(); if (activeDrumAudioNodes[drumKey].filter) activeDrumAudioNodes[drumKey].filter.disconnect(); try { source.disconnect(); } catch (e) {/*ignore*/} delete activeDrumAudioNodes[drumKey]; }}; } }}
+            function playDrumSound(trackIndex, startTime, drumKey, contextToUse = audioContext) { const currentAudioContext = contextToUse; const isOfflineContext = currentAudioContext instanceof OfflineAudioContext; let source, gain, filter; let duration = 0.15; if (!isOfflineContext && activeDrumAudioNodes[drumKey]) { try { if (activeDrumAudioNodes[drumKey].source && typeof activeDrumAudioNodes[drumKey].source.stop === 'function') { activeDrumAudioNodes[drumKey].source.stop(startTime); } if(activeDrumAudioNodes[drumKey].gain) activeDrumAudioNodes[drumKey].gain.disconnect(); if(activeDrumAudioNodes[drumKey].filter) activeDrumAudioNodes[drumKey].filter.disconnect(); } catch (e) { console.warn("Error stopping previous drum sound:", e); } delete activeDrumAudioNodes[drumKey]; } gain = currentAudioContext.createGain(); gain.connect(currentAudioContext.destination); const drumType = DRUM_TRACK_NAMES[trackIndex]; switch (drumType) { case "Finger Snap": source = currentAudioContext.createBufferSource(); const fsBufferSize = currentAudioContext.sampleRate * 0.2; const fsNoiseBuffer = currentAudioContext.createBuffer(1, fsBufferSize, currentAudioContext.sampleRate); const fsOutput = fsNoiseBuffer.getChannelData(0); for (let i = 0; i < fsBufferSize; i++) { fsOutput[i] = Math.random() * 2 - 1; } source.buffer = fsNoiseBuffer; filter = currentAudioContext.createBiquadFilter(); filter.type = 'bandpass'; filter.frequency.setValueAtTime(3000, startTime); filter.Q.setValueAtTime(5, startTime); gain.gain.setValueAtTime(0, startTime); gain.gain.linearRampToValueAtTime(0.9, startTime + 0.005); gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.08); duration = 0.09; source.connect(filter).connect(gain); break; case "Hi-Hat": const bufferSize = currentAudioContext.sampleRate * 0.1; const noiseBuffer = currentAudioContext.createBuffer(1, bufferSize, currentAudioContext.sampleRate); const output = noiseBuffer.getChannelData(0); for (let i = 0; i < bufferSize; i++) { output[i] = Math.random() * 2 - 1; } source = currentAudioContext.createBufferSource(); source.buffer = noiseBuffer; filter = currentAudioContext.createBiquadFilter(); filter.type = 'highpass'; filter.frequency.setValueAtTime(7000, startTime); gain.gain.setValueAtTime(0.6, startTime); gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.05); duration = 0.06; source.connect(filter).connect(gain); break; case "Kick": source = currentAudioContext.createOscillator(); source.type = 'sine'; source.frequency.setValueAtTime(150, startTime); source.frequency.exponentialRampToValueAtTime(50, startTime + 0.1); gain.gain.setValueAtTime(1.5, startTime); gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.15); duration = 0.16; source.connect(gain); break; } if (source) { source.start(startTime); source.stop(startTime + duration + 0.01); if (!isOfflineContext) { activeDrumAudioNodes[drumKey] = { source, gain, filter, expectedEndTime: startTime + duration + 0.01 }; source.onended = () => { if (activeDrumAudioNodes[drumKey] && activeDrumAudioNodes[drumKey].source === source && currentAudioContext.currentTime >= activeDrumAudioNodes[drumKey].expectedEndTime - 0.005) { if (activeDrumAudioNodes[drumKey].gain) activeDrumAudioNodes[drumKey].gain.disconnect(); if (activeDrumAudioNodes[drumKey].filter) activeDrumAudioNodes[drumKey].filter.disconnect(); try { source.disconnect(); } catch (e) {/*ignore*/} delete activeDrumAudioNodes[drumKey]; }}; } }}
             function tick() { if (!audioContext) return; const currentTime = audioContext.currentTime; const stepDuration = (60 / tempoBPM) / 4; const subStepDuration = stepDuration / 2; for (let note = 0; note < NUM_NOTES; note++) { if (!notesData[note] || !notesData[note][currentStep]) continue; const cellData = notesData[note][currentStep]; if (cellData.isSplit && cellData.subNotes) { if (cellData.subNotes[0] && cellData.subNotes[0].duration > 0) { playNoteSound(note, cellData.subNotes[0].duration * stepDuration, currentTime, `seq-${note}-${currentStep}-0`, audioContext); } if (cellData.subNotes[1] && cellData.subNotes[1].duration > 0) { playNoteSound(note, cellData.subNotes[1].duration * stepDuration, currentTime + subStepDuration, `seq-${note}-${currentStep}-1`, audioContext); }} else if (!cellData.isSplit && cellData.noteInfo && cellData.noteInfo.duration > 0) { const noteDurationSeconds = cellData.noteInfo.duration * stepDuration; playNoteSound(note, noteDurationSeconds, currentTime, `seq-${note}-${currentStep}`, audioContext); }} for (let track = 0; track < NUM_DRUM_TRACKS; track++) { if (!drumNotesData[track] || !drumNotesData[track][currentStep]) continue; const cellData = drumNotesData[track][currentStep]; if (cellData.isSplit && cellData.subActive) { if (cellData.subActive[0]) { playDrumSound(track, currentTime, `seq-drum-${track}-${currentStep}-0`, audioContext); } if (cellData.subActive[1]) { playDrumSound(track, currentTime + subStepDuration, `seq-drum-${track}-${currentStep}-1`, audioContext); }} else if (!cellData.isSplit && cellData.active) { playDrumSound(track, currentTime, `seq-drum-${track}-${currentStep}`, audioContext); }} if (currentStep === currentNumSteps - 1 && !shouldLoop) { stopPlayback(); currentStep = 0; highlightCurrentStepColumn(); return; } currentStep = (currentStep + 1) % currentNumSteps; highlightCurrentStepColumn(); }
             function startPlayback() { if (isPlaying) return; if (!initAudioContext()) return; isPlaying = true; playBtn.disabled = true; stopBtn.disabled = false; highlightCurrentStepColumn(); tick(); const intervalTimeMs = ((60 / tempoBPM) / 4) * 1000; if (intervalId) clearInterval(intervalId); intervalId = setInterval(tick, intervalTimeMs); }
             function stopPlayback() { isPlaying = false; playBtn.disabled = false; stopBtn.disabled = true; if (intervalId) clearInterval(intervalId); intervalId = null; const currentTime = audioContext ? audioContext.currentTime : 0; Object.values(activeAudioNodes).forEach(entry => { if (entry && entry.masterGain && entry.source) { try { entry.masterGain.gain.cancelScheduledValues(currentTime); entry.masterGain.gain.setValueAtTime(entry.masterGain.gain.value, currentTime); entry.masterGain.gain.linearRampToValueAtTime(0.00001, currentTime + 0.01); if (entry.source.stop) { entry.source.stop(currentTime + 0.02); } setTimeout(() => { if (entry.nodes) { entry.nodes.forEach(node => { try { node.disconnect(); } catch(e) { /* ignore */ } }); }}, 30); } catch (e) { console.warn("Error stopping melody node on stopPlayback:", e); } }}); activeAudioNodes = {}; Object.values(activeDrumAudioNodes).forEach(entry => { if (entry && entry.source) { try { if (entry.gain) { entry.gain.gain.cancelScheduledValues(currentTime); entry.gain.gain.setValueAtTime(entry.gain.gain.value, currentTime); entry.gain.gain.linearRampToValueAtTime(0.00001, currentTime + 0.01); } if (entry.source.stop) { entry.source.stop(currentTime + 0.02); } setTimeout(() => { if(entry.gain) entry.gain.disconnect(); if(entry.filter) entry.filter.disconnect(); try { entry.source.disconnect(); } catch(e) {/*ignore*/} }, 30); } catch (e) { console.warn("Error stopping drum node on stopPlayback:", e); } }}); activeDrumAudioNodes = {}; highlightCurrentStepColumn(); }
             
             function clearGrid() {
                 if (isPlaying) stopPlayback();
-                initializeGridData(); // Re-initializes notesData to empty for currentNumSteps
+                initializeGridData(); 
                 renderNotes();
-                initializeDrumGridData(); // Re-initializes drumNotesData to empty for currentNumSteps
+                initializeDrumGridData(); 
                 renderDrumNotes();
                 saveStateForUndo();
             }
             function updateTempo() { tempoBPM = parseFloat(tempoInput.value); if (tempoBPM < 20) tempoBPM = 20; if (tempoBPM > 600) tempoBPM = 600; tempoInput.value = tempoBPM; if (isPlaying) { stopPlayback(); startPlayback(); } }
-            function updateInstrument() { /* No change needed for current requests */ }
+            function updateInstrument() { /* No change needed */ }
             
             function addStep() {
                 if (isPlaying) stopPlayback();
@@ -894,7 +977,6 @@
             }
 
             function updateRemoveStepButtonState() { removeStepBtn.disabled = currentNumSteps <= 1; }
-            function toggleLoop() { shouldLoop = loopToggle.checked; }
             
             function duplicateAndAppendTrack() {
                 if (isPlaying) stopPlayback();
@@ -933,19 +1015,17 @@
                 saveStateForUndo();
             }
 
-            // Undo/Redo functions
             function saveStateForUndo(isInitial = false) {
                 const state = {
                     notesData: JSON.parse(JSON.stringify(notesData)),
                     drumNotesData: JSON.parse(JSON.stringify(drumNotesData)),
                     currentNumSteps: currentNumSteps
-                    // Potentially add tempo, instrument if they should be part of undo/redo
                 };
                 undoStack.push(state);
                 if (undoStack.length > MAX_HISTORY_SIZE) {
                     undoStack.shift();
                 }
-                if (!isInitial) { // Don't clear redo stack on initial save
+                if (!isInitial) { 
                     redoStack = [];
                 }
                 updateUndoRedoButtons();
@@ -966,8 +1046,6 @@
 
                 stepCountLabel.textContent = `${currentNumSteps}`;
                 updateRemoveStepButtonState();
-                // tempoInput.value = state.tempoBPM || tempoBPM; // If tempo is part of state
-                // instrumentSelect.value = state.instrument || instrumentSelect.value; // If instrument is part of state
                 updateUndoRedoButtons();
             }
 
@@ -981,7 +1059,6 @@
                 };
                 redoStack.push(currentState);
                 if (redoStack.length > MAX_HISTORY_SIZE) redoStack.shift();
-
 
                 const prevState = undoStack.pop();
                 restoreState(prevState);
@@ -1020,7 +1097,10 @@
             instrumentSelect.addEventListener('change', updateInstrument); 
             addStepBtn.addEventListener('click', addStep);
             removeStepBtn.addEventListener('click', removeStep);
-            loopToggle.addEventListener('change', toggleLoop);
+            loopBtn.addEventListener('click', () => {
+                shouldLoop = !shouldLoop;
+                loopBtn.classList.toggle('active-mode', shouldLoop);
+            });
             duplicateAppendBtn.addEventListener('click', duplicateAndAppendTrack);
             exportWavBtn.addEventListener('click', exportSequenceAsWav); 
             undoBtn.addEventListener('click', undo);
@@ -1032,14 +1112,11 @@
                 const cursorStyle = isSplitCellMode ? 'crosshair' : 'default';
                 gridContainer.style.cursor = cursorStyle;
                 drumGridContainer.style.cursor = cursorStyle;
-                // If exiting split mode by clicking the button again, ensure no pending interaction
                 if (!isSplitCellMode && draggingNoteInfo) {
-                    // Potentially finalize or cancel dragging if any
-                    // For simplicity, we might just reset draggingNoteInfo here if it causes issues
+                    // No specific action needed here for now
                 }
             });
 
-            // Keyboard shortcuts for Undo/Redo
             document.addEventListener('keydown', (event) => {
                 if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
                     event.preventDefault();
@@ -1052,6 +1129,77 @@
             
             init(); 
 
+            const gridTouchState = {
+                isPanning: false,
+                startX: 0,
+                startY: 0,
+                initialScrollLeft: 0,
+                initialScrollTop: 0
+            };
+
+            gridContainer.addEventListener('touchstart', (e) => {
+                if (e.touches.length >= 2) { // MODIFIED: Check for 2 or more touches
+                    // Cancel any pending single-touch interactions for both grids
+                    if (noteInteractionDebounceTimer) {
+                        clearTimeout(noteInteractionDebounceTimer);
+                        noteInteractionDebounceTimer = null;
+                    }
+                    if (drumInteractionDebounceTimer) {
+                        clearTimeout(drumInteractionDebounceTimer);
+                        drumInteractionDebounceTimer = null;
+                    }
+                    // If draggingNoteInfo was a placeholder from a debounced action, clear it.
+                    // This requires draggingNoteInfo to have a way to identify itself as temporary.
+                    // For simplicity, if a 2-finger gesture starts, we assume any immediate draggingNoteInfo
+                    // from a near-simultaneous single touch should be cancelled.
+                    // However, _executeInteractionStart won't run if timer is cleared, so draggingNoteInfo shouldn't be set.
+
+                    e.preventDefault(); 
+                    gridTouchState.isPanning = true;
+                    const touch1 = e.touches[0];
+                    const touch2 = e.touches[1];
+                    gridTouchState.startX = (touch1.clientX + touch2.clientX) / 2;
+                    gridTouchState.startY = (touch1.clientY + touch2.clientY) / 2;
+                    gridTouchState.initialScrollLeft = gridContainer.scrollLeft;
+                    gridTouchState.initialScrollTop = gridContainer.scrollTop;
+                    
+                    gridContainer.style.userSelect = 'none';
+                    gridContainer.style.webkitUserSelect = 'none'; 
+                    gridContainer.style.msUserSelect = 'none'; 
+                }
+                // If e.touches.length is 1, it will be handled by the cell's touchstart,
+                // which then calls the debounced handleInteractionStart.
+            }, { passive: false });
+
+            gridContainer.addEventListener('touchmove', (e) => {
+                if (gridTouchState.isPanning && e.touches.length >= 2) { // MODIFIED: Check for 2 or more
+                    e.preventDefault(); 
+                    const touch1 = e.touches[0];
+                    const touch2 = e.touches[1];
+                    const currentX = (touch1.clientX + touch2.clientX) / 2;
+                    const currentY = (touch1.clientY + touch2.clientY) / 2;
+
+                    const deltaX = currentX - gridTouchState.startX;
+                    const deltaY = currentY - gridTouchState.startY;
+
+                    gridContainer.scrollLeft = gridTouchState.initialScrollLeft - deltaX;
+                    gridContainer.scrollTop = gridTouchState.initialScrollTop - deltaY;
+                }
+            }, { passive: false });
+
+            const resetGridTouchPanningState = () => {
+                if (gridTouchState.isPanning) {
+                    gridTouchState.isPanning = false;
+                    gridContainer.style.userSelect = '';
+                    gridContainer.style.webkitUserSelect = '';
+                    gridContainer.style.msUserSelect = '';
+                }
+            };
+
+            gridContainer.addEventListener('touchend', resetGridTouchPanningState);
+            gridContainer.addEventListener('touchcancel', resetGridTouchPanningState);
+
+
             if (gridContainer && drumGridContainer) { 
                 let scrollTimer = null;
                 gridContainer.addEventListener('scroll', () => { 
@@ -1059,10 +1207,8 @@
                     scrollTimer = setTimeout(() => { 
                         drumGridContainer.scrollLeft = gridContainer.scrollLeft; 
                         scrollTimer = null; 
-                    }, 1); // Reduced timeout for smoother sync
+                    }, 1); 
                 });
-                 // Optional: Sync drum grid scroll to melody grid if melody is scrolled by other means (e.g. mouse wheel if only melody grid is focusable for it)
-                // This might be redundant if the above covers all cases.
             }
         });
     </script>
