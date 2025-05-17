@@ -1,4 +1,4 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -26,7 +26,11 @@
             background-color: var(--bg-color); color: var(--text-color);
             height: 100dvh; margin: 0; overflow: hidden; font-size: 14px;
         }
-        .container { display: flex; flex-direction: column; height: 100vh; background-color: var(--bg-secondary-color); }
+        .container { 
+            display: flex; flex-direction: column; 
+            /* height: 100vh; MODIFIED: Removed, will be set by JS */
+            background-color: var(--bg-secondary-color); 
+        }
         h1 { text-align: center; color: var(--main-accent-color); margin: 10px 0; font-size: 1.4em; font-weight: 300; }
         .controls {
             display: flex; justify-content: space-between; align-items: center; padding: 8px 15px;
@@ -263,7 +267,7 @@
             let noteInteractionDebounceTimer = null;
             let drumInteractionDebounceTimer = null;
             const TOUCH_DEBOUNCE_DELAY = 50; 
-            let isLikelyTap = false; // ADDED: Flag to distinguish tap from drag start
+            let isLikelyTap = false; // Global flag to distinguish tap from drag start for the current gesture
 
             function generateNoteNamesAndBaseMidi() { 
                 NOTE_NAMES = []; const topOctave = START_OCTAVE + NUM_OCTAVES - 1; 
@@ -390,6 +394,8 @@
                 updateRemoveStepButtonState();
                 saveStateForUndo(true); 
                 updateUndoRedoButtons();
+
+                setAppHeight(); // ADDED for Bug 2: Set initial height
             }
 
             function renderNotes() { 
@@ -557,7 +563,6 @@
                         type: event.type,
                         target: event.target,
                         touches: [{ clientX: event.touches[0].clientX, clientY: event.touches[0].clientY }],
-                        // Store original event target's dataset for reliable access in debounced call
                         originalDataset: event.target.closest('.cell, .drum-cell')?.dataset 
                     };
                 }
@@ -572,7 +577,7 @@
             }
 
             function handleInteractionStart(event) {
-                isLikelyTap = false; // Reset flag
+                isLikelyTap = false; 
                 if (event.type.startsWith('touch')) {
                     if (event.touches.length > 1) {
                         if (noteInteractionDebounceTimer) {
@@ -582,7 +587,7 @@
                         return; 
                     }
                     event.preventDefault(); 
-                    isLikelyTap = true; // Set for touchstart
+                    isLikelyTap = true; 
 
                     if (noteInteractionDebounceTimer) {
                         clearTimeout(noteInteractionDebounceTimer);
@@ -590,27 +595,32 @@
                     const eventCopy = shallowCloneTouchEvent(event);
                     noteInteractionDebounceTimer = setTimeout(() => {
                         noteInteractionDebounceTimer = null;
-                        if (gridTouchState.isPanning) return; // If panning started during debounce, abort
+                        if (gridTouchState.isPanning) return; 
                         _executeInteractionStart(eventCopy);
                     }, TOUCH_DEBOUNCE_DELAY);
                     return; 
                 }
-                // For mousedown, it's less likely to be a "tap then drag something else" issue
                 _executeInteractionStart(event);
             }
             
             function _executeInteractionStart(event) { 
-                if (draggingNoteInfo && event.type.startsWith('touch')) { // MODIFIED: Clear previous dragging info on new touch start if any
+                // FIX ATTEMPT for Bug 1: Clear any lingering drag info from a *previous* touch interaction
+                // if a new touch interaction starts. This is crucial if the previous touchend/cancel
+                // didn't clear it or if interactions are very rapid.
+                if (event.type.startsWith('touch') && draggingNoteInfo && draggingNoteInfo.isTouch) {
+                    // console.log("New touch interaction starting, clearing previous touch drag info.");
                     draggingNoteInfo = null;
+                    // It might also be beneficial to remove listeners here, but handleInteractionEnd should
+                    // bail out if draggingNoteInfo is null.
                 }
+
 
                 if (event.type === 'mousedown' && event.button !== 0) return; 
                 
                 if (!initAudioContext()) return;
 
-                // Use originalDataset if available (from debounced touch), otherwise fallback to current target
                 const datasetSource = event.originalDataset || event.target.closest('.cell')?.dataset;
-                const targetDomCell = event.target.closest('.cell'); // Still need targetDomCell for getBoundingClientRect
+                const targetDomCell = event.target.closest('.cell'); 
 
                 if (!targetDomCell || !datasetSource) return;
 
@@ -650,6 +660,8 @@
                 }
 
                 const subStepIndex = cellData.isSplit ? getSubStepFromMouseEvent(event, targetDomCell) : -1;
+                const currentIsTouch = event.type.startsWith('touch'); // For clarity
+
                 if (cellData.isSplit) { 
                     if (!cellData.subNotes) cellData.subNotes = [null, null]; 
                     let subNoteToDrag = cellData.subNotes[subStepIndex];
@@ -659,7 +671,7 @@
                             originalDuration: subNoteToDrag.duration, action: 'maybe_drag_or_delete_sub', 
                             initialClientX: clientX, 
                             initialOffsetXFromNoteStart: clientX - (targetDomCell.getBoundingClientRect().left + (subStepIndex * (cellWidth/2 + gridGap/2))),
-                            isTouch: event.type.startsWith('touch') // ADDED
+                            isTouch: currentIsTouch 
                         };
                     } else { 
                         cellData.subNotes[subStepIndex] = { duration: 0.5 }; 
@@ -669,7 +681,7 @@
                             originalDuration: 0, action: 'create_drag_sub', 
                             initialClientX: clientX, 
                             initialOffsetXFromNoteStart: clientX - (targetDomCell.getBoundingClientRect().left + (subStepIndex * (cellWidth/2 + gridGap/2))),
-                            isTouch: event.type.startsWith('touch') // ADDED
+                            isTouch: currentIsTouch 
                         }; 
                     }
                 } else { 
@@ -699,34 +711,29 @@
                             originalDuration: existingNoteObject.duration, action: 'maybe_drag_or_delete', 
                             initialClientX: clientX, 
                             initialOffsetXFromNoteStart: (step - existingNoteStartStep) * (cellWidth + gridGap) + offsetXInCell,
-                            isTouch: event.type.startsWith('touch') // ADDED
+                            isTouch: currentIsTouch 
                         }; 
                     } else { 
-                        // This is a new note creation
                         notesData[note][step].noteInfo = { duration: 1 }; 
                         playNoteSound(note, 0.05, audioContext.currentTime, `click-${note}-${step}`, audioContext); 
                         draggingNoteInfo = { 
                             note: note, startStep: step, subStep: -1, 
-                            originalDuration: 0, // For new note, original duration is 0 before drag
-                            action: 'create_drag', // It becomes a drag operation immediately
+                            originalDuration: 0, 
+                            action: 'create_drag', 
                             initialClientX: clientX, 
                             initialOffsetXFromNoteStart: offsetXInCell,
-                            isTouch: event.type.startsWith('touch') // ADDED
+                            isTouch: currentIsTouch 
                         }; 
                     }
                 }
                 renderNotes();
                 if (draggingNoteInfo) { 
-                    const eventTypeForListeners = event.type.startsWith('touch') ? 'touchstart' : 'mousedown';
-                    draggingNoteInfo.initialEventType = eventTypeForListeners; // Store original type for listener removal
+                    draggingNoteInfo.initialEventType = currentIsTouch ? 'touchstart' : 'mousedown';
                     
-                    if (eventTypeForListeners === 'mousedown') { 
+                    if (draggingNoteInfo.initialEventType === 'mousedown') { 
                         document.addEventListener('mousemove', handleInteractionMove); 
                         document.addEventListener('mouseup', handleInteractionEnd); 
-                    } else { // touchstart
-                        // For touch, only add move/end listeners if it's not a "tap" that should just create/delete
-                        // The 'isLikelyTap' flag will be checked in handleInteractionEnd for touch.
-                        // For now, always add listeners, but handleInteractionEnd will behave differently for taps.
+                    } else { 
                         document.addEventListener('touchmove', handleInteractionMove, { passive: false }); 
                         document.addEventListener('touchend', handleInteractionEnd); 
                         document.addEventListener('touchcancel', handleInteractionEnd); 
@@ -739,7 +746,7 @@
                 if (!draggingNoteInfo) return; 
                 if (event.type === 'touchmove') {
                     event.preventDefault();
-                    isLikelyTap = false; // If move occurs, it's not a simple tap
+                    isLikelyTap = false; 
                 }
                 const note = draggingNoteInfo.note; 
                 const startStep = draggingNoteInfo.startStep; 
@@ -759,14 +766,12 @@
                 if (draggingNoteInfo.action.startsWith('maybe_drag_or_delete')) {
                     if (Math.abs(clientX - draggingNoteInfo.initialClientX) > 5) { 
                         draggingNoteInfo.action = (startSubStep !== -1) ? 'drag_length_sub' : 'drag_length';
-                    } else { return; } // Not enough movement to start drag
+                    } else { return; } 
                 }
                 
                 if (draggingNoteInfo.action === 'create_drag' || draggingNoteInfo.action === 'drag_length') { 
                     const noteToModify = notesData[note][startStep].noteInfo; 
                     if (noteToModify) {
-                        // For 'create_drag', the duration starts from 1.
-                        // For 'drag_length', it modifies existing duration.
                         const newDurationSteps = Math.max(1, currentMouseCellIndex - startStep + 1);
                         if (newDurationSteps !== noteToModify.duration) { 
                             noteToModify.duration = newDurationSteps; 
@@ -802,13 +807,12 @@
                 const note = draggingNoteInfo.note; 
                 const step = draggingNoteInfo.startStep; 
                 const subStep = draggingNoteInfo.subStep;
-                const originalEventType = draggingNoteInfo.initialEventType; // Get the original event type
+                const originalEventType = draggingNoteInfo.initialEventType; 
 
-                // Clean up listeners first
                 if (originalEventType === 'mousedown') { 
                     document.removeEventListener('mousemove', handleInteractionMove); 
                     document.removeEventListener('mouseup', handleInteractionEnd); 
-                } else { // touchstart
+                } else { 
                     document.removeEventListener('touchmove', handleInteractionMove); 
                     document.removeEventListener('touchend', handleInteractionEnd); 
                     document.removeEventListener('touchcancel', handleInteractionEnd); 
@@ -822,8 +826,8 @@
 
                 let stateChanged = false;
 
-                // MODIFIED: Handle tap specifically for touch events
                 if (originalEventType === 'touchstart' && isLikelyTap) {
+                    // This is a TAP operation for touch
                     if (draggingNoteInfo.action === 'maybe_drag_or_delete') {
                         if (notesData[note][step] && !notesData[note][step].isSplit && notesData[note][step].noteInfo) {
                             notesData[note][step].noteInfo = null; 
@@ -834,17 +838,16 @@
                             notesData[note][step].subNotes[subStep] = null; 
                             stateChanged = true;
                         }
-                    } else if (draggingNoteInfo.action === 'create_drag') {
-                        // For a tap that creates a note, duration is already set to 1 in _executeInteractionStart.
-                        // No further change to duration here.
-                        stateChanged = true; // State did change by creating the note.
-                    } else if (draggingNoteInfo.action === 'create_drag_sub') {
-                        // Similar to create_drag, sub-note created with duration 0.5.
-                        stateChanged = true;
+                    } else if (draggingNoteInfo.action === 'create_drag' || draggingNoteInfo.action === 'create_drag_sub') {
+                        // Note was already created with default duration in _executeInteractionStart.
+                        // For a pure tap, no length adjustment is needed here.
+                        stateChanged = true; 
                     }
-                    // For taps, we don't want to adjust length based on final pointer position if it was a 'create' action.
-                } else { // Mouse operation or touch drag
+                } else { 
+                    // This is a MOUSE operation or a TOUCH DRAG
                     if (draggingNoteInfo.action === 'maybe_drag_or_delete') { 
+                        // This case means it was a mousedown/mouseup without significant move (treated as click to delete)
+                        // or a touchstart/touchend without significant move that wasn't caught by isLikelyTap somehow (less likely).
                         if (notesData[note][step] && !notesData[note][step].isSplit && notesData[note][step].noteInfo) { 
                              notesData[note][step].noteInfo = null; 
                              stateChanged = true;
@@ -855,12 +858,13 @@
                             stateChanged = true;
                         }
                     } else if (draggingNoteInfo.action.includes('drag') || draggingNoteInfo.action.includes('create')) {
-                        // Length adjustment would have happened in handleInteractionMove
-                        // We just confirm state changed
+                        // If it was a drag ('drag_length', 'drag_length_sub') or a create that turned into a drag
+                        // ('create_drag', 'create_drag_sub' followed by mousemove/touchmove),
+                        // the length adjustment happened in handleInteractionMove.
+                        // We just confirm state changed.
                         stateChanged = true;
                     }
                 }
-
 
                 renderNotes(); 
                 if (stateChanged) {
@@ -868,7 +872,7 @@
                 }
                 
                 draggingNoteInfo = null;
-                isLikelyTap = false; // Reset flag
+                isLikelyTap = false; 
             }
 
 
@@ -960,7 +964,7 @@
                 if (changed) {
                     saveStateForUndo();
                 }
-                isLikelyTap = false; // Reset for drum interactions as well
+                isLikelyTap = false; 
             }
 
             function midiToFrequency(midiNote) { return 440 * Math.pow(2, (midiNote - 69) / 12); }
@@ -1196,7 +1200,7 @@
                         drumInteractionDebounceTimer = null;
                     }
                     
-                    gridTouchState.isPanning = true; // Set panning true *before* preventDefault
+                    gridTouchState.isPanning = true; 
                     e.preventDefault(); 
                     
                     const touch1 = e.touches[0];
@@ -1251,6 +1255,18 @@
                     }, 1); 
                 });
             }
+
+            // --- ADDED for Bug 2: Dynamic height adjustment ---
+            function setAppHeight() {
+                const appContainer = document.querySelector('.container');
+                if (appContainer) {
+                    appContainer.style.height = `${window.innerHeight}px`;
+                }
+            }
+            window.addEventListener('resize', setAppHeight);
+            window.addEventListener('orientationchange', setAppHeight);
+            // setAppHeight(); // Already called in init() to ensure DOM is ready.
+            // --- End of Bug 2 fix ---
         });
     </script>
 </body>
