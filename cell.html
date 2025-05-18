@@ -2,11 +2,11 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <link rel="icon" href="https://s.yimg.com/ny/api/res/1.2/dOVWY5V2rBuRG4oojoCuxg--/YXBwaWQ9aGlnaGxhbmRlcjt3PTY0MA--/https://media.zenfs.com/en/the_conversation_464/e85d3807a7702782af88875abfcf8369">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300&family=Roboto:wdth,wght@75..100,300&display=swap" rel="stylesheet">
     <title>Concellt - MIDI Sequencer</title>
     <style>
         :root {
@@ -41,8 +41,8 @@
         .controls button, .controls select, .controls input[type="number"] {
             padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 5px;
             background-color: #424242; color: var(--text-color); cursor: pointer;
-            transition: background-color 0.2s ease, border-color 0.2s ease; font-size: 0.85em;
-            font-family: Roboto, "Roboto", sans-serif;
+            transition: background-color 0.2s ease, border-color 0.2s ease; font-size: 0.75em;
+            font-family: "Noto Sans JP", sans-serif;
         }
         .controls button:hover, .controls select:hover, .controls input[type="number"]:hover { background-color: #4f4f4f; border-color: #5a5a5a; }
         .controls button.primary, .controls button.active-mode { 
@@ -168,8 +168,8 @@
             <div class="controls-group">
                 <button id="playBtn" class="primary">▶</button>
                 <button id="stopBtn" disabled>■</button>
-                <button id="undoBtn" title="Undo (Ctrl+Z)" disabled>Z</button>
-                <button id="redoBtn" title="Redo (Ctrl+Y)" disabled>Y</button>
+                <button id="undoBtn" title="Undo (Ctrl+Z)" disabled>←</button>
+                <button id="redoBtn" title="Redo (Ctrl+Y)" disabled>→</button>
             </div>
             <div class="controls-group">
                 <div class="tempo-control">
@@ -194,15 +194,16 @@
             </div>
             <div class="controls-group">
                     <span id="stepCountLabel">16</span>
-                    <button id="addStepBtn" title="Add Step">+</button>
-                    <button id="removeStepBtn" title="Remove Last Step">−</button>
+                    <button id="addStepBtn" title="Add Step">＋</button>
+                    <button id="removeStepBtn" title="Remove Last Step">―</button>
                 <button id="duplicateAppendBtn" title="Duplicate and Append">×</button>
                 <button id="splitCellBtn" title="Cell Division Mode">÷</button>
-                <button id="clearBtn">Kill</button>
-                <button id="loopBtn" title="Toggle Loop">Loop</button>
+                <button id="sustainNoteBtn" title="Sustain Mode">↦</button>
+                <button id="loopBtn" title="Loop Mode">↺</button>
+                <button id="clearBtn" title="Clear">／</button>
             </div>
             <div class="controls-group">
-                <button id="exportWavBtn">Export</button>
+                <button id="exportWavBtn">↓</button>
             </div>
         </div>
 
@@ -247,6 +248,7 @@
             const duplicateAppendBtn = document.getElementById('duplicateAppendBtn');
             const exportWavBtn = document.getElementById('exportWavBtn');
             const splitCellBtn = document.getElementById('splitCellBtn'); 
+            const sustainNoteBtn = document.getElementById('sustainNoteBtn'); // MODIFIED: Added sustain button reference
             const undoBtn = document.getElementById('undoBtn');
             const redoBtn = document.getElementById('redoBtn');
 
@@ -259,6 +261,7 @@
             let draggingNoteInfo = null; let activeAudioNodes = {};
             let activeDrumAudioNodes = {}; 
             let isSplitCellMode = false; 
+            let isSustainNoteMode = false; // MODIFIED: Added sustain mode state, default off
 
             let undoStack = [];
             let redoStack = [];
@@ -267,14 +270,7 @@
             let noteInteractionDebounceTimer = null;
             let drumInteractionDebounceTimer = null;
             const TOUCH_DEBOUNCE_DELAY = 50; 
-            let isLikelyTap = false; 
-
-            // --- Long press detection variables ---
-            let longPressTimer = null;
-            const LONG_PRESS_DURATION = 1000; // 1 seconds
-            let isLongPressActiveForCurrentGesture = false;
-            let touchStartPrimaryCellInfo = null; // Stores info about the touchstart event for melody grid
-            let drumTouchStartPrimaryCellInfo = null; // Stores info for drum grid
+            let isLikelyTap = false;
 
             function generateNoteNamesAndBaseMidi() { 
                 NOTE_NAMES = []; const topOctave = START_OCTAVE + NUM_OCTAVES - 1; 
@@ -387,6 +383,11 @@
                 } else {
                     loopBtn.classList.remove('active-mode');
                 }
+                // Sustain note button is off by default, no class needed initially
+                isSustainNoteMode = false;
+                sustainNoteBtn.classList.remove('active-mode');
+
+
                 currentNumSteps = initialNumSteps;
 
                 initializeGridStructure(); 
@@ -402,7 +403,7 @@
                 saveStateForUndo(true); 
                 updateUndoRedoButtons();
 
-                setAppHeight(); 
+                setAppHeight();
             }
 
             function renderNotes() { 
@@ -584,58 +585,36 @@
             }
 
             function handleInteractionStart(event) {
+                isLikelyTap = false; 
                 if (event.type.startsWith('touch')) {
-                    if (event.touches.length > 1) { // Ignore multi-touch for note input
-                        if (noteInteractionDebounceTimer) { clearTimeout(noteInteractionDebounceTimer); noteInteractionDebounceTimer = null; }
-                        if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
-                        touchStartPrimaryCellInfo = null;
-                        return;
-                    }
-                    event.preventDefault();
-                    isLikelyTap = true; 
-                    isLongPressActiveForCurrentGesture = false;
-                    
-                    const targetCell = event.target.closest('.cell');
-                    if (!targetCell) return;
-                    const note = parseInt(targetCell.dataset.note);
-                    const step = parseInt(targetCell.dataset.step);
-
-                    touchStartPrimaryCellInfo = { 
-                        originalEvent: shallowCloneTouchEvent(event), 
-                        note: note, 
-                        step: step, 
-                        targetCell: targetCell,
-                        timestamp: Date.now() 
-                    };
-
-                    clearTimeout(longPressTimer);
-                    longPressTimer = setTimeout(() => {
-                        if (touchStartPrimaryCellInfo && !draggingNoteInfo) { // Check if touch is still active and no other interaction started
-                            isLongPressActiveForCurrentGesture = true;
-                            isLikelyTap = false; // Long press is not a tap
-                            _executeInteractionStart(touchStartPrimaryCellInfo.originalEvent, { forceDrag: true });
-                            touchStartPrimaryCellInfo = null; // Consumed by long press
+                    if (event.touches.length > 1) {
+                        if (noteInteractionDebounceTimer) {
+                            clearTimeout(noteInteractionDebounceTimer);
+                            noteInteractionDebounceTimer = null;
                         }
-                        longPressTimer = null;
-                    }, LONG_PRESS_DURATION);
+                        return; 
+                    }
+                    event.preventDefault(); 
+                    isLikelyTap = true; 
 
-                    if (noteInteractionDebounceTimer) { clearTimeout(noteInteractionDebounceTimer); }
-                    const eventCopyForDebounce = shallowCloneTouchEvent(event);
+                    if (noteInteractionDebounceTimer) {
+                        clearTimeout(noteInteractionDebounceTimer);
+                    }
+                    const eventCopy = shallowCloneTouchEvent(event);
                     noteInteractionDebounceTimer = setTimeout(() => {
                         noteInteractionDebounceTimer = null;
-                        if (isLongPressActiveForCurrentGesture || gridTouchState.isPanning || draggingNoteInfo) return;
-                        _executeInteractionStart(eventCopyForDebounce);
-                        touchStartPrimaryCellInfo = null; // Consumed by debounce
+                        if (gridTouchState.isPanning) return; 
+                        _executeInteractionStart(eventCopy);
                     }, TOUCH_DEBOUNCE_DELAY);
-
-                } else { // Mouse event
-                    isLikelyTap = false; // Mouse can't be a tap in this context
-                    _executeInteractionStart(event);
+                    return; 
                 }
+                _executeInteractionStart(event);
             }
             
-            function _executeInteractionStart(event, options = {}) { 
-                const forceDrag = options.forceDrag || false;
+            function _executeInteractionStart(event) { 
+                if (event.type.startsWith('touch') && draggingNoteInfo && draggingNoteInfo.isTouch) {
+                    draggingNoteInfo = null;
+                }
 
                 if (event.type === 'mousedown' && event.button !== 0) return; 
                 if (!initAudioContext()) return;
@@ -651,10 +630,8 @@
                 if (isNaN(note) || isNaN(step) || !notesData[note] || !notesData[note][step]) return; 
                 const cellData = notesData[note][step]; 
                 const clientX = event.type.startsWith('touch') ? event.touches[0].clientX : event.clientX;
-                const currentIsTouch = event.type.startsWith('touch');
 
                 if (isSplitCellMode) {
-                    // ... (existing split cell mode logic - unchanged)
                     if (!cellData.isSplit) {
                         cellData.isSplit = true; 
                         targetDomCell.classList.add('split'); 
@@ -683,33 +660,29 @@
                 }
 
                 const subStepIndex = cellData.isSplit ? getSubStepFromMouseEvent(event, targetDomCell) : -1;
+                const currentIsTouch = event.type.startsWith('touch');
 
                 if (cellData.isSplit) { 
                     if (!cellData.subNotes) cellData.subNotes = [null, null]; 
                     let subNoteToDrag = cellData.subNotes[subStepIndex];
-                    if (subNoteToDrag && !forceDrag) { 
+                    if (subNoteToDrag) { 
                         draggingNoteInfo = { 
                             note: note, startStep: step, subStep: subStepIndex, 
                             originalDuration: subNoteToDrag.duration, action: 'maybe_drag_or_delete_sub', 
                             initialClientX: clientX, 
                             initialOffsetXFromNoteStart: clientX - (targetDomCell.getBoundingClientRect().left + (subStepIndex * (cellWidth/2 + gridGap/2))),
-                            isTouch: currentIsTouch, isLongPressDrag: forceDrag
+                            isTouch: currentIsTouch 
                         };
                     } else { 
-                        if (!subNoteToDrag) cellData.subNotes[subStepIndex] = { duration: 0.5 };
-                        else if (forceDrag && subNoteToDrag) { /* Keep existing duration for drag */ }
-
-                        if(!forceDrag || !subNoteToDrag) playNoteSound(note, 0.05, audioContext.currentTime, `click-${note}-${step}-${subStepIndex}`, audioContext);
+                        cellData.subNotes[subStepIndex] = { duration: 0.5 }; 
+                        playNoteSound(note, 0.05, audioContext.currentTime, `click-${note}-${step}-${subStepIndex}`, audioContext);
                         draggingNoteInfo = { 
                             note: note, startStep: step, subStep: subStepIndex, 
-                            originalDuration: forceDrag && subNoteToDrag ? subNoteToDrag.duration : 0, 
-                            action: (forceDrag || !subNoteToDrag) ? 'create_drag_sub' : 'maybe_drag_or_delete_sub', // Corrected logic here
+                            originalDuration: 0, action: 'create_drag_sub', 
                             initialClientX: clientX, 
                             initialOffsetXFromNoteStart: clientX - (targetDomCell.getBoundingClientRect().left + (subStepIndex * (cellWidth/2 + gridGap/2))),
-                            isTouch: currentIsTouch, isLongPressDrag: forceDrag
+                            isTouch: currentIsTouch 
                         }; 
-                        if (forceDrag) draggingNoteInfo.action = 'drag_length_sub'; // If forced drag and note exists, or create_drag_sub if new
-                        if (forceDrag && !subNoteToDrag) draggingNoteInfo.action = 'create_drag_sub';
                     }
                 } else { 
                     let existingNoteStartStep = -1; 
@@ -732,29 +705,25 @@
                     } 
                     const cellRect = targetDomCell.getBoundingClientRect(); 
                     const offsetXInCell = clientX - cellRect.left; 
-                    if (existingNoteObject && !forceDrag) { 
+                    if (existingNoteObject) { 
                         draggingNoteInfo = { 
                             note: note, startStep: existingNoteStartStep, subStep: -1, 
                             originalDuration: existingNoteObject.duration, action: 'maybe_drag_or_delete', 
                             initialClientX: clientX, 
                             initialOffsetXFromNoteStart: (step - existingNoteStartStep) * (cellWidth + gridGap) + offsetXInCell,
-                            isTouch: currentIsTouch, isLongPressDrag: forceDrag
+                            isTouch: currentIsTouch 
                         }; 
                     } else { 
-                        if (!existingNoteObject) notesData[note][step].noteInfo = { duration: 1 }; 
-                        else if (forceDrag && existingNoteObject) { /* Keep existing duration for drag */ }
-                        
-                        if(!forceDrag || !existingNoteObject) playNoteSound(note, 0.05, audioContext.currentTime, `click-${note}-${step}`, audioContext); 
+                        notesData[note][step].noteInfo = { duration: 1 }; 
+                        playNoteSound(note, 0.05, audioContext.currentTime, `click-${note}-${step}`, audioContext); 
                         draggingNoteInfo = { 
-                            note: note, startStep: (forceDrag && existingNoteObject) ? existingNoteStartStep : step, subStep: -1, 
-                            originalDuration: forceDrag && existingNoteObject ? existingNoteObject.duration : 0, 
-                            action: (forceDrag || !existingNoteObject) ? 'create_drag' : 'maybe_drag_or_delete',
+                            note: note, startStep: step, subStep: -1, 
+                            originalDuration: 0, 
+                            action: 'create_drag', 
                             initialClientX: clientX, 
-                            initialOffsetXFromNoteStart: (forceDrag && existingNoteObject) ? (step - existingNoteStartStep) * (cellWidth + gridGap) + offsetXInCell : offsetXInCell,
-                            isTouch: currentIsTouch, isLongPressDrag: forceDrag
-                        };
-                        if (forceDrag) draggingNoteInfo.action = 'drag_length'; // If forced drag and note exists, or create_drag if new
-                        if (forceDrag && !existingNoteObject) draggingNoteInfo.action = 'create_drag';
+                            initialOffsetXFromNoteStart: offsetXInCell,
+                            isTouch: currentIsTouch 
+                        }; 
                     }
                 }
                 renderNotes();
@@ -774,22 +743,11 @@
 
 
             function handleInteractionMove(event) { 
-                if (event.type.startsWith('touch')) {
-                    if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
-                    if (noteInteractionDebounceTimer) { clearTimeout(noteInteractionDebounceTimer); noteInteractionDebounceTimer = null; }
-
-                    if (!draggingNoteInfo && touchStartPrimaryCellInfo && !isLongPressActiveForCurrentGesture) {
-                        // Moved before long press or debounce timeout: treat as immediate short drag
-                        _executeInteractionStart(touchStartPrimaryCellInfo.originalEvent);
-                        touchStartPrimaryCellInfo = null; // Consumed
-                    }
+                if (!draggingNoteInfo) return; 
+                if (event.type === 'touchmove') {
+                    event.preventDefault();
                     isLikelyTap = false; 
                 }
-
-                if (!draggingNoteInfo) return; 
-                if (event.type === 'touchmove') event.preventDefault();
-
-
                 const note = draggingNoteInfo.note; 
                 const startStep = draggingNoteInfo.startStep; 
                 const startSubStep = draggingNoteInfo.subStep;
@@ -805,9 +763,7 @@
                 let currentMouseSubCellIndex = (fractionInCell * (cellWidth + gridGap) < (cellWidth / 2 + gridGap / 2)) ? 0 : 1;
                 currentMouseCellIndex = Math.max(0, Math.min(currentNumSteps - 1, currentMouseCellIndex));
 
-                // If it was a long press, action is already 'drag_length' or 'create_drag'.
-                // If not, and it was 'maybe_drag...', change to actual drag if moved enough.
-                if (draggingNoteInfo.action.startsWith('maybe_drag_or_delete') && !draggingNoteInfo.isLongPressDrag) {
+                if (draggingNoteInfo.action.startsWith('maybe_drag_or_delete')) {
                     if (Math.abs(clientX - draggingNoteInfo.initialClientX) > 5) { 
                         draggingNoteInfo.action = (startSubStep !== -1) ? 'drag_length_sub' : 'drag_length';
                     } else { return; } 
@@ -818,8 +774,11 @@
                     if (noteToModify) {
                         const newDurationSteps = Math.max(1, currentMouseCellIndex - startStep + 1);
                         if (newDurationSteps !== noteToModify.duration) { 
-                            noteToModify.duration = newDurationSteps; 
-                            renderNotes(); 
+                            // MODIFIED: Only update duration if sustain mode is active
+                            if (isSustainNoteMode) {
+                                noteToModify.duration = newDurationSteps; 
+                                renderNotes(); 
+                            }
                         }
                     }
                 } else if (draggingNoteInfo.action === 'create_drag_sub' || draggingNoteInfo.action === 'drag_length_sub') { 
@@ -838,33 +797,23 @@
                         } else { numHalfSteps = 1; } 
                         const newDuration = Math.max(0.5, numHalfSteps * 0.5); 
                         if (newDuration !== subNoteToModify.duration) { 
-                            subNoteToModify.duration = newDuration; 
-                            renderNotes(); 
+                            // MODIFIED: Only update duration if sustain mode is active
+                            if (isSustainNoteMode) {
+                                subNoteToModify.duration = newDuration; 
+                                renderNotes(); 
+                            }
                         }
                     }
                 }
             }
 
             function handleInteractionEnd(event) { 
-                if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
-                if (noteInteractionDebounceTimer) { clearTimeout(noteInteractionDebounceTimer); noteInteractionDebounceTimer = null; }
-
-                const wasActuallyLongPressDrag = isLongPressActiveForCurrentGesture; // Capture state before reset
-                isLongPressActiveForCurrentGesture = false; // Reset for next gesture
-
-                if (!draggingNoteInfo) {
-                    // This can happen if touchend occurs before debounce/longpress and no move
-                    // Or if the interaction was cancelled/ignored (e.g. multi-touch)
-                    touchStartPrimaryCellInfo = null; // Clear any pending start info
-                    return;
-                }
+                if (!draggingNoteInfo) return; 
                 
                 const note = draggingNoteInfo.note; 
                 const step = draggingNoteInfo.startStep; 
                 const subStep = draggingNoteInfo.subStep;
                 const originalEventType = draggingNoteInfo.initialEventType; 
-                const wasDraggingInfoLongPress = draggingNoteInfo.isLongPressDrag;
-
 
                 if (originalEventType === 'mousedown') { 
                     document.removeEventListener('mousemove', handleInteractionMove); 
@@ -878,36 +827,26 @@
                 if (!notesData[note] || !notesData[note][step]) {
                      draggingNoteInfo = null; 
                      isLikelyTap = false;
-                     touchStartPrimaryCellInfo = null;
                      return;
                 }
 
                 let stateChanged = false;
 
-                if (originalEventType === 'touchstart') {
-                    if (wasDraggingInfoLongPress) { // If draggingNoteInfo was set by a long press
-                        // Length was adjusted in move, just confirm state changed
-                        stateChanged = true;
-                    } else if (isLikelyTap) { // Normal tap (not a long press)
-                        if (draggingNoteInfo.action === 'maybe_drag_or_delete') {
-                            if (notesData[note][step] && !notesData[note][step].isSplit && notesData[note][step].noteInfo) {
-                                notesData[note][step].noteInfo = null; 
-                                stateChanged = true;
-                            }
-                        } else if (draggingNoteInfo.action === 'maybe_drag_or_delete_sub') {
-                            if (notesData[note][step] && notesData[note][step].isSplit && notesData[note][step].subNotes && notesData[note][step].subNotes[subStep]) {
-                                notesData[note][step].subNotes[subStep] = null; 
-                                stateChanged = true;
-                            }
-                        } else if (draggingNoteInfo.action === 'create_drag' || draggingNoteInfo.action === 'create_drag_sub') {
-                            // Note was created with default duration in _executeInteractionStart.
-                            // For a pure tap, no length adjustment is needed here.
-                            stateChanged = true; 
+                if (originalEventType === 'touchstart' && isLikelyTap) {
+                    if (draggingNoteInfo.action === 'maybe_drag_or_delete') {
+                        if (notesData[note][step] && !notesData[note][step].isSplit && notesData[note][step].noteInfo) {
+                            notesData[note][step].noteInfo = null; 
+                            stateChanged = true;
                         }
-                    } else { // Short drag (not a long press, not a tap)
-                         stateChanged = true; // Length adjusted in move
+                    } else if (draggingNoteInfo.action === 'maybe_drag_or_delete_sub') {
+                        if (notesData[note][step] && notesData[note][step].isSplit && notesData[note][step].subNotes && notesData[note][step].subNotes[subStep]) {
+                            notesData[note][step].subNotes[subStep] = null; 
+                            stateChanged = true;
+                        }
+                    } else if (draggingNoteInfo.action === 'create_drag' || draggingNoteInfo.action === 'create_drag_sub') {
+                        stateChanged = true; 
                     }
-                } else { // Mousedown (PC)
+                } else { 
                     if (draggingNoteInfo.action === 'maybe_drag_or_delete') { 
                         if (notesData[note][step] && !notesData[note][step].isSplit && notesData[note][step].noteInfo) { 
                              notesData[note][step].noteInfo = null; 
@@ -919,10 +858,14 @@
                             stateChanged = true;
                         }
                     } else if (draggingNoteInfo.action.includes('drag') || draggingNoteInfo.action.includes('create')) {
+                        // If it was a drag, length adjustment (if any) happened in handleInteractionMove
+                        // (respecting isSustainNoteMode).
+                        // If it was a create_drag that didn't move much, it's a single note.
                         stateChanged = true;
                     }
                 }
 
+                // Ensure final render, especially if a note was created but not dragged (or drag was no-op due to sustain mode off)
                 renderNotes(); 
                 if (stateChanged) {
                     saveStateForUndo();
@@ -930,41 +873,33 @@
                 
                 draggingNoteInfo = null;
                 isLikelyTap = false; 
-                touchStartPrimaryCellInfo = null;
             }
 
 
             function handleDrumInteraction(event) {
+                isLikelyTap = false;
                 if (event.type.startsWith('touch')) {
-                     if (event.touches.length > 1) {
-                        if (drumInteractionDebounceTimer) { clearTimeout(drumInteractionDebounceTimer); drumInteractionDebounceTimer = null; }
-                        if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; } // Use same longPressTimer for simplicity or separate
-                        drumTouchStartPrimaryCellInfo = null;
-                        return;
+                    if (event.touches.length > 1) {
+                        if (drumInteractionDebounceTimer) {
+                            clearTimeout(drumInteractionDebounceTimer);
+                            drumInteractionDebounceTimer = null;
+                        }
+                        return; 
                     }
-                    event.preventDefault();
+                    event.preventDefault(); 
                     isLikelyTap = true;
-                    isLongPressActiveForCurrentGesture = false; // Assuming same flag can be reused or make drum-specific
 
-                    const targetCell = event.target.closest('.drum-cell');
-                    if (!targetCell) return;
-                    // Store drum cell info if needed for long press logic on drums (not requested, but for consistency)
-                    // drumTouchStartPrimaryCellInfo = { originalEvent: shallowCloneTouchEvent(event), targetCell: targetCell, timestamp: Date.now() };
-
-                    // For drums, long press to drag is not implemented as per request.
-                    // So, we just use the debounce for tap.
-                    if (drumInteractionDebounceTimer) { clearTimeout(drumInteractionDebounceTimer); }
+                    if (drumInteractionDebounceTimer) {
+                        clearTimeout(drumInteractionDebounceTimer);
+                    }
                     const eventCopy = shallowCloneTouchEvent(event);
                     drumInteractionDebounceTimer = setTimeout(() => {
                         drumInteractionDebounceTimer = null;
-                        if (gridTouchState.isPanning) return; // Assuming gridTouchState.isPanning is relevant
+                        if (gridTouchState.isPanning) return; 
                         _executeDrumInteraction(eventCopy);
-                        // drumTouchStartPrimaryCellInfo = null; 
                     }, TOUCH_DEBOUNCE_DELAY);
-                    return;
+                    return; 
                 }
-                // Mouse event for drums
-                isLikelyTap = false;
                 _executeDrumInteraction(event);
             }
 
@@ -985,7 +920,6 @@
                 const cellData = drumNotesData[track][step];
 
                 if (isSplitCellMode) { 
-                    // ... (existing drum split cell mode logic - unchanged)
                     if (!cellData.isSplit) { 
                         cellData.isSplit = true; 
                         targetCell.classList.add('split');
@@ -1030,7 +964,7 @@
                 if (changed) {
                     saveStateForUndo();
                 }
-                // isLikelyTap = false; // Reset here, though for drums it's less complex currently
+                isLikelyTap = false; 
             }
 
             function midiToFrequency(midiNote) { return 440 * Math.pow(2, (midiNote - 69) / 12); }
@@ -1235,6 +1169,13 @@
                 }
             });
 
+            // MODIFIED: Added event listener for sustainNoteBtn
+            sustainNoteBtn.addEventListener('click', () => {
+                isSustainNoteMode = !isSustainNoteMode;
+                sustainNoteBtn.classList.toggle('active-mode', isSustainNoteMode);
+                // No cursor change needed for sustain mode, as interaction is on existing notes
+            });
+
             document.addEventListener('keydown', (event) => {
                 if ((event.ctrlKey || event.metaKey) && event.key === 'z') {
                     event.preventDefault();
@@ -1257,28 +1198,17 @@
 
             gridContainer.addEventListener('touchstart', (e) => {
                 if (e.touches.length >= 2) { 
-                    // Cancel any pending single-touch interactions for note input
-                    if (noteInteractionDebounceTimer) { clearTimeout(noteInteractionDebounceTimer); noteInteractionDebounceTimer = null; }
-                    if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
-                    touchStartPrimaryCellInfo = null;
-                    if (draggingNoteInfo) { // If a drag was somehow active, cancel it
-                        // This might involve calling a simplified handleInteractionEnd or just resetting draggingNoteInfo
-                        // For now, just nullify, assuming the multi-touch takes precedence.
-                        if (draggingNoteInfo.initialEventType === 'mousedown') { 
-                            document.removeEventListener('mousemove', handleInteractionMove); 
-                            document.removeEventListener('mouseup', handleInteractionEnd); 
-                        } else { 
-                            document.removeEventListener('touchmove', handleInteractionMove); 
-                            document.removeEventListener('touchend', handleInteractionEnd); 
-                            document.removeEventListener('touchcancel', handleInteractionEnd); 
-                        }
-                        draggingNoteInfo = null;
-                        renderNotes(); // Re-render to clear any visual artifacts if a drag was interrupted
+                    if (noteInteractionDebounceTimer) {
+                        clearTimeout(noteInteractionDebounceTimer);
+                        noteInteractionDebounceTimer = null;
                     }
-
-
+                    if (drumInteractionDebounceTimer) {
+                        clearTimeout(drumInteractionDebounceTimer);
+                        drumInteractionDebounceTimer = null;
+                    }
+                    
                     gridTouchState.isPanning = true; 
-                    // e.preventDefault(); // Already called in cell's touchstart, but good for clarity if it wasn't
+                    e.preventDefault(); 
                     
                     const touch1 = e.touches[0];
                     const touch2 = e.touches[1];
@@ -1291,11 +1221,11 @@
                     gridContainer.style.webkitUserSelect = 'none'; 
                     gridContainer.style.msUserSelect = 'none'; 
                 }
-            }, { passive: false }); // Keep passive:false for grid-level panning
+            }, { passive: false });
 
             gridContainer.addEventListener('touchmove', (e) => {
                 if (gridTouchState.isPanning && e.touches.length >= 2) { 
-                    // e.preventDefault(); // Already called in cell's touchmove for single touch, this is for 2-finger pan
+                    e.preventDefault(); 
                     const touch1 = e.touches[0];
                     const touch2 = e.touches[1];
                     const currentX = (touch1.clientX + touch2.clientX) / 2;
@@ -1307,8 +1237,7 @@
                     gridContainer.scrollLeft = gridTouchState.initialScrollLeft - deltaX;
                     gridContainer.scrollTop = gridTouchState.initialScrollTop - deltaY;
                 }
-            }, { passive: false }); // Keep passive:false for grid-level panning
-
+            }, { passive: false });
 
             const resetGridTouchPanningState = () => {
                 if (gridTouchState.isPanning) {
