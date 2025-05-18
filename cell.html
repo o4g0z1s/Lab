@@ -6,7 +6,7 @@
     <link rel="icon" href="https://s.yimg.com/ny/api/res/1.2/dOVWY5V2rBuRG4oojoCuxg--/YXBwaWQ9aGlnaGxhbmRlcjt3PTY0MA--/https://media.zenfs.com/en/the_conversation_464/e85d3807a7702782af88875abfcf8369">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300&family=Roboto:wdth,wght@75..100,300&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300&family=Noto+Sans+Math&family=Roboto:wght@300&display=swap" rel="stylesheet">
     <title>Concellt - MIDI Sequencer</title>
     <style>
         :root {
@@ -22,7 +22,7 @@
             --drum-cell-active-hover-color: var(--note-hover-color); 
         }
         body, html {
-            font-family: Roboto, "Roboto", sans-serif;
+            font-family: "Roboto", sans-serif;
             background-color: var(--bg-color); color: var(--text-color);
             height: 100dvh; margin: 0; overflow: hidden; font-size: 14px;
         }
@@ -198,8 +198,8 @@
                     <button id="removeStepBtn" title="Remove Last Step">―</button>
                 <button id="duplicateAppendBtn" title="Duplicate and Append">×</button>
                 <button id="splitCellBtn" title="Cell Division Mode">÷</button>
-                <button id="sustainNoteBtn" title="Sustain Mode">↦</button>
-                <button id="loopBtn" title="Loop Mode">↺</button>
+                <button id="sustainNoteBtn" title="Sustain Mode" style="font-family:'Noto Sans Math'">↦</button>
+                <button id="loopBtn" title="Loop Mode" style="font-family:'Noto Sans Math'">↺</button>
                 <button id="clearBtn" title="Clear">／</button>
             </div>
             <div class="controls-group">
