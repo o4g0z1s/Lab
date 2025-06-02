@@ -614,7 +614,6 @@
                         const textAfter = outputTextbox.value.substring(outputTextbox.selectionEnd, outputTextbox.value.length);
                         outputTextbox.value = textBefore + char + textAfter;
                         outputTextbox.selectionStart = outputTextbox.selectionEnd = cursorPos + char.length; 
-                        outputTextbox.focus();
                     });
 
                     if (currentSearchedCodePoint === i) { 
