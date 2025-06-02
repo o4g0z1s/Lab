@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Tulpen+One&display=swap" rel="stylesheet">
+    <title>Invisible - JA</title>
+    <style>
+        body {
+            font-family:"Tulpen One";
+            margin: 0;
+            padding: 20px;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #333;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+        p {
+            font-size: 5em;
+            color: #eee;
+            margin: 20px;
+        }
+        textarea {
+            width: calc(100% - 22px); /* paddingを考慮 */
+            min-height: 150px;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+            background: #000;
+            color: #eee;
+            resize: none;
+            text-align: center;
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px; /* ボタン間のスペース */
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        button {
+            font-family:"Tulpen One";
+            padding: 12px 20px;
+            background-color: #555;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.5em;
+            transition: background-color 0.3s ease;
+        }
+        button.copy {
+            background-color: #777;
+        }
+        button:hover {
+            background-color: #666;
+        }
+        button.copy:hover {
+            background-color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <p>Invisible</p>
+        <textarea id="textIO" placeholder="..."></textarea>
+
+        <div class="button-group">
+            <button onclick="processText('encode')">Encode</button>
+            <button id="copyButton" class="copy">Copy</button>
+            <button onclick="processText('decode')" class="decode">Decode</button>
+        </div>
+    </div>
+
+    <script>
+        // ひらがなの範囲
+        const HIRAGANA_START_CODEPOINT = 0x3041;
+        const HIRAGANA_END_CODEPOINT   = 0x3096;
+
+        // 変換後のタグ文字の開始コードポイント (ひらがな対応)
+        const TAG_HIRAGANA_START_CODEPOINT = 0xE0000;
+        const TAG_HIRAGANA_END_CODEPOINT = TAG_HIRAGANA_START_CODEPOINT + (HIRAGANA_END_CODEPOINT - HIRAGANA_START_CODEPOINT); // 0xE0055
+
+        // 句読点・記号・スペースのコードポイント
+        const ZEN_SPACE_CODEPOINT   = 0x3000; // 全角スペース
+        const KUTEN_CODEPOINT       = 0x3001; // 、 (読点)
+        const TOUTEN_CODEPOINT      = 0x3002; // 。 (句点)
+        const CHOUON_CODEPOINT      = 0x30FC; // ー (長音記号)
+        const NAMI_DASH_CODEPOINT   = 0x301C; // 〜 (波ダッシュ)
+        const ZEN_EXCLAMATION_CODEPOINT = 0xFF01; // ！ (全角感嘆符)
+        const ZEN_QUESTION_CODEPOINT    = 0xFF1F; // ？ (全角疑問符)
+
+
+        // 句読点・記号・スペースに対応するタグ文字のコードポイント
+        // ひらがな用のタグ文字範囲の直後に割り当てる
+        const TAG_KUTEN_CODEPOINT       = TAG_HIRAGANA_END_CODEPOINT + 1; // 0xE0056
+        const TAG_TOUTEN_CODEPOINT      = TAG_HIRAGANA_END_CODEPOINT + 2; // 0xE0057
+        const TAG_CHOUON_CODEPOINT      = TAG_HIRAGANA_END_CODEPOINT + 3; // 0xE0058
+        const TAG_NAMI_DASH_CODEPOINT   = TAG_HIRAGANA_END_CODEPOINT + 4; // 0xE0059
+        const TAG_ZEN_EXCLAMATION_CODEPOINT = TAG_HIRAGANA_END_CODEPOINT + 5; // 0xE005A
+        const TAG_ZEN_QUESTION_CODEPOINT    = TAG_HIRAGANA_END_CODEPOINT + 6; // 0xE005B
+        const TAG_ZEN_SPACE_CODEPOINT   = TAG_HIRAGANA_END_CODEPOINT + 7; // 0xE005C
+
+
+        function processText(mode) {
+            const textIO = document.getElementById("textIO");
+            const currentText = textIO.value;
+            let outputChars = [];
+
+            for (const char of currentText) {
+                const codePoint = char.codePointAt(0);
+                let processedChar = char; // デフォルトは元の文字 (対象外の文字はそのまま)
+
+                if (mode === 'encode') {
+                    // ひらがな
+                    if (codePoint >= HIRAGANA_START_CODEPOINT && codePoint <= HIRAGANA_END_CODEPOINT) {
+                        const offset = codePoint - HIRAGANA_START_CODEPOINT;
+                        processedChar = String.fromCodePoint(TAG_HIRAGANA_START_CODEPOINT + offset);
+                    }
+                    // 全角スペース
+                    else if (codePoint === ZEN_SPACE_CODEPOINT) {
+                        processedChar = String.fromCodePoint(TAG_ZEN_SPACE_CODEPOINT);
+                    }
+                    // 、
+                    else if (codePoint === KUTEN_CODEPOINT) {
+                        processedChar = String.fromCodePoint(TAG_KUTEN_CODEPOINT);
+                    }
+                    // 。
+                    else if (codePoint === TOUTEN_CODEPOINT) {
+                        processedChar = String.fromCodePoint(TAG_TOUTEN_CODEPOINT);
+                    }
+                    // ー
+                    else if (codePoint === CHOUON_CODEPOINT) {
+                        processedChar = String.fromCodePoint(TAG_CHOUON_CODEPOINT);
+                    }
+                    // 〜
+                    else if (codePoint === NAMI_DASH_CODEPOINT) {
+                        processedChar = String.fromCodePoint(TAG_NAMI_DASH_CODEPOINT);
+                    }
+                    // ！
+                    else if (codePoint === ZEN_EXCLAMATION_CODEPOINT) {
+                        processedChar = String.fromCodePoint(TAG_ZEN_EXCLAMATION_CODEPOINT);
+                    }
+                    // ？
+                    else if (codePoint === ZEN_QUESTION_CODEPOINT) {
+                        processedChar = String.fromCodePoint(TAG_ZEN_QUESTION_CODEPOINT);
+                    }
+                } else if (mode === 'decode') {
+                    // タグひらがな
+                    if (codePoint >= TAG_HIRAGANA_START_CODEPOINT && codePoint <= TAG_HIRAGANA_END_CODEPOINT) {
+                        const offset = codePoint - TAG_HIRAGANA_START_CODEPOINT;
+                        processedChar = String.fromCodePoint(HIRAGANA_START_CODEPOINT + offset);
+                    }
+                    // タグ 全角スペース
+                    else if (codePoint === TAG_ZEN_SPACE_CODEPOINT) {
+                        processedChar = String.fromCodePoint(ZEN_SPACE_CODEPOINT);
+                    }
+                    // タグ 、
+                    else if (codePoint === TAG_KUTEN_CODEPOINT) {
+                        processedChar = String.fromCodePoint(KUTEN_CODEPOINT);
+                    }
+                    // タグ 。
+                    else if (codePoint === TAG_TOUTEN_CODEPOINT) {
+                        processedChar = String.fromCodePoint(TOUTEN_CODEPOINT);
+                    }
+                    // タグ ー
+                    else if (codePoint === TAG_CHOUON_CODEPOINT) {
+                        processedChar = String.fromCodePoint(CHOUON_CODEPOINT);
+                    }
+                    // タグ 〜
+                    else if (codePoint === TAG_NAMI_DASH_CODEPOINT) {
+                        processedChar = String.fromCodePoint(NAMI_DASH_CODEPOINT);
+                    }
+                    // タグ ！
+                    else if (codePoint === TAG_ZEN_EXCLAMATION_CODEPOINT) {
+                        processedChar = String.fromCodePoint(ZEN_EXCLAMATION_CODEPOINT);
+                    }
+                    // タグ ？
+                    else if (codePoint === TAG_ZEN_QUESTION_CODEPOINT) {
+                        processedChar = String.fromCodePoint(ZEN_QUESTION_CODEPOINT);
+                    }
+                } else {
+                    console.error("無効なモードです:", mode);
+                    return; // 不明なモードの場合は処理を中断
+                }
+                outputChars.push(processedChar);
+            }
+            textIO.value = outputChars.join('');
+        }
+
+        document.getElementById('copyButton').onclick = function() {
+            navigator.clipboard.writeText(document.getElementById('textIO').value)
+        };
+    </script>
+</body>
+</html>
