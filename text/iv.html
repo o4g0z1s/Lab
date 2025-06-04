@@ -89,48 +89,84 @@
         </div>
     </div>
 
-    <script>
-        // Unicodeコードポイントのオフセット
-        // 基本ラテン文字 (U+0020 - U+007E) から タグ文字 (U+E0020 - U+E007E) へのオフセット
-        const UNICODE_OFFSET = 0xE0000;
-
-        // 基本ラテン文字の範囲
-        const LATIN_START_CODEPOINT = 0x0020; // スペース
-        const LATIN_END_CODEPOINT   = 0x007E; // チルダ
-
-        function processText(mode) {
-            const textIO = document.getElementById("textIO");
-            const currentText = textIO.value;
-            let outputChars = [];
-
-            for (const char of currentText) {
-                const codePoint = char.codePointAt(0);
-                let processedChar = char; // デフォルトは元の文字
-
-                if (mode === 'encode') {
-                    // 基本ラテン文字 (U+0020 - U+007E) を タグ文字 (U+E0020 - U+E007E) に変換
-                    if (codePoint >= LATIN_START_CODEPOINT && codePoint <= LATIN_END_CODEPOINT) {
-                        processedChar = String.fromCodePoint(codePoint + UNICODE_OFFSET);
-                    }
-                } else if (mode === 'decode') {
-                    // タグ文字 (U+E0020 - U+E007E) を 基本ラテン文字 (U+0020 - U+007E) に変換
-                    const tagStartCodePoint = LATIN_START_CODEPOINT + UNICODE_OFFSET;
-                    const tagEndCodePoint   = LATIN_END_CODEPOINT   + UNICODE_OFFSET;
-                    if (codePoint >= tagStartCodePoint && codePoint <= tagEndCodePoint) {
-                        processedChar = String.fromCodePoint(codePoint - UNICODE_OFFSET);
-                    }
-                } else {
-                    console.error("無効なモードです:", mode);
-                    return; // 不明なモードの場合は処理を中断
-                }
-                outputChars.push(processedChar);
-            }
-            textIO.value = outputChars.join('');
+<script>
+    const TARGET_CHARS_STRING = " !\"#&'()+,-./0123456789:;=?@ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz　、。「」ぁあぃいぅうぇえぉおかがきぎくぐけげこごさざしじすずせぜそぞただちぢっつづてでとどなにぬねのはばぱひびぴふぶぷへべぺほぼぽまみむめもゃやゅゆょよらりるれろゎわゐゑをんゔァアィイゥウェエォオカガキギクグケゲコゴサザシジスズセゼソゾタダチヂッツヅテデトドナニヌネノハバパヒビピフブプヘベペホボポマミムメモャヤュユョヨラリルレロヮワヰヱヲンヴー！？";
+    /**
+     * 指定されたインデックス（0から255）に対応する Variation Selector のコードポイントを返します。
+     * VS1-VS16 (U+FE00 - U+FE0F) はインデックス 0-15 に対応。
+     * VS17-VS256 (U+E0100 - U+E01EF) はインデックス 16-255 に対応。
+     * @param {number} index - 0ベースのインデックス (0 から TARGET_CHARS_STRING.length - 1 の範囲を想定)。
+     * @returns {number} 対応するVariation Selectorのコードポイント。インデックスが不正な場合は-1。
+     */
+    function getVSCodePoint(index) {
+        // この関数は汎用的にVS1-VS256のコードポイントを返すものとする
+        if (index < 0 || index >= 256) { // VSは256個まで (インデックス 0-255)
+             console.error("Index out of bounds for standard Variation Selectors (0-255):", index);
+             return -1;
         }
+        if (index < 16) { // インデックス 0-15 (VS1-VS16)
+            return 0xFE00 + index;
+        } else { // インデックス 16-255 (VS17-VS256)
+            return 0xE0100 + (index - 16);
+        }
+    }
+    /**
+     * 指定されたVariation Selectorのコードポイントに対応する元の文字の0ベースインデックスを返します。
+     * @param {number} vsCodePoint - Variation Selectorのコードポイント。
+     * @returns {number} 対応する0ベースインデックス。対応しないVSの場合は -1。
+     */
+    function getOriginalCharIndexFromVS(vsCodePoint) {
+        if (vsCodePoint >= 0xFE00 && vsCodePoint <= 0xFE0F) { // VS1-VS16
+            return vsCodePoint - 0xFE00; // インデックス 0-15
+        } else if (vsCodePoint >= 0xE0100 && vsCodePoint <= 0xE01EF) { // VS17-VS256
+            return (vsCodePoint - 0xE0100) + 16; // インデックス 16-255
+        }
+        return -1;
+    }
 
-        document.getElementById('copyButton').onclick = function() {
-            navigator.clipboard.writeText(document.getElementById('textIO').value)
-        };
-    </script>
+    function processText(mode) {
+        const textIO = document.getElementById("textIO");
+        const currentText = textIO.value;
+        let outputChars = [];
+
+        for (const char of currentText) {
+            let processedChar = char; // デフォルトは元の文字 (対象外の文字はそのまま)
+
+            if (mode === 'encode') {
+                const index = TARGET_CHARS_STRING.indexOf(char);
+                // index は 0 から (TARGET_CHARS_STRING.length - 1) の範囲、または -1
+                if (index !== -1) {
+                    // 文字がTARGET_CHARS_STRING内に見つかった場合
+                    const vsCodePoint = getVSCodePoint(index);
+                    if (vsCodePoint !== -1) { // getVSCodePointが有効な値を返した場合
+                         processedChar = String.fromCodePoint(vsCodePoint);
+                    } else {
+                        // index が TARGET_CHARS_STRING.length 未満の場合
+                        console.warn("Could not get VS codepoint for char:", char, "at index:", index);
+                    }
+                }
+                // 見つからなかった文字 (index === -1) はそのまま processedChar (元の文字) として扱われる
+            } else if (mode === 'decode') {
+                const codePoint = char.codePointAt(0);
+                const originalCharIndex = getOriginalCharIndexFromVS(codePoint);
+                // originalCharIndex は 0 から 255 の範囲、または -1
+
+                if (originalCharIndex !== -1 && originalCharIndex < TARGET_CHARS_STRING.length) {
+                    // 有効なVSで、かつ対応する元の文字がTARGET_CHARS_STRING内に存在する場合
+                    processedChar = TARGET_CHARS_STRING[originalCharIndex];
+                }
+            } else {
+                console.error("Error:", mode);
+                return;
+            }
+            outputChars.push(processedChar);
+        }
+        textIO.value = outputChars.join('');
+    }
+
+    document.getElementById('copyButton').onclick = function() {
+        navigator.clipboard.writeText(document.getElementById('textIO').value)
+    };
+</script>
 </body>
 </html>
