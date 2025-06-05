@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>wwwave</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #1a1a1a;
+            overflow: hidden;
+        }
+
+        #text-container p {
+            font-family: Helvetica, Arial, sans-serif;
+            color: #eee;
+            font-size: 20px;
+            line-height: 1.2;
+            letter-spacing: 0.1em;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            white-space: pre;
+        }
+    </style>
+</head>
+<body>
+    <div id="text-container"></div>
+
+    <script>
+        const ROWS = 20;
+        const COLS = 50;
+        const ALPHABET_SEQUENCE = "wvyxklijtfrnmuhbdpqgoceasz".split('');
+        const COLUMN_DELAY = 40; // ms (各列が変化するまでの遅延)
+        const CYCLE_WAIT = 100;  // ms (全列変化後、次の文字セットへの変化開始までの待機時間)
+
+        const container = document.getElementById('text-container');
+        const lineElements = []; // 各行の<p>要素を格納
+        // charMatrix[row][col] で各位置の文字を保持
+        const charMatrix = Array(ROWS).fill(null).map(() => Array(COLS).fill('')); 
+
+        let currentAlphabetIndex = 0;
+        let isForward = true; // true: 順方向, false: 逆方向
+
+        // 初期セットアップ：10行分のp要素を作成し、charMatrixを初期化
+        function setupTextDisplay() {
+            const initialChar = ALPHABET_SEQUENCE[currentAlphabetIndex];
+            for (let r = 0; r < ROWS; r++) {
+                const pElement = document.createElement('p');
+                let lineText = "";
+                for (let c = 0; c < COLS; c++) {
+                    charMatrix[r][c] = initialChar;
+                    lineText += initialChar;
+                }
+                pElement.textContent = lineText;
+                container.appendChild(pElement);
+                lineElements.push(pElement);
+            }
+        }
+
+        // 指定された列のすべての行の文字を更新し、表示に反映
+        function updateColumnAndRefreshDisplay(columnIndex, newChar) {
+            // 1. charMatrixの該当列を更新
+            for (let r = 0; r < ROWS; r++) {
+                if (charMatrix[r]) { // 行が存在することを確認
+                    charMatrix[r][columnIndex] = newChar;
+                }
+            }
+
+            // 2. 表示を更新 (各行のtextContentをcharMatrixから再構築)
+            // この実装では、列が更新されるたびにその行全体のtextContentを再設定する
+            // 全ての行で、更新された列の文字が変わる
+            for (let r = 0; r < ROWS; r++) {
+                if (lineElements[r] && charMatrix[r]) {
+                    lineElements[r].textContent = charMatrix[r].join('');
+                }
+            }
+        }
+
+
+        function startNextAnimationCycle() {
+            // 1. 次の表示アルファベットを決定
+            if (isForward) {
+                currentAlphabetIndex++;
+                if (currentAlphabetIndex >= ALPHABET_SEQUENCE.length) {
+                    currentAlphabetIndex = ALPHABET_SEQUENCE.length - 2;
+                    isForward = false;
+                }
+            } else { // isBackward
+                currentAlphabetIndex--;
+                if (currentAlphabetIndex < 0) {
+                    currentAlphabetIndex = 1;
+                    isForward = true;
+                }
+            }
+            
+            // インデックスが範囲外になった場合の安全策
+            if (currentAlphabetIndex < 0 || currentAlphabetIndex >= ALPHABET_SEQUENCE.length) {
+                console.error("Alphabet index out of bounds:", currentAlphabetIndex, "Resetting.");
+                currentAlphabetIndex = 0;
+                isForward = true; 
+            }
+            
+            const nextChar = ALPHABET_SEQUENCE[currentAlphabetIndex];
+
+            // 2. 列ごとのアニメーションをスケジュール
+            for (let c = 0; c < COLS; c++) {
+                setTimeout(() => {
+                    updateColumnAndRefreshDisplay(c, nextChar);
+                }, c * COLUMN_DELAY);
+            }
+
+            // 3. 次のサイクル開始までの時間をスケジュール
+            // 最後の列の更新が開始されるのが (COLS - 1) * COLUMN_DELAY 後
+            // その処理が完了したとみなし、そこから CYCLE_WAIT 待つ
+            const timeUntilNextCycleStart = ((COLS - 1) * COLUMN_DELAY) + CYCLE_WAIT;
+            setTimeout(startNextAnimationCycle, timeUntilNextCycleStart);
+        }
+
+        // DOMが読み込まれたら実行
+        document.addEventListener('DOMContentLoaded', () => {
+            setupTextDisplay(); // 初期表示をセットアップ
+
+             startNextAnimationCycle(); // 最初の文字セットから次の文字セットへの変化をすぐに開始
+        });
+    </script>
+</body>
+</html>
