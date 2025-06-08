@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Melody Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --background: #121212;
+            --surface: #1E1E1E;
+            --primary: #BB86FC;
+            --primary-variant: #3700B3;
+            --secondary: #03DAC6;
+            --on-surface: #FFFFFF;
+            --on-surface-muted: #B3B3B3;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: 'Poppins', 'Helvetica', sans-serif;
+            background-color: var(--background);
+            color: var(--on-surface);
+            font-size: 16px;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        #container {
+            padding: 2.5rem 3rem;
+            border-radius: 16px;
+            background-color: var(--surface);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 550px;
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            margin-top: 0;
+            margin-bottom: 2.5rem;
+            color: var(--on-surface);
+            font-weight: 600;
+        }
+
+        .control-group {
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .control-group label {
+            font-size: 1em;
+            color: var(--on-surface-muted);
+            text-align: left;
+            flex-shrink: 0;
+        }
+
+        .control-group input[type="number"], .control-group select {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1em;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--primary);
+            background-color: rgba(0,0,0,0.2);
+            color: var(--on-surface);
+            flex-grow: 1;
+            transition: all 0.2s ease;
+        }
+        .control-group input:focus, .control-group select:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px var(--primary-variant);
+        }
+
+        .control-group input[type="checkbox"] {
+            width: 22px; height: 22px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        #setup-btn, #play-pause-btn {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.25em;
+            font-weight: 600;
+            padding: 16px 30px;
+            margin-top: 1rem;
+            width: 100%;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--background);
+        }
+
+        #setup-btn {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+        }
+        #setup-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        #play-pause-btn { display: none; }
+        .play-btn { background-color: var(--secondary); color: var(--background); }
+        .pause-btn { background-color: var(--primary); color: var(--background); }
+        button:active { transform: scale(0.98); }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="setup-view">
+            <h1>Advanced Melody Generator</h1>
+            <div class="control-group">
+                <label for="tempo">Tempo (BPM):</label>
+                <input type="number" id="tempo" value="120" min="20" max="300">
+            </div>
+            <div class="control-group">
+                <label for="instrument">Instrument:</label>
+                <select id="instrument">
+                    <option value="piano" selected>Piano</option>
+                    <option value="guitar">Guitar</option>
+                    <option value="synth">Synth Lead</option>
+                    <option value="pluck">Pluck</option>
+                    <option value="sine">Sine Wave</option>
+                    <option value="square">Square Wave</option>
+                    <option value="sawtooth">Sawtooth Wave</option>
+                    <option value="triangle">Triangle Wave</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="tone">Melody Octave:</label>
+                <select id="tone">
+                    <option value="high">High</option>
+                    <option value="mid" selected>Mid</option>
+                    <option value="low">Low</option>
+                    <option value="sub">Sub</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="percussion">Arpeggio (Xylophone):</label>
+                <input type="checkbox" id="percussion" checked>
+            </div>
+            <div class="control-group">
+                <label for="bass">Random Bassline:</label>
+                <input type="checkbox" id="bass" checked>
+            </div>
+            <button id="setup-btn">Start Generating</button>
+        </div>
+        <button id="play-pause-btn"></button>
+    </div>
+
+    <script>
+        let audioContext;
+        let isPlaying = false;
+        let melodyScheduler, percussionScheduler, bassScheduler = null;
+        
+        let tempo, instrumentType, baseFrequency, percussionEnabled, bassEnabled;
+
+        // State for each part
+        let nextNoteTime = 0.0, lastNoteIndex = null, lastDirection = 'none', currentPattern = [], rhythmIndex = 0;
+        let nextPercussionTime = 0.0;
+        let nextBassTime = 0.0, lastBassNoteIndex = null, currentBassPattern = [], bassRhythmIndex = 0;
+
+        const C_MAJOR_SCALE_SEMITONES = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19, 21, 23];
+        const BASE_FREQUENCIES = { sub: 65.41, low: 130.81, mid: 261.63, high: 523.25 }; // C2, C3, C4, C5
+        
+        // Rhythm Patterns
+        const MELODY_RHYTHM_PATTERNS = [
+            [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 1], [1, 0.5, 0.5, 2],
+            [0.5, 0.5, 1, 0.5, 0.5, 1], [1.5, 0.5, 2], [4], [2, 1, 1],
+            [0.5, 0.5, 0.5, 0.5, 2], [1, -0.5, 0.5, 2],
+        ];
+        const BASS_RHYTHM_PATTERNS = [ [2, 2], [1, 1, 2], [4], [1, 1, 1, 1], [1, -1, 1, -1] ];
+
+        // --- DOM & Events ---
+        const setupView = document.getElementById('setup-view'), setupBtn = document.getElementById('setup-btn'), playPauseBtn = document.getElementById('play-pause-btn');
+        setupBtn.addEventListener('click', () => {
+            tempo = parseInt(document.getElementById('tempo').value, 10);
+            instrumentType = document.getElementById('instrument').value;
+            baseFrequency = BASE_FREQUENCIES[document.getElementById('tone').value];
+            percussionEnabled = document.getElementById('percussion').checked;
+            bassEnabled = document.getElementById('bass').checked;
+            if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            setupView.style.display = 'none'; playPauseBtn.style.display = 'block';
+            isPlaying = true; updatePlayPauseButton(); playMusic();
+        });
+        playPauseBtn.addEventListener('click', () => { isPlaying = !isPlaying; if (isPlaying) playMusic(); else pauseMusic(); updatePlayPauseButton(); });
+        function updatePlayPauseButton() {
+            playPauseBtn.textContent = isPlaying ? 'Pause' : 'Play';
+            playPauseBtn.className = isPlaying ? 'pause-btn' : 'play-btn';
+        }
+
+        // --- Music Control ---
+        function playMusic() {
+            if (audioContext.state === 'suspended') audioContext.resume();
+            
+            // Start Melody
+            if (currentPattern.length === 0) pickNextPattern(true);
+            nextNoteTime = audioContext.currentTime + 0.1;
+            melodyScheduler = setInterval(scheduleNotes, 50);
+
+            // Start Arpeggio
+            if (percussionEnabled) {
+                nextPercussionTime = audioContext.currentTime + 0.1;
+                percussionScheduler = setInterval(schedulePercussion, 50);
+            }
+            
+            // Start Bass
+            if (bassEnabled) {
+                if (currentBassPattern.length === 0) pickNextBassPattern(true);
+                nextBassTime = audioContext.currentTime + 0.1;
+                bassScheduler = setInterval(scheduleBass, 50);
+            }
+        }
+        function pauseMusic() {
+            clearInterval(melodyScheduler);
+            if (percussionScheduler) clearInterval(percussionScheduler);
+            if (bassScheduler) clearInterval(bassScheduler);
+            melodyScheduler = percussionScheduler = bassScheduler = null;
+        }
+
+        // --- Instrument Synthesis ---
+        // Main Sound Router
+        function playNote(frequency, time, durationInBeats) {
+            const durationInSeconds = (60.0 / tempo) * durationInBeats;
+            const soundGenerators = { piano: createPianoSound, guitar: createGuitarSound, synth: createSynthSound, pluck: createPluckSound };
+            const generator = soundGenerators[instrumentType] || ((...args) => createBasicWaveSound(instrumentType, ...args));
+            generator(frequency, time, durationInSeconds);
+        }
+        // Basic Oscillator
+        function createBasicWaveSound(type, freq, time, dur) { /* ... same as before ... */ }
+        function createPianoSound(freq, time, dur) { /* ... same as before ... */ }
+        function createGuitarSound(freq, time, dur) { /* ... same as before ... */ }
+        function createPluckSound(freq, time, dur) { /* ... same as before ... */ }
+        function createSynthSound(freq, time, dur) { /* ... same as before ... */ }
+        // Bass Sound
+        function createBassSound(frequency, time, duration) { /* ... same as before ... */ }
+        // Xylophone Sound
+        function createXylophoneSound(frequency, time) { /* ... same as before ... */ }
+
+        // --- Scheduling Logic ---
+        // Bass
+        function scheduleBass() {
+            const lookaheadTime = 0.1;
+            while (nextBassTime < audioContext.currentTime + lookaheadTime) {
+                const noteDurationInBeats = currentBassPattern[bassRhythmIndex];
+                const isRest = noteDurationInBeats < 0;
+                const absDuration = Math.abs(noteDurationInBeats);
+                if (!isRest) {
+                    const nextBassIndex = selectNextBassNoteIndex();
+                    // Use only harmonically important notes for bass
+                    const bassScale = [0, 4, 7, 12]; // C, E, G, C
+                    const semitones = bassScale[nextBassIndex];
+                    const frequency = BASE_FREQUENCIES.low * Math.pow(2, (semitones - 12) / 12); // Always low octave
+                    createBassSound(frequency, nextBassTime, (60.0 / tempo) * absDuration);
+                    lastBassNoteIndex = nextBassIndex;
+                }
+                nextBassTime += (60.0 / tempo) * absDuration;
+                bassRhythmIndex++;
+                if (bassRhythmIndex >= currentBassPattern.length) pickNextBassPattern();
+            }
+        }
+        // Melody
+        function scheduleNotes() { /* ... same as before ... */ }
+        // Arpeggio
+        function schedulePercussion() { /* ... same as before ... */ }
+
+        // --- Note & Rhythm Selection ---
+        function pickNextPattern(forceNew = false) { /* ... same as before, uses MELODY_RHYTHM_PATTERNS ... */ }
+        function pickNextBassPattern(forceNew = false) {
+            if (!forceNew && Math.random() < 0.25 && currentBassPattern.length > 0) {
+                bassRhythmIndex = 0; return;
+            }
+            currentBassPattern = BASS_RHYTHM_PATTERNS[Math.floor(Math.random() * BASS_RHYTHM_PATTERNS.length)];
+            bassRhythmIndex = 0;
+        }
+        function selectNextNoteIndex() { /* ... same as before ... */ }
+        function selectNextBassNoteIndex() {
+            if (lastBassNoteIndex === null || Math.random() < 0.1) {
+                return Math.floor(Math.random() * 4); // 4 notes in our bass scale
+            }
+            // Prefer to move by one step in the bass scale (e.g., C -> E or G -> C)
+            let nextIndex = lastBassNoteIndex + (Math.random() < 0.5 ? 1 : -1);
+            return (nextIndex + 4) % 4; // Wrap around (0,1,2,3)
+        }
+        
+        // --- Full Instrument Definitions (to keep the script self-contained) ---
+        function createBasicWaveSound(type, freq, time, dur) { const osc = audioContext.createOscillator(); const gain = audioContext.createGain(); osc.type = type; osc.frequency.setValueAtTime(freq, time); gain.gain.setValueAtTime(0, time); gain.gain.linearRampToValueAtTime(0.4, time + 0.05); gain.gain.exponentialRampToValueAtTime(0.0001, time + dur * 0.9); osc.connect(gain); gain.connect(audioContext.destination); osc.start(time); osc.stop(time + dur); }
+        function createPianoSound(freq, time, dur) { const attackTime = 0.01, decayTime = dur * 0.5; const osc1 = audioContext.createOscillator(); osc1.type = 'triangle'; osc1.frequency.setValueAtTime(freq, time); const osc2 = audioContext.createOscillator(); osc2.type = 'square'; osc2.frequency.setValueAtTime(freq * 2, time); const gain1 = audioContext.createGain(); gain1.gain.setValueAtTime(0, time); gain1.gain.linearRampToValueAtTime(0.5, time + attackTime); gain1.gain.exponentialRampToValueAtTime(0.0001, time + decayTime); const gain2 = audioContext.createGain(); gain2.gain.setValueAtTime(0, time); gain2.gain.linearRampToValueAtTime(0.3, time + attackTime); gain2.gain.exponentialRampToValueAtTime(0.0001, time + decayTime * 0.5); osc1.connect(gain1); gain1.connect(audioContext.destination); osc2.connect(gain2); gain2.connect(audioContext.destination); osc1.start(time); osc2.start(time); osc1.stop(time + decayTime + 0.1); osc2.stop(time + decayTime + 0.1); }
+        function createGuitarSound(freq, time, dur) { const attackTime = 0.02, decayTime = dur * 0.8; const osc1 = audioContext.createOscillator(); osc1.type = 'triangle'; osc1.frequency.setValueAtTime(freq, time); const osc2 = audioContext.createOscillator(); osc2.type = 'sawtooth'; osc2.frequency.setValueAtTime(freq * 1.005, time); const gain = audioContext.createGain(); gain.gain.setValueAtTime(0, time); gain.gain.linearRampToValueAtTime(0.4, time + attackTime); gain.gain.exponentialRampToValueAtTime(0.0001, time + decayTime); osc1.connect(gain); osc2.connect(gain); gain.connect(audioContext.destination); osc1.start(time); osc2.start(time); osc1.stop(time + decayTime + 0.1); osc2.stop(time + decayTime + 0.1); }
+        function createPluckSound(freq, time, dur) { const filter = audioContext.createBiquadFilter(); filter.type = 'lowpass'; filter.Q.value = 5; filter.frequency.setValueAtTime(freq * 4, time); filter.frequency.exponentialRampToValueAtTime(freq, time + dur * 0.5); const osc = audioContext.createOscillator(); osc.type = 'sawtooth'; osc.frequency.setValueAtTime(freq, time); const gain = audioContext.createGain(); gain.gain.setValueAtTime(0, time); gain.gain.linearRampToValueAtTime(0.6, time + 0.01); gain.gain.exponentialRampToValueAtTime(0.0001, time + dur * 0.8); osc.connect(filter); filter.connect(gain); gain.connect(audioContext.destination); osc.start(time); osc.stop(time + dur); }
+        function createSynthSound(freq, time, dur) { const filter = audioContext.createBiquadFilter(); filter.type = 'lowpass'; filter.Q.value = 2; filter.frequency.setValueAtTime(freq, time); filter.frequency.linearRampToValueAtTime(freq * 2.5, time + dur * 0.5); const osc1 = audioContext.createOscillator(); osc1.type = 'sawtooth'; osc1.frequency.setValueAtTime(freq, time); const osc2 = audioContext.createOscillator(); osc2.type = 'sawtooth'; osc2.frequency.setValueAtTime(freq * 0.995, time); const gain = audioContext.createGain(); gain.gain.setValueAtTime(0, time); gain.gain.linearRampToValueAtTime(0.4, time + 0.05); gain.gain.linearRampToValueAtTime(0, time + dur); osc1.connect(gain); osc2.connect(gain); gain.connect(filter); filter.connect(audioContext.destination); osc1.start(time); osc2.start(time); osc1.stop(time + dur); osc2.stop(time + dur); }
+        function createBassSound(frequency, time, duration) { const osc = audioContext.createOscillator(); osc.type = 'sawtooth'; osc.frequency.setValueAtTime(frequency, time); const filter = audioContext.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.setValueAtTime(400, time); filter.Q.value = 1; const gain = audioContext.createGain(); gain.gain.setValueAtTime(0, time); gain.gain.linearRampToValueAtTime(0.7, time + 0.02); gain.gain.linearRampToValueAtTime(0.0001, time + duration * 0.95); osc.connect(filter); filter.connect(gain); gain.connect(audioContext.destination); osc.start(time); osc.stop(time + duration); }
+        function createXylophoneSound(frequency, time) { const masterGain = audioContext.createGain(); masterGain.gain.setValueAtTime(0, time); masterGain.gain.linearRampToValueAtTime(0.6, time + 0.01); masterGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.5); masterGain.connect(audioContext.destination); const osc1 = audioContext.createOscillator(); osc1.type = 'sine'; osc1.frequency.value = frequency; const osc2 = audioContext.createOscillator(); osc2.type = 'sine'; osc2.frequency.value = frequency * 3.01; const gain2 = audioContext.createGain(); gain2.gain.value = 0.2; osc1.connect(masterGain); osc2.connect(gain2); gain2.connect(masterGain); osc1.start(time); osc2.start(time); osc1.stop(time + 0.5); osc2.stop(time + 0.5); }
+        function scheduleNotes() { const lookaheadTime = 0.1; while (nextNoteTime < audioContext.currentTime + lookaheadTime) { const noteDurationInBeats = currentPattern[rhythmIndex]; const isRest = noteDurationInBeats < 0; const absDuration = Math.abs(noteDurationInBeats); if (!isRest) { const nextIndex = selectNextNoteIndex(); const semitones = C_MAJOR_SCALE_SEMITONES[nextIndex]; let frequency = baseFrequency * Math.pow(2, semitones / 12); if (Math.random() < 0.1) frequency *= Math.pow(2, (Math.random() < 0.5 ? 1 : -1) / 12); playNote(frequency, nextNoteTime, absDuration); lastDirection = (lastNoteIndex !== null) ? ((nextIndex > lastNoteIndex) ? 'up' : (nextIndex < lastNoteIndex) ? 'down' : 'stay') : 'none'; lastNoteIndex = nextIndex; } nextNoteTime += (60.0 / tempo) * absDuration; rhythmIndex++; if (rhythmIndex >= currentPattern.length) pickNextPattern(); } }
+        function schedulePercussion() { const lookaheadTime = 0.1; const sixteenthNoteTime = (60.0 / tempo) / 4; while (nextPercussionTime < audioContext.currentTime + lookaheadTime) { if (Math.random() < 0.3) { const noteIndex = Math.floor(Math.random() * C_MAJOR_SCALE_SEMITONES.length); const semitones = C_MAJOR_SCALE_SEMITONES[noteIndex]; const frequency = baseFrequency * Math.pow(2, (semitones + 12) / 12); createXylophoneSound(frequency, nextPercussionTime); } nextPercussionTime += sixteenthNoteTime; } }
+        function pickNextPattern(forceNew = false) { if (!forceNew && Math.random() < 0.3 && currentPattern.length > 0) { rhythmIndex = 0; return; } currentPattern = MELODY_RHYTHM_PATTERNS[Math.floor(Math.random() * MELODY_RHYTHM_PATTERNS.length)]; rhythmIndex = 0; }
+        function selectNextNoteIndex() { if (lastNoteIndex === null) return Math.floor(Math.random() * C_MAJOR_SCALE_SEMITONES.length); if (Math.random() < 0.20) return lastNoteIndex; const weights = C_MAJOR_SCALE_SEMITONES.map((_, i) => { if (i === lastNoteIndex) return 0; const distance = Math.abs(i - lastNoteIndex); let weight = 1.0; if (distance === 1) weight = 1.5; if (distance >= 2 && distance <= 3) weight = 3.0; if (distance >= 4 && distance <= 5) weight = 0.5; if (distance > 5) weight = 0.2; if (lastDirection === 'up' && i > lastNoteIndex) weight *= 2.0; if (lastDirection === 'down' && i < lastNoteIndex) weight *= 2.0; return weight; }); const totalWeight = weights.reduce((sum, w) => sum + w, 0); if (totalWeight === 0) return Math.floor(Math.random() * C_MAJOR_SCALE_SEMITONES.length); let random = Math.random() * totalWeight; for (let i = 0; i < weights.length; i++) { if ((random -= weights[i]) <= 0) return i; } return C_MAJOR_SCALE_SEMITONES.length - 1; }
+    </script>
+</body>
+</html>
