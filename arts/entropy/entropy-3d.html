@@ -188,7 +188,7 @@
 
     // イベントリスナーの登録
     document.addEventListener('mousedown', handleDragStart);
-    document.addEventListener('touchstart', handleDragStart, { passive: true });
+    document.addEventListener('touchstart', handleDragStart);
     document.addEventListener('mousemove', handleDragMove);
     document.addEventListener('touchmove', handleDragMove, { passive: false });
     document.addEventListener('mouseup', handleDragEnd);
