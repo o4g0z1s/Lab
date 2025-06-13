@@ -93,7 +93,8 @@
     function getOuterSpherePosition(radius) {
         const theta = Math.random() * 2 * Math.PI;
         const phi = Math.acos((Math.random() * 2) - 1);
-        const r = radius * (1.03 + Math.random() * 0.05);
+        const radiusFactor = isSmallScreen ? 1.15 : 1.08;
+        const r = radius * (radiusFactor + Math.random() * 0.05);
         const x = r * Math.sin(phi) * Math.cos(theta);
         const y = r * Math.sin(phi) * Math.sin(theta);
         const z = r * Math.cos(phi);
@@ -114,7 +115,7 @@
             const maxFontSize = isSmallScreen ? 30 : 40;
             baseFontSize = Math.random() * maxFontSize + 5;
         } else {
-            const maxFontSize = isSmallScreen ? 120 : 180;
+            const maxFontSize = isSmallScreen ? 150 : 200;
             const randomFactor = (Math.random() + Math.random()) / 2;
             baseFontSize = randomFactor * maxFontSize + 5;
         }
@@ -129,7 +130,7 @@
     }
 
     function generateRandomArt() {
-        const numberOfInnerTexts = isSmallScreen ? 200 : 250;
+        const numberOfInnerTexts = isSmallScreen ? 200 : 270;
         for (let i = 0; i < numberOfInnerTexts; i++) {
             createRandomText(false); // isOuter = false
         }
