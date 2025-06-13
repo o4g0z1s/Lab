@@ -25,6 +25,7 @@
         }
         body {
             font-family: "Noto Emoji", Helvetica;
+            background-color: #000;
         }
 
         #kaleidoscope-container {
@@ -73,20 +74,14 @@
     const centerY = artboardSize / 2;
 
     // --- ユーティリティ関数 ---
-    function getRandomBackgroundColor() {
-        const colors = ['#0d001a', '#000'];
-        return colors[Math.floor(Math.random() * colors.length)];
-    }
-    function getRandomColor() {
-        const letters = '789ABCDEF';
-        let color = '#';
-        for (let i = 0; i < 6; i++) {
-            color += letters[Math.floor(Math.random() * 8)];
-        }
-        return color;
-    }
+function getRandomColor() {
+    const hue = Math.floor(Math.random() * 360);
+    const saturation = Math.floor(30 + Math.random() * 60);
+    const lightness = Math.floor(50 + Math.random() * 20);
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+}
     function getRandomUnicodeChar() {
-        const unicodeRange = [ [0x2500, 0x2775], [0x0531, 0x2E42], [0xA000, 0xABF9] ];
+        const unicodeRange = [ [0x2500, 0x2775], [0x0531, 0x2E42], [0x0531, 0x2E42], [0xA000, 0xABF9] ];
         let codePoint;
         const range = unicodeRange[Math.floor(Math.random() * unicodeRange.length)];
         codePoint = Math.floor(Math.random() * (range[1] - range[0] + 1)) + range[0];
@@ -156,7 +151,6 @@
     }
 
     // --- 初期化処理 ---
-    document.body.style.backgroundColor = getRandomBackgroundColor();
     generateKaleidoscopeArt();
 
 </script>
