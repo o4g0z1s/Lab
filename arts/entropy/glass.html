@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><text x='16' y='24' font-size='24' text-anchor='middle' fill='orange'>✴️</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><text x='16' y='24' font-size='24' text-anchor='middle' fill='orange'>🔯</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Emoji:wght@300..700&display=swap" rel="stylesheet">
@@ -15,7 +15,7 @@
     
       gtag('config', 'G-E675FYQ3DK');
     </script>
-    <title>𝙺𝚊𝚕𝚎𝚒𝚍𝚘𝚜𝚌𝚘𝚙𝚎</title>
+    <title>𝚂𝚝𝚊𝚒𝚗𝚎𝚍 𝙶𝚕𝚊𝚜𝚜</title>
     <style>
         html, body {
             height: 100%;
@@ -55,11 +55,11 @@
     let numberOfBasePatterns;
 
     if (isSmallScreen) {
-        maxFontSize = 60; 
-        numberOfBasePatterns = 25; 
+        maxFontSize = 90; 
+        numberOfBasePatterns = 25;
     } else {
-        maxFontSize = 150;
-        numberOfBasePatterns = 40; 
+        maxFontSize = 180;
+        numberOfBasePatterns = 40;
     }
     
     // --- コンテナのセットアップ ---
@@ -72,12 +72,12 @@
     const centerY = artboardSize / 2;
 
     // --- ユーティリティ関数 ---
-function getRandomColor() {
-    const hue = Math.floor(Math.random() * 360);
-    const saturation = Math.floor(30 + Math.random() * 60);
-    const lightness = Math.floor(50 + Math.random() * 20);
-    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-}
+    function getRandomColor() {
+        const hue = Math.floor(Math.random() * 360);
+        const saturation = Math.floor(30 + Math.random() * 60);
+        const lightness = Math.floor(50 + Math.random() * 20);
+        return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+    }
     function getRandomUnicodeChar() {
         const unicodeRange = [ [0x2500, 0x2775], [0x0531, 0x2E42], [0x0531, 0x2E42], [0xA000, 0xABF9] ];
         let codePoint;
@@ -86,8 +86,8 @@ function getRandomColor() {
         return String.fromCharCode(codePoint);
     }
 
-    // --- 万華鏡アート生成関数 ---
-    function createTextElement(x, y, char, color, fontSize, rotation, isMirrored) {
+    // --- アート生成関数 ---
+    function createTextElement(x, y, char, color, fontSize, rotation) {
         const textElement = document.createElement('div');
         textElement.className = 'text';
         textElement.textContent = char;
@@ -96,10 +96,7 @@ function getRandomColor() {
         textElement.style.left = `${x}px`;
         textElement.style.top = `${y}px`;
         
-        let transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
-        if (isMirrored) {
-            transform += ' scaleY(-1)';
-        }
+        const transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
         textElement.style.transform = transform;
         
         container.appendChild(textElement);
@@ -131,14 +128,8 @@ function getRandomColor() {
             const currentAngleRad = angleRad + currentSegmentAngleRad;
             const x = centerX + radius * Math.cos(currentAngleRad);
             const y = centerY + radius * Math.sin(currentAngleRad);
-            const rotationDeg = initialRotation + (currentSegmentAngleRad * 180 / Math.PI);
-            createTextElement(x, y, char, color, fontSize, rotationDeg, false);
-
-            const mirroredAngleRad = -angleRad + currentSegmentAngleRad;
-            const mirroredX = centerX + radius * Math.cos(mirroredAngleRad);
-            const mirroredY = centerY + radius * Math.sin(mirroredAngleRad);
-            const mirroredRotationDeg = -initialRotation + (currentSegmentAngleRad * 180 / Math.PI);
-            createTextElement(mirroredX, mirroredY, char, color, fontSize, mirroredRotationDeg, true);
+            const rotationDeg = initialRotation + (currentAngleRad * 180 / Math.PI);
+            createTextElement(x, y, char, color, fontSize, rotationDeg);
         }
     }
 
