@@ -26,7 +26,6 @@
 
         .organelle {
             position: absolute;
-            user-select: none;
             line-height: 1;
             display: inline-block;
             transform-origin: center center;
@@ -196,9 +195,6 @@
         }
 
         generateCell();
-
-        // 画面サイズが変更されたときにも再描画する（任意）
-        window.addEventListener('resize', generateCell);
     });
     </script>
 </body>
