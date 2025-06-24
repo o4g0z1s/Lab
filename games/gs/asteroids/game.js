@@ -226,6 +226,11 @@ Sprite = function () {
   };
   this.draw = function () {
     if (!this.visible) return;
+    
+    // 無敵時間中の点滅処理
+    if (this.invincible && Math.floor(this.invincibleTimer / 4) % 2) {
+      return;
+    }
 
     this.context.lineWidth = 1.0 / this.scale;
 
@@ -371,6 +376,12 @@ Ship = function () {
               0, -12,
               5,   4]);
 
+  // パワーアップ用プロパティ
+  this.fireRateLevel = 0; // 連射速度レベル
+  this.bulletStreams = 1; // 弾の発射列数
+  this.invincible = false; // 無敵フラグ
+  this.invincibleTimer = 0; // 無敵時間タイマー
+
   this.children.exhaust = new Sprite();
   this.children.exhaust.init("exhaust",
                              [-3,  6,
@@ -381,9 +392,17 @@ Ship = function () {
 
   this.postMove = this.wrapPostMove;
 
-  this.collidesWith = ["asteroid", "bigalien", "alienbullet"];
+  this.collidesWith = ["asteroid", "bigalien", "alienbullet", "powerup"];
 
   this.preMove = function (delta) {
+    // 無敵時間の処理
+    if (this.invincible) {
+      this.invincibleTimer -= delta;
+      if (this.invincibleTimer <= 0) {
+        this.invincible = false;
+      }
+    }
+
     if (KEY_STATUS.left) {
       this.vel.rot = -6;
     } else if (KEY_STATUS.right) {
@@ -407,23 +426,44 @@ Ship = function () {
       this.bulletCounter -= delta;
     }
     if (KEY_STATUS.space) {
+      // 連射速度をより強化
+      var bulletRechargeTime = 10 - this.fireRateLevel * 1.8;
+      if (bulletRechargeTime < 1) bulletRechargeTime = 1; // 連射速度の上限をより速く
+
       if (this.bulletCounter <= 0) {
-        this.bulletCounter = 10;
-        for (var i = 0; i < this.bullets.length; i++) {
-          if (!this.bullets[i].visible) {
+        // 発射可能な弾を先に集める
+        var availableBullets = [];
+        for(var i=0; i<this.bullets.length; i++) {
+            if (!this.bullets[i].visible) {
+                availableBullets.push(this.bullets[i]);
+            }
+        }
+        
+        // 必要な数の弾が利用可能な場合のみ発射
+        if (availableBullets.length >= this.bulletStreams) {
+            this.bulletCounter = bulletRechargeTime;
             SFX.laser();
-            var bullet = this.bullets[i];
-            var rad = ((this.rot-90) * Math.PI)/180;
-            var vectorx = Math.cos(rad);
-            var vectory = Math.sin(rad);
-            // move to the nose of the ship
-            bullet.x = this.x + vectorx * 4;
-            bullet.y = this.y + vectory * 4;
-            bullet.vel.x = 6 * vectorx + this.vel.x;
-            bullet.vel.y = 6 * vectory + this.vel.y;
-            bullet.visible = true;
-            break;
-          }
+
+            var streamAngle = 15; // 弾の広がる角度
+            var startAngle = -streamAngle * (this.bulletStreams - 1) / 2;
+
+            for (var j = 0; j < this.bulletStreams; j++) {
+                var bullet = availableBullets[j];
+                
+                var angleOffset = startAngle + j * streamAngle;
+                var rad = ((this.rot - 90 + angleOffset) * Math.PI) / 180;
+                var vectorx = Math.cos(rad);
+                var vectory = Math.sin(rad);
+                
+                // 弾の初期位置は船の先端
+                var noseRad = ((this.rot-90) * Math.PI)/180;
+                bullet.x = this.x + Math.cos(noseRad) * 10;
+                bullet.y = this.y + Math.sin(noseRad) * 10;
+                
+                bullet.vel.x = 6 * vectorx + this.vel.x;
+                bullet.vel.y = 6 * vectory + this.vel.y;
+                bullet.visible = true;
+            }
         }
       }
     }
@@ -436,6 +476,12 @@ Ship = function () {
   };
 
   this.collision = function (other) {
+    if (this.invincible) return; // 無敵中は衝突しない
+
+    // パワーアップアイテムとの衝突は、アイテム側で処理するのでここでは何もしない
+    if (other.name === 'powerup') {
+      return;
+    }
     SFX.explosion();
     Game.explosionAt(other.x, other.y);
     Game.FSM.state = 'player_died';
@@ -447,6 +493,14 @@ Ship = function () {
 
 };
 Ship.prototype = new Sprite();
+
+// パワーアップをリセットするメソッド
+Ship.prototype.reset = function() {
+    this.fireRateLevel = 0;
+    this.bulletStreams = 1;
+    this.invincible = false;
+    this.invincibleTimer = 0;
+};
 
 BigAlien = function () {
   this.init("bigalien",
@@ -672,11 +726,91 @@ Asteroid = function () {
         Game.sprites.push(roid);
       }
     }
+    // ステージレベルに応じてパワーアップアイテムの出現率を調整
+    var dropChance = 0.25 - (Game.level * 0.02);
+    if (dropChance < 0.05) { // 最低でも5%は保証
+      dropChance = 0.05;
+    }
+    if (Math.random() < dropChance) {
+      Game.spawnPowerUp(this.x, this.y);
+    }
     Game.explosionAt(other.x, other.y);
     this.die();
   };
 };
 Asteroid.prototype = new Sprite();
+
+PowerUp = function () {
+  // 8角形で円を近似したポイントを生成
+  var points = [];
+  var sides = 8;
+  var radius = 6;
+  for (var i = 0; i < sides; i++) {
+    var angle = (i / sides) * 2 * Math.PI;
+    points.push(Math.cos(angle) * radius);
+    points.push(Math.sin(angle) * radius);
+  }
+
+  this.init("powerup", points);
+
+  this.visible = true;
+  this.scale = 1.5;
+  this.postMove = this.wrapPostMove;
+  this.collidesWith = ["bullet", "ship"];
+
+  this.collision = function (other) {
+    // 弾か船との衝突で取得
+    if (other.name !== "bullet" && other.name !== "ship") return;
+
+    SFX.explosion(); // TODO: Add a new sound for power-ups
+
+    this.applyRandomEffects();
+
+    Game.explosionAt(this.x, this.y);
+    this.die();
+  };
+
+  this.applyRandomEffects = function() {
+    var effects = ['fireRate', 'extraLife', 'bulletStream'];
+    var numberOfEffects = Math.floor(Math.random() * 2) + 1; // 1 or 2 effects
+
+    // Fisher-Yates shuffle to pick random effects
+    for (var i = effects.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = effects[i];
+        effects[i] = effects[j];
+        effects[j] = temp;
+    }
+
+    for (var i = 0; i < numberOfEffects; i++) {
+        var effect = effects[i];
+        switch(effect) {
+            case 'fireRate':
+                if (Game.ship.fireRateLevel < 5) { // 上限
+                    Game.ship.fireRateLevel++;
+                } else {
+                    Game.score += 500; // 上限に達していたらボーナススコア
+                }
+                break;
+            case 'extraLife':
+                if (Game.lives < 3) { // ライフ上限を3に設定
+                    Game.lives; //Game.lives++;
+                } else {
+                    Game.score += 1000; // 上限に達していたらボーナススコア
+                }
+                break;
+            case 'bulletStream':
+                if (Game.ship.bulletStreams < 5) {
+                    Game.ship.bulletStreams++;
+                } else {
+                    Game.score += 500; // 上限に達していたらボーナススコア
+                }
+                break;
+        }
+    }
+  };
+};
+PowerUp.prototype = new Sprite();
 
 Explosion = function () {
   this.init("explosion");
@@ -872,6 +1006,7 @@ Game = {
   score: 0,
   totalAsteroids: 5,
   lives: 0,
+  level: 1,
 
   canvasWidth: 800,
   canvasHeight: 600,
@@ -903,6 +1038,16 @@ Game = {
     }
   },
 
+  spawnPowerUp: function(x, y) {
+    var powerUp = new PowerUp();
+    powerUp.x = x;
+    powerUp.y = y;
+    powerUp.vel.x = Math.random() * 2 - 1;
+    powerUp.vel.y = Math.random() * 2 - 1;
+    powerUp.vel.rot = Math.random() * 2 - 1;
+    this.sprites.push(powerUp);
+  },
+
   explosionAt: function (x, y) {
     var splosion = new Explosion();
     splosion.x = x;
@@ -926,16 +1071,18 @@ Game = {
     },
     start: function () {
       for (var i = 0; i < Game.sprites.length; i++) {
-        if (Game.sprites[i].name == 'asteroid') {
+        var name = Game.sprites[i].name;
+        if (name == 'asteroid' || name == 'powerup') {
           Game.sprites[i].die();
-        } else if (Game.sprites[i].name == 'bullet' ||
-                   Game.sprites[i].name == 'bigalien') {
+        } else if (name == 'bullet' || name == 'alienbullet' || name == 'bigalien') {
           Game.sprites[i].visible = false;
         }
       }
 
+      Game.ship.reset();
       Game.score = 0;
       Game.lives = 2;
+      Game.level = 1;
       Game.totalAsteroids = 2;
       Game.spawnAsteroids();
 
@@ -946,21 +1093,25 @@ Game = {
     spawn_ship: function () {
       Game.ship.x = Game.canvasWidth / 2;
       Game.ship.y = Game.canvasHeight / 2;
-      if (Game.ship.isClear()) {
-        Game.ship.rot = 0;
-        Game.ship.vel.x = 0;
-        Game.ship.vel.y = 0;
-        Game.ship.visible = true;
-        this.state = 'run';
-      }
+      
+      // isClearチェックを外して強制的に復活させ、無敵時間を設定
+      Game.ship.rot = 0;
+      Game.ship.vel.x = 0;
+      Game.ship.vel.y = 0;
+      Game.ship.visible = true;
+      Game.ship.invincible = true;
+      Game.ship.invincibleTimer = 120; // 約4秒間の無敵時間 (120/30fps)
+      
+      this.state = 'run';
     },
     run: function () {
+      var asteroidCount = 0;
       for (var i = 0; i < Game.sprites.length; i++) {
-        if (Game.sprites[i].name == 'asteroid') {
-          break;
+        if (Game.sprites[i].name == 'asteroid' && Game.sprites[i].visible) {
+          asteroidCount++;
         }
       }
-      if (i == Game.sprites.length) {
+      if (asteroidCount === 0) {
         this.state = 'new_level';
       }
       if (!Game.bigAlien.visible &&
@@ -977,6 +1128,7 @@ Game = {
       if (Date.now() - this.timer > 1000) {
         this.timer = null;
         Game.totalAsteroids++;
+        Game.level++;
         if (Game.totalAsteroids > 12) Game.totalAsteroids = 12;
         Game.spawnAsteroids();
         this.state = 'run';
@@ -1000,6 +1152,7 @@ Game = {
       Text.renderText('GAME OVER', 50, Game.canvasWidth/2 - 160, Game.canvasHeight/2 + 10);
       if (this.timer == null) {
         this.timer = Date.now();
+        Game.ship.reset(); // ゲームオーバー時にパワーアップをリセット
       }
       // wait 5 seconds then go back to waiting state
       if (Date.now() - this.timer > 5000) {
@@ -1077,7 +1230,7 @@ $(function () {
   sprites.push(ship);
 
   ship.bullets = [];
-  for (var i = 0; i < 10; i++) {
+  for (var i = 0; i < 100; i++) { // 弾の最大数を増やしておく
     var bull = new Bullet();
     ship.bullets.push(bull);
     sprites.push(bull);
@@ -1094,6 +1247,7 @@ $(function () {
   extraDude.visible = true;
   extraDude.preMove = null;
   extraDude.children = [];
+  extraDude.reset(); // パワーアップ状態を持たないように
 
   var i, j = 0;
 
@@ -1148,6 +1302,11 @@ $(function () {
     lastFrame = thisFrame;
     delta = elapsed / 30;
 
+    // フレームレートが極端に落ちた際のジャンプを防ぐ
+    if (delta > 3) {
+      delta = 3;
+    }
+
     for (i = 0; i < sprites.length; i++) {
 
       sprites[i].run(delta);
@@ -1166,8 +1325,8 @@ $(function () {
     // extra dudes
     for (i = 0; i < Game.lives; i++) {
       context.save();
-      extraDude.x = Game.canvasWidth - (8 * (i + 1));
-      extraDude.y = 32;
+      extraDude.x = Game.canvasWidth - (12 * (i + 1));
+      extraDude.y = 40;
       extraDude.configureTransform();
       extraDude.draw();
       context.restore();
