@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+    <title>Text Processor Pro</title>
+    <style>
+        :root {
+            --bg-color: #1e1e1e;
+            --text-color: #d4d4d4;
+            --border-color: #4a4a4a;
+            --button-bg: #3c3c3c;
+            --button-hover-bg: #5a5a5a;
+            --input-bg: #2a2a2a;
+            --selected-cell-bg: #3a3a3a;
+            --selected-cell-border: #666666;
+            --button-active-grey: #606060;
+            --textarea-font-size: 16px;
+        }
+        body {
+            font-family: "Inter", sans-serif;
+            display: flex; margin: 0; padding: 0;
+            background-color: var(--bg-color); color: var(--text-color);
+            height: 100vh; overflow: hidden;
+            user-select: none;
+        }
+        .container { display: flex; width: 100%; height: 100%; }
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; height: 100%; padding: 10px; min-width: 0; }
+        .sidebar {
+            width: 350px; min-width: 300px; height: 100%;
+            border-left: 1px solid var(--border-color);
+            padding: 15px; overflow-y: auto; box-sizing: border-box;
+            background-color: #252526;
+            flex-shrink: 0;
+        }
+        #grid-container {
+            flex-grow: 1; display: grid; gap: 5px; padding: 5px;
+            border: 1px solid var(--border-color); overflow: auto;
+            background-color: #2a2a2a; position: relative;
+        }
+        .cell { position: relative; }
+        .cell-textarea {
+            width: 100%; height: 100%;
+            border: 1px solid var(--border-color); resize: none;
+            padding: 8px; box-sizing: border-box;
+            font-family: "Courier New", Courier, monospace;
+            background-color: var(--input-bg); color: var(--text-color);
+            outline: none;
+            font-size: var(--textarea-font-size);
+            white-space: pre;
+        }
+        .cell.selected .cell-textarea {
+            background-color: var(--selected-cell-bg);
+            border: 2px solid var(--selected-cell-border);
+        }
+        .toolbar { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; flex-wrap: wrap; }
+        .toolbar button#multi-select-toggle-btn.active { background-color: var(--button-active-grey); }
+        .info-bar { padding: 5px; font-size: 12px; color: #999; height: 20px; text-align: right; }
+        h3 {
+            margin-top: 20px; margin-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px; font-weight: 600;
+        }
+        h3:first-child { margin-top: 0; }
+        .control-group { margin-bottom: 5px; }
+        .control-group label { display: block; margin-bottom: 5px; margin-top: 15px; font-size: 14px; }
+        .control-group .checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+        .control-group .checkbox-group label { display: flex; align-items: center; margin-top: 5px; font-size: 13px; }
+        .insert-button-group { display: flex; flex-direction: column; gap: 5px; align-items: stretch; }
+        input[type="text"], input[type="number"] {
+            width: 100%; padding: 8px; box-sizing: border-box;
+            border: 1px solid var(--border-color); border-radius: 4px;
+            background-color: var(--input-bg); color: var(--text-color);
+        }
+        input[type="checkbox"] {
+            accent-color: var(--button-bg);
+        }
+        input[type="checkbox"]:hover {
+            accent-color: var(--button-hover-bg);
+        }
+        button {
+            padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 4px;
+            background-color: var(--button-bg); cursor: pointer;
+            font-size: 14px; color: var(--text-color);
+            transition: background-color 0.2s;
+            font-family: "Inter";
+        }
+        button:hover { background-color: var(--button-hover-bg); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .multi-replace-pair { display: flex; gap: 5px; margin-bottom: 5px; align-items: center;}
+        .multi-replace-pair input { flex: 1; }
+        .remove-pair-btn {
+            background-color: transparent;
+            color: var(--text-color);
+            border: none;
+            width: 20px; height: 20px;
+            line-height: 20px; text-align: center;
+            padding: 0; cursor: pointer; font-weight: bold;
+            font-size: 20px;
+            transition: color 0.2s;
+        }
+        .remove-pair-btn:hover { color: white; }
+
+        @media (max-width: 768px) {
+            .container { flex-direction: column; }
+            .sidebar {
+                width: 100%; height: auto; max-height: 45vh;
+                border-left: none; border-top: 1px solid var(--border-color);
+                flex-shrink: 1;
+            }
+            .main-content { height: auto; flex-grow: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="main-content">
+            <div class="toolbar">
+                <button id="undo-btn">Undo</button>
+                <button id="redo-btn">Redo</button>
+                <button id="copy-btn">Copy Selected</button>
+                <button id="select-all-btn">Select All</button>
+                <button id="multi-select-toggle-btn">Multi Select</button>
+                <button id="merge-btn">Combine Selected</button>
+            </div>
+            <div id="grid-container"></div>
+            <div class="info-bar" id="info-bar">Chars: 0, Lines: 0</div>
+        </div>
+        <div class="sidebar">
+            <h3>Cell Division</h3>
+            <div class="control-group">
+                <label for="split-line-num">Split text after Line/Column Number:</label>
+                <input type="number" id="split-line-num" min="1" placeholder="Enter the number">
+                <button id="split-v-btn" style="margin-top: 5px;">Split Top and Bottom</button>
+                <button id="split-h-btn" style="margin-top: 5px;">Split Left and Right</button>
+            </div>
+            <h3>Search & Replace</h3>
+            <div class="control-group">
+                <label>Multi Replace:</label>
+                <div id="multi-replace-container"></div>
+                <button id="add-replace-pair-btn">Add Pair</button>
+                <button id="multi-replace-btn">Replace All</button>
+            </div>
+             <div class="control-group">
+                <label>Single Character Replace:</label>
+                 <div class="single-char-replace-pair">
+                    <input type="text" id="single-char-find" placeholder="abcdef">
+                    <input type="text" id="single-char-replace" placeholder="ABCDEF" style="margin-top: 5px;">
+                </div>
+                <button id="single-char-replace-btn" style="margin-top: 5px;">Replace Characters</button>
+            </div>
+            <h3>Remove & Insert</h3>
+            <div class="control-group">
+                <label>Remove Characters:</label>
+                <div class="checkbox-group">
+                    <label><input type="checkbox" id="remove-uppercase" value="A-Z"> Uppercase</label>
+                    <label><input type="checkbox" id="remove-lowercase" value="a-z"> Lowercase</label>
+                    <label><input type="checkbox" id="remove-numbers" value="0-9"> Numbers</label>
+                    <label><input type="checkbox" id="remove-numbers" value="\u0020-\u007E"> Ascii</label>
+                    <label><input type="checkbox" id="remove-hiragana" value="\u3040-\u309F"> Hiragana</label>
+                    <label><input type="checkbox" id="remove-katakana" value="\u30A0-\u30FF"> Katakana</label>
+                    <label><input type="checkbox" id="remove-newlines" value="\n"> Newlines</label>
+                    <label><input type="checkbox" id="remove-spaces" value=" "> Spaces</label>
+                </div>
+                <input type="text" id="remove-custom" placeholder="Custom characters" style="margin-top: 8px;">
+                <button id="remove-btn" style="margin-top: 5px;">Remove</button>
+            </div>
+            <div class="control-group">
+                <label for="insert-string">Insert String:</label>
+                <input type="text" id="insert-string" placeholder="String to insert (use \n for newline)">
+                <input type="number" id="insert-interval" min="1" placeholder="Interval" style="margin-top: 5px;">
+                <button id="insert-interval-btn" style="margin-top: 5px;">Insert by Interval</button>
+                <hr style="margin: 10px 0; border-color: var(--border-color);">
+                <div class="insert-button-group">
+                  <button id="insert-start-btn">Insert at Start of Text</button>
+                  <button id="insert-end-btn">Insert at End of Text</button>
+                  <button id="insert-line-start-btn">Insert at Start of Lines</button>
+                  <button id="insert-line-end-btn">Insert at End of Lines</button>
+                </div>
+            </div>
+            <h3>Setting</h3>
+            <div class="control-group">
+                <label for="font-size-input">Font Size (px):</label>
+                <input type="number" id="font-size-input" min="4" max="24" value="16">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elements ---
+            const gridContainer = document.getElementById('grid-container');
+            const undoBtn = document.getElementById('undo-btn');
+            const redoBtn = document.getElementById('redo-btn');
+            const copyBtn = document.getElementById('copy-btn');
+            const selectAllBtn = document.getElementById('select-all-btn');
+            const multiSelectToggleBtn = document.getElementById('multi-select-toggle-btn');
+            const mergeBtn = document.getElementById('merge-btn');
+            const infoBar = document.getElementById('info-bar');
+            
+            const splitVBtn = document.getElementById('split-v-btn');
+            const splitHBtn = document.getElementById('split-h-btn');
+            const splitLineNumInput = document.getElementById('split-line-num');
+
+            const multiReplaceContainer = document.getElementById('multi-replace-container');
+            const addReplacePairBtn = document.getElementById('add-replace-pair-btn');
+            const multiReplaceBtn = document.getElementById('multi-replace-btn');
+            const singleCharFindInput = document.getElementById('single-char-find');
+            const singleCharReplaceInput = document.getElementById('single-char-replace');
+            const singleCharReplaceBtn = document.getElementById('single-char-replace-btn');
+
+            const removeBtn = document.getElementById('remove-btn');
+            const removeCustomInput = document.getElementById('remove-custom');
+            const insertStringInput = document.getElementById('insert-string');
+            const insertIntervalInput = document.getElementById('insert-interval');
+            const insertIntervalBtn = document.getElementById('insert-interval-btn');
+            const insertStartBtn = document.getElementById('insert-start-btn');
+            const insertEndBtn = document.getElementById('insert-end-btn');
+            const insertLineStartBtn = document.getElementById('insert-line-start-btn');
+            const insertLineEndBtn = document.getElementById('insert-line-end-btn');
+            
+            const fontSizeInput = document.getElementById('font-size-input');
+
+            // --- State Management ---
+            let cells = [];
+            let columnWidths = [];
+            let rowHeights = [];
+            let selectedCellIds = new Set();
+            let history = [];
+            let historyIndex = -1;
+            let nextId = 0;
+            let isMultiSelectMode = false;
+            const BASE_GRID_SIZE = 4;
+
+            // --- Resizing State ---
+            let isResizing = false;
+            let resizeType = null; 
+            let resizeIndex = -1;
+            const resizeHandleWidth = 5;
+
+            // --- Core Functions ---
+            function saveState() {
+                const state = {
+                    cells: JSON.parse(JSON.stringify(cells)),
+                    columnWidths: [...columnWidths],
+                    rowHeights: [...rowHeights],
+                    selectedCellIds: new Set(selectedCellIds)
+                };
+                history = history.slice(0, historyIndex + 1);
+                history.push(state);
+                historyIndex++;
+                updateUndoRedoButtons();
+            }
+            function applyState(state) {
+                cells = JSON.parse(JSON.stringify(state.cells));
+                columnWidths = [...state.columnWidths];
+                rowHeights = [...state.rowHeights];
+                selectedCellIds = new Set(state.selectedCellIds);
+                renderGrid(); updateInfoBar(); updateMergeButton();
+            }
+            function undo() { if (historyIndex > 0) { historyIndex--; applyState(history[historyIndex]); } updateUndoRedoButtons(); }
+            function redo() { if (historyIndex < history.length - 1) { historyIndex++; applyState(history[historyIndex]); } updateUndoRedoButtons(); }
+            function updateUndoRedoButtons() { undoBtn.disabled = historyIndex <= 0; redoBtn.disabled = historyIndex >= history.length - 1; }
+            function createCell(row, col, rowSpan = 1, colSpan = 1, text = '') { return { id: nextId++, row, col, rowSpan, colSpan, text }; }
+            
+            function renderGrid() {
+                gridContainer.innerHTML = '';
+                gridContainer.style.gridTemplateColumns = columnWidths.map(w => `${w}px`).join(' ');
+                gridContainer.style.gridTemplateRows = rowHeights.map(h => `${h}px`).join(' ');
+
+                cells.forEach(cell => {
+                    const cellWrapper = document.createElement('div');
+                    cellWrapper.className = 'cell';
+                    cellWrapper.dataset.id = cell.id;
+                    cellWrapper.style.gridArea = `${cell.row + 1} / ${cell.col + 1} / span ${cell.rowSpan} / span ${cell.colSpan}`;
+                    if (selectedCellIds.has(cell.id)) { cellWrapper.classList.add('selected'); }
+
+                    const textarea = document.createElement('textarea');
+                    textarea.className = 'cell-textarea';
+                    textarea.value = cell.text;
+                    textarea.dataset.id = cell.id;
+                    textarea.wrap = 'off';
+                    textarea.placeholder ='Welcome to the TPP!\n\n- Type text in a cell to edit.\n- Use the sidebar to split, replace, remove, or insert text.\n- Select multiple cells with Ctrl+Click (or Cmd+Click) or by using the Multi-Select button.\n- Drag the borders between cells to resize.';
+                    textarea.addEventListener('input', e => { cells.find(c => c.id === cell.id).text = e.target.value; updateInfoBar(); });
+                    textarea.addEventListener('focusout', saveState);
+                    cellWrapper.appendChild(textarea);
+                    gridContainer.appendChild(cellWrapper);
+                });
+            }
+            function toggleCellSelection(id, ctrlKey) {
+                if (!isMultiSelectMode && !ctrlKey) {
+                    if (selectedCellIds.size === 1 && selectedCellIds.has(id)) return;
+                    selectedCellIds.clear(); selectedCellIds.add(id);
+                } else {
+                    if (selectedCellIds.has(id)) { selectedCellIds.delete(id); } else { selectedCellIds.add(id); }
+                }
+                updateSelectionUI();
+            }
+            function updateSelectionUI() {
+                document.querySelectorAll('.cell').forEach(c => c.classList.remove('selected'));
+                selectedCellIds.forEach(id => { const el = gridContainer.querySelector(`.cell[data-id='${id}']`); if (el) el.classList.add('selected'); });
+                updateMergeButton(); updateInfoBar();
+            }
+            function getSelectedCells() { return cells.filter(c => selectedCellIds.has(c.id)); }
+            function updateInfoBar() {
+                const selected = getSelectedCells();
+                const combinedText = selected.map(c => c.text).join('\n');
+                const charCount = (combinedText.replace(/\s/g, '')).length;
+                const lineCount = combinedText.length > 0 ? combinedText.split('\n').length : 0;
+                infoBar.textContent = `Chars: ${charCount}, Lines: ${lineCount}`;
+            }
+            function updateMergeButton() { mergeBtn.disabled = selectedCellIds.size <= 1; }
+
+            // --- Event Listeners ---
+            gridContainer.addEventListener('click', e => { if (e.target.classList.contains('cell-textarea')) { toggleCellSelection(parseInt(e.target.dataset.id), e.ctrlKey || e.metaKey); } });
+            undoBtn.addEventListener('click', undo);
+            redoBtn.addEventListener('click', redo);
+            selectAllBtn.addEventListener('click', () => { selectedCellIds = new Set(cells.map(c => c.id)); updateSelectionUI(); });
+            multiSelectToggleBtn.addEventListener('click', () => { isMultiSelectMode = !isMultiSelectMode; multiSelectToggleBtn.classList.toggle('active', isMultiSelectMode); });
+            copyBtn.addEventListener('click', () => {
+                const textToCopy = getSelectedCells().map(c => c.text).join('\n---\n');
+                if(textToCopy) navigator.clipboard.writeText(textToCopy).then(() => alert('Selected text copied.'));
+            });
+            fontSizeInput.addEventListener('input', e => {
+                const newSize = e.target.value;
+                if (newSize >= 8 && newSize <= 32) {
+                    document.documentElement.style.setProperty('--textarea-font-size', `${newSize}px`);
+                }
+            });
+
+            // --- Cell Operations (Final Grid Model Logic) ---
+            splitVBtn.addEventListener('click', () => {
+                const cellsToSplit = getSelectedCells();
+                if (cellsToSplit.length === 0) return;
+                const newCells = [];
+                cellsToSplit.forEach(cell => {
+                    if (cell.rowSpan < 2) return; 
+                    const splitPoint = Math.floor(cell.rowSpan / 2);
+                    const lineNum = parseInt(splitLineNumInput.value);
+                    let topText = cell.text, bottomText = '';
+                    if (!isNaN(lineNum) && lineNum > 0) {
+                        const lines = cell.text.split('\n');
+                        if(lines.length >= lineNum){
+                           topText = lines.slice(0, lineNum).join('\n');
+                           bottomText = lines.slice(lineNum).join('\n');
+                        }
+                    }
+                    newCells.push(createCell(cell.row + splitPoint, cell.col, cell.rowSpan - splitPoint, cell.colSpan, bottomText));
+                    cell.rowSpan = splitPoint;
+                    cell.text = topText;
+                });
+                cells.push(...newCells);
+                saveState(); renderGrid();
+            });
+
+            splitHBtn.addEventListener('click', () => {
+                const cellsToSplit = getSelectedCells();
+                if (cellsToSplit.length === 0) return;
+                const newCells = [];
+                cellsToSplit.forEach(cell => {
+                    if (cell.colSpan < 2) return;
+                    const splitPoint = Math.floor(cell.colSpan / 2);
+                    const lineNum = parseInt(splitLineNumInput.value);
+                    let leftText = cell.text, rightText = '';
+                    if (!isNaN(lineNum) && lineNum > 0) {
+                        const lines = cell.text.split('\n');
+                        leftText = lines.map(l => l.substring(0, lineNum)).join('\n');
+                        rightText = lines.map(l => l.substring(lineNum)).join('\n');
+                    }
+                    newCells.push(createCell(cell.row, cell.col + splitPoint, cell.rowSpan, cell.colSpan - splitPoint, rightText));
+                    cell.colSpan = splitPoint;
+                    cell.text = leftText;
+                });
+                cells.push(...newCells);
+                saveState(); renderGrid();
+            });
+
+            function mergeFirstAvailablePair(cellList) {
+                // Vertical Merge Check
+                for (let i = 0; i < cellList.length; i++) {
+                    for (let j = i + 1; j < cellList.length; j++) {
+                        const c1 = cellList[i];
+                        const c2 = cellList[j];
+                        
+                        let topCell, bottomCell;
+                        if (c1.row + c1.rowSpan === c2.row) { topCell = c1; bottomCell = c2; } 
+                        else if (c2.row + c2.rowSpan === c1.row) { topCell = c2; bottomCell = c1; }
+                        else { continue; }
+
+                        if (topCell.col === bottomCell.col && topCell.colSpan === bottomCell.colSpan) {
+                            const newText = topCell.text + '\n' + bottomCell.text;
+                            const newCell = createCell(topCell.row, topCell.col, topCell.rowSpan + bottomCell.rowSpan, topCell.colSpan, newText);
+                            cells = cells.filter(c => c.id !== topCell.id && c.id !== bottomCell.id);
+                            cells.push(newCell);
+                            selectedCellIds.delete(topCell.id);
+                            selectedCellIds.delete(bottomCell.id);
+                            selectedCellIds.add(newCell.id);
+                            return true;
+                        }
+                    }
+                }
+
+                // Horizontal Merge Check
+                for (let i = 0; i < cellList.length; i++) {
+                    for (let j = i + 1; j < cellList.length; j++) {
+                        const c1 = cellList[i];
+                        const c2 = cellList[j];
+                        
+                        let leftCell, rightCell;
+                        if (c1.col + c1.colSpan === c2.col) { leftCell = c1; rightCell = c2; }
+                        else if (c2.col + c2.colSpan === c1.col) { leftCell = c2; rightCell = c1; }
+                        else { continue; }
+
+                        if (leftCell.row === rightCell.row && leftCell.rowSpan === rightCell.rowSpan) {
+                            const lines1 = leftCell.text.split('\n');
+                            const lines2 = rightCell.text.split('\n');
+                            const maxLines = Math.max(lines1.length, lines2.length);
+                            const newLines = [];
+                            for(let k=0; k < maxLines; k++) {
+                                newLines.push((lines1[k] || '') + (lines2[k] || ''));
+                            }
+                            const newText = newLines.join('\n');
+                            const newCell = createCell(leftCell.row, leftCell.col, leftCell.rowSpan, leftCell.colSpan + rightCell.colSpan, newText);
+                            cells = cells.filter(c => c.id !== leftCell.id && c.id !== rightCell.id);
+                            cells.push(newCell);
+                            selectedCellIds.delete(leftCell.id);
+                            selectedCellIds.delete(rightCell.id);
+                            selectedCellIds.add(newCell.id);
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+
+            mergeBtn.addEventListener('click', () => {
+                let mergedInLoop;
+                do {
+                    mergedInLoop = mergeFirstAvailablePair(getSelectedCells());
+                } while(mergedInLoop);
+                
+                saveState();
+                renderGrid();
+            });
+
+
+            // --- Text Operations ---
+            function addReplacePair() {
+                const pairDiv = document.createElement('div');
+                pairDiv.className = 'multi-replace-pair';
+                pairDiv.innerHTML = `<input type="text" placeholder="Search"><input type="text" placeholder="Replace">`;
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = '×';
+                removeBtn.className = 'remove-pair-btn';
+                removeBtn.onclick = () => pairDiv.remove();
+                pairDiv.appendChild(removeBtn);
+                multiReplaceContainer.appendChild(pairDiv);
+            }
+            addReplacePairBtn.addEventListener('click', addReplacePair);
+
+            multiReplaceBtn.addEventListener('click', () => {
+                const pairs = Array.from(document.querySelectorAll('.multi-replace-pair')).map(p => ({
+                    find: p.children[0].value.replace(/\\n/g, '\n'),
+                    replace: p.children[1].value.replace(/\\n/g, '\n')
+                })).filter(p => p.find);
+                if (pairs.length === 0) return;
+                getSelectedCells().forEach(cell => { pairs.forEach(pair => { cell.text = cell.text.split(pair.find).join(pair.replace); }); });
+                saveState(); renderGrid();
+            });
+
+            singleCharReplaceBtn.addEventListener('click', () => {
+                const findChars = singleCharFindInput.value;
+                const replaceChars = singleCharReplaceInput.value;
+                if (findChars.length === 0 || findChars.length !== replaceChars.length) {
+                    alert('Find and Replace strings must be non-empty and have the same length.'); return;
+                }
+                const map = {};
+                for (let i = 0; i < findChars.length; i++) map[findChars[i]] = replaceChars[i];
+                getSelectedCells().forEach(cell => { cell.text = cell.text.split('').map(char => map[char] || char).join(''); });
+                saveState(); renderGrid();
+            });
+
+            removeBtn.addEventListener('click', () => {
+                let regexParts = [];
+                document.querySelectorAll('.checkbox-group input:checked').forEach(cb => { regexParts.push(cb.value === '\\n' || cb.value === ' ' ? cb.value : `[${cb.value}]`); });
+                const customString = removeCustomInput.value;
+                if (customString) { const customChars = customString.split('').map(char => char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')); if (customChars.length > 0) regexParts.push(...customChars); }
+                if (regexParts.length === 0) return;
+                const regex = new RegExp(regexParts.join('|'), 'g');
+                getSelectedCells().forEach(cell => { cell.text = cell.text.replace(regex, ''); });
+                saveState(); renderGrid();
+            });
+
+            insertIntervalBtn.addEventListener('click', () => {
+                const str = insertStringInput.value.replace(/\\n/g, '\n');
+                const interval = parseInt(insertIntervalInput.value);
+                if (!str || isNaN(interval) || interval <= 0) return;
+                getSelectedCells().forEach(cell => {
+                    let newText = '';
+                    if (cell.text.length > 0) {
+                      for (let i = 0; i < cell.text.length; i += interval) { newText += cell.text.substring(i, i + interval) + str; }
+                      if (cell.text.length % interval !== 0) { newText = newText.slice(0, -str.length); }
+                    }
+                    cell.text = newText;
+                });
+                saveState(); renderGrid();
+            });
+
+            const createTextUpdater = (updater) => () => {
+                const str = insertStringInput.value.replace(/\\n/g, '\n');
+                getSelectedCells().forEach(cell => { cell.text = updater(cell.text, str); });
+                saveState(); renderGrid();
+            };
+            insertStartBtn.addEventListener('click', createTextUpdater((text, str) => str + text));
+            insertEndBtn.addEventListener('click', createTextUpdater((text, str) => text + str));
+            insertLineStartBtn.addEventListener('click', createTextUpdater((text, str) => text.split('\n').map(line => str + line).join('\n')));
+            insertLineEndBtn.addEventListener('click', createTextUpdater((text, str) => text.split('\n').map(line => line + str).join('\n')));
+
+            // --- Grid Resizing Logic ---
+            gridContainer.addEventListener('mousemove', e => {
+                if (isResizing) {
+                    if (resizeType === 'col') {
+                        const delta = e.movementX;
+                        const minWidth = 50;
+                        if (columnWidths[resizeIndex] + delta > minWidth && columnWidths[resizeIndex + 1] - delta > minWidth) {
+                            columnWidths[resizeIndex] += delta;
+                            columnWidths[resizeIndex + 1] -= delta;
+                            renderGrid();
+                        }
+                    } else if (resizeType === 'row') {
+                        const delta = e.movementY;
+                        const minHeight = 40;
+                         if (rowHeights[resizeIndex] + delta > minHeight && rowHeights[resizeIndex + 1] - delta > minHeight) {
+                            rowHeights[resizeIndex] += delta;
+                            rowHeights[resizeIndex + 1] -= delta;
+                            renderGrid();
+                        }
+                    }
+                } else {
+                    let onColBoundary = false, onRowBoundary = false;
+                    let currentX = 0;
+                    for (let i = 0; i < columnWidths.length - 1; i++) {
+                        currentX += columnWidths[i] + resizeHandleWidth;
+                        if (Math.abs(e.offsetX - currentX + resizeHandleWidth/2) < resizeHandleWidth) {
+                            onColBoundary = true; break;
+                        }
+                    }
+                    let currentY = 0;
+                    for (let i = 0; i < rowHeights.length - 1; i++) {
+                        currentY += rowHeights[i] + resizeHandleWidth;
+                        if (Math.abs(e.offsetY - currentY + resizeHandleWidth/2) < resizeHandleWidth) {
+                            onRowBoundary = true; break;
+                        }
+                    }
+                    if(onColBoundary) gridContainer.style.cursor = 'col-resize';
+                    else if (onRowBoundary) gridContainer.style.cursor = 'row-resize';
+                    else gridContainer.style.cursor = 'default';
+                }
+            });
+            gridContainer.addEventListener('mousedown', e => {
+                if (gridContainer.style.cursor === 'col-resize') {
+                    isResizing = true; resizeType = 'col';
+                    let currentX = 0;
+                    for (let i = 0; i < columnWidths.length - 1; i++) {
+                        currentX += columnWidths[i] + resizeHandleWidth;
+                        if (Math.abs(e.offsetX - currentX + resizeHandleWidth/2) < resizeHandleWidth) {
+                            resizeIndex = i; break;
+                        }
+                    }
+                } else if (gridContainer.style.cursor === 'row-resize') {
+                    isResizing = true; resizeType = 'row';
+                    let currentY = 0;
+                     for (let i = 0; i < rowHeights.length - 1; i++) {
+                        currentY += rowHeights[i] + resizeHandleWidth;
+                        if (Math.abs(e.offsetY - currentY + resizeHandleWidth/2) < resizeHandleWidth) {
+                            resizeIndex = i; break;
+                        }
+                    }
+                }
+            });
+            window.addEventListener('mouseup', () => {
+                if (isResizing) {
+                    isResizing = false;
+                    resizeType = null;
+                    resizeIndex = -1;
+                    gridContainer.style.cursor = 'default';
+                    saveState();
+                }
+            });
+
+            // --- Initialization ---
+            function init() {
+                cells.push(createCell(0, 0, BASE_GRID_SIZE, BASE_GRID_SIZE));
+
+                const gap = 5;
+                const containerPadding = 5;
+                
+                const totalCellWidth = gridContainer.clientWidth - (2 * containerPadding) - (gap * (BASE_GRID_SIZE - 1));
+                const totalCellHeight = gridContainer.clientHeight - (2 * containerPadding) - (gap * (BASE_GRID_SIZE - 1));
+                
+                columnWidths = Array(BASE_GRID_SIZE).fill(totalCellWidth / BASE_GRID_SIZE);
+                rowHeights = Array(BASE_GRID_SIZE).fill(totalCellHeight / BASE_GRID_SIZE);
+
+                selectedCellIds.add(0);
+                addReplacePair();
+                saveState();
+                historyIndex = 0;
+                applyState(history[0]);
+                updateUndoRedoButtons();
+            }
+            
+            window.onload = init;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rich Text Previewer</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
+    <link id="google-fonts-link" rel="stylesheet" href="">
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --panel-bg-color: #2c2c2c;
+            --text-color: #e0e0e0;
+            --primary-color: #666;
+            --border-color: #444;
+            --label-color: #bbb;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container { display: flex; width: 100%; height: 100%; position: relative; }
+        .settings-panel {
+            width: 350px;
+            background-color: var(--panel-bg-color);
+            padding: 25px;
+            overflow-y: auto;
+            height: 100%;
+            border-right: 1px solid var(--border-color);
+            flex-shrink: 0;
+            transition: margin-left 0.3s ease-in-out, font-family 0.1s;
+            z-index: 1000;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .settings-panel::-webkit-scrollbar {
+            display: none;
+        }
+        .preview-panel {
+            flex-grow: 1;
+            padding: 0;
+            height: 100%;
+            overflow-y: auto;
+            background-color: var(--bg-color);
+            position: relative;
+        }
+
+        /* --- 設定パネル内の要素 --- */
+        .settings-panel h1 { font-size: 24px; margin-bottom: 30px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        .control-group { margin-bottom: 25px; }
+        .control-group label { display: block; margin-bottom: 10px; color: var(--label-color); font-size: 14px; }
+        .control-group .label-with-value { display: flex; justify-content: space-between; align-items: center; }
+        .control-group .value-display { font-size: 14px; color: var(--label-color); background-color: #222; padding: 4px 8px; border-radius: 4px; }
+
+        /* --- フォーム要素のスタイル --- */
+        textarea {
+            width: 100%; background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 5px;
+            color: var(--text-color); min-height: 40px; padding: 8px 12px; font-size: 14px;
+            resize: vertical; min-height: 80px;
+        }
+        input[type="color"] {
+            width: 100%; height: 40px; border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer;
+            -webkit-appearance: none; -moz-appearance: none; appearance: none; background-color: transparent; padding: 0;
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 3px; }
+        input[type="range"] { width: 100%; cursor: pointer; accent-color: var(--primary-color); }
+
+        /* --- Choices.jsのスタイル上書き --- */
+        .choices { margin-bottom: 0; }
+        .choices__inner { background-color: var(--bg-color); border-color: var(--border-color); color: var(--text-color); }
+        .choices__list--dropdown { background-color: var(--bg-color); border-color: var(--border-color); }
+        .choices__input--cloned { background-color: var(--bg-color) !important; color: var(--text-color); }
+        .choices__list--dropdown .choices__item--choice { background-color: var(--bg-color) !important; color: var(--text-color) !important; }
+        .choices__item.is-selected { background-color: var(--primary-color) !important; color: white !important; }
+        .choices__list--dropdown .choices__item--choice:hover,
+        .choices__list--dropdown .choices__item--choice.is-highlighted { background-color: var(--primary-color) !important; color: white !important; }
+        
+        /* --- プレビューエリア --- */
+        #preview-text {
+            width: 100%; height: 99%; background-color: transparent; border: none;
+            color: var(--text-color); font-size: 40px; line-height: 1.5; letter-spacing: 0px;
+            resize: none; outline: none; white-space: pre-wrap; word-wrap: break-word;
+            padding: 35px;
+        }
+
+        /* --- サイドバートグルボタン (デスクトップ) --- */
+        #sidebar-toggle {
+            position: absolute; top: 50%; left: 350px;
+            transform: translate(-50%, -50%); z-index: 1001;
+            background-color: var(--border-color); border: 1px solid var(--bg-color);
+            color: var(--text-color); width: 28px; height: 28px; border-radius: 50%;
+            cursor: pointer; display: flex; justify-content: center; align-items: center;
+            transition: left 0.3s ease-in-out, background-color 0.2s;
+        }
+        #sidebar-toggle:hover { background-color: var(--primary-color); }
+        .container.sidebar-collapsed .settings-panel { margin-left: -350px; }
+        .container.sidebar-collapsed #sidebar-toggle {
+            left: 5px;
+            transform: translateY(-50%);
+        }
+        
+        #overlay { display: none; }
+
+        /* --- レスポンシブ対応 (スマートフォン) --- */
+        @media (max-width: 800px) {
+            .settings-panel {
+                position: absolute; top: 0; left: 0; height: 100%;
+                transform: translateX(0); transition: transform 0.3s ease-in-out;
+                width: 80%; max-width: 350px;
+            }
+            .container.sidebar-collapsed .settings-panel { transform: translateX(-100%); }
+            
+            #sidebar-toggle {
+                position: fixed;
+                top: 20px;
+                left: min(80vw, 350px);
+                transform: translate(-50%, 0);
+            }
+            .container.sidebar-collapsed #sidebar-toggle {
+                left: 5px;
+            }
+
+            #overlay {
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0, 0, 0, 0.5); z-index: 999;
+                opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s;
+                display: block;
+            }
+            .container:not(.sidebar-collapsed) #overlay { opacity: 1; visibility: visible; }
+        }
+    </style>
+</head>
+<body>
+    <div id="overlay"></div>
+    <div class="container" id="container">
+        <div class="settings-panel" id="settings-panel">
+            <h1>Rich Text Previewer</h1>
+            <div class="control-group"> <label for="font-select">Font Family</label> <select id="font-select"></select> </div>
+            <div class="control-group"> <label for="font-weight-select">Font Weight</label> <select id="font-weight-select"></select> </div>
+            <div class="control-group"> <label for="font-select-2">Fallback Font</label> <select id="font-select-2"></select> </div>
+            <div class="control-group" id="font-weight-group-2"> <label for="font-weight-select-2">Fallback Font Weight</label> <select id="font-weight-select-2"></select> </div>
+            <div class="control-group"> <label for="text-color">Text Color</label> <input type="color" id="text-color" value="#E0E0E0"> </div>
+            <div class="control-group"> <label for="bg-color">Background Color</label> <input type="color" id="bg-color" value="#1a1a1a"> </div>
+            <div class="control-group">
+                <div class="label-with-value"> <label for="font-size">Font Size</label> <span id="font-size-value" class="value-display">24px</span> </div>
+                <input type="range" id="font-size" min="10" max="120" value="40">
+            </div>
+            <div class="control-group">
+                <div class="label-with-value"> <label for="line-height">Line Height</label> <span id="line-height-value" class="value-display">1.6</span> </div>
+                <input type="range" id="line-height" min="0.5" max="3" step="0.1" value="1.5">
+            </div>
+            <div class="control-group">
+                <div class="label-with-value"> <label for="letter-spacing">Letter Spacing</label> <span id="letter-spacing-value" class="value-display">0px</span> </div>
+                <input type="range" id="letter-spacing" min="-5" max="20" step="0.5" value="0">
+            </div>
+            <div class="control-group">
+                <label for="custom-css">Custom CSS</label>
+                <textarea id="custom-css" style="background-color: #1a1a1a;"></textarea>
+            </div>
+        </div>
+
+        <div class="preview-panel" id="preview-panel">
+            <textarea id="preview-text">
+Welcome to the RTP! Type or paste your own text here to see how it looks with the selected settings. You can change the font family, weight, colors, size, line height, and letter spacing in the panel on the left. All changes will be applied in real-time.</textarea>
+        </div>
+        
+        <button id="sidebar-toggle" title="Toggle Sidebar">
+            <svg id="icon-open" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            <svg id="icon-closed" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- 要素の取得 ---
+            const container = document.getElementById('container');
+            const settingsPanel = document.getElementById('settings-panel');
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const overlay = document.getElementById('overlay');
+            const iconOpen = document.getElementById('icon-open');
+            const iconClosed = document.getElementById('icon-closed');
+            const fontSelectElement = document.getElementById('font-select');
+            const fontSelectElement2 = document.getElementById('font-select-2');
+            const fontWeightSelectElement = document.getElementById('font-weight-select');
+            const fontWeightSelectElement2 = document.getElementById('font-weight-select-2');
+            const fontWeightGroup2 = document.getElementById('font-weight-group-2');
+            const textColorInput = document.getElementById('text-color');
+            const bgColorInput = document.getElementById('bg-color');
+            const fontSizeInput = document.getElementById('font-size');
+            const lineHeightInput = document.getElementById('line-height');
+            const letterSpacingInput = document.getElementById('letter-spacing');
+            const customCssInput = document.getElementById('custom-css');
+            const fontSizeValue = document.getElementById('font-size-value');
+            const lineHeightValue = document.getElementById('line-height-value');
+            const letterSpacingValue = document.getElementById('letter-spacing-value');
+            const previewText = document.getElementById('preview-text');
+            const googleFontLink = document.getElementById('google-fonts-link');
+            
+            let googleFontsData = {};
+            const customCssStyleTag = document.createElement('style');
+            document.head.appendChild(customCssStyleTag);
+
+            // --- サイドバーのトグル機能 ---
+            function toggleSidebar() { container.classList.toggle('sidebar-collapsed'); updateToggleIcon(); }
+            function updateToggleIcon() {
+                 const isCollapsed = container.classList.contains('sidebar-collapsed');
+                 iconOpen.style.display = isCollapsed ? 'none' : 'block';
+                 iconClosed.style.display = isCollapsed ? 'block' : 'none';
+            }
+            sidebarToggle.addEventListener('click', toggleSidebar);
+            overlay.addEventListener('click', () => { if (!container.classList.contains('sidebar-collapsed')) { toggleSidebar(); } });
+            
+            if (window.innerWidth <= 800) { container.classList.add('sidebar-collapsed'); }
+            updateToggleIcon();
+
+            // --- Choices.jsの初期化 ---
+            const fontFamilyChoices = new Choices(fontSelectElement, { searchEnabled: true, itemSelectText: 'Select', placeholder: true, placeholderValue: 'Loading fonts...', removeItemButton: false, searchResultLimit: 9999 });
+            const fontFamilyChoices2 = new Choices(fontSelectElement2, { searchEnabled: true, itemSelectText: 'Select', placeholder: true, placeholderValue: 'Select fallback', removeItemButton: false, searchResultLimit: 9999 });
+            const fontWeightChoices = new Choices(fontWeightSelectElement, { searchEnabled: false, itemSelectText: 'Select', shouldSort: false });
+            const fontWeightChoices2 = new Choices(fontWeightSelectElement2, { searchEnabled: false, itemSelectText: 'Select', shouldSort: false });
+
+            // --- フォントウェイトの選択肢を更新するヘルパー関数 ---
+            function updateFontWeightOptions(fontFamily, choicesInstance, groupElement) {
+                if (groupElement) {
+                    groupElement.style.display = (fontFamily && fontFamily !== '') ? 'block' : 'none';
+                }
+
+                choicesInstance.clearStore();
+                const fontData = googleFontsData[fontFamily];
+                let weights = ['normal', 'bold', '100', '200', '300', '400', '500', '600', '700', '800', '900'];
+                if (fontData) {
+                    weights = fontData.variants.filter(v => !v.includes('italic')).map(v => (v === 'regular' ? '400' : v));
+                }
+                
+                const weightOptions = weights.map(w => ({ value: w, label: w }));
+                choicesInstance.setChoices(weightOptions, 'value', 'label', true);
+
+                let defaultValue = '400';
+                if (weights.includes('400')) { defaultValue = '400'; }
+                else if (weights.includes('normal')) { defaultValue = 'normal'; }
+                else if (weights.length > 0) { defaultValue = weights[0]; }
+                choicesInstance.setChoiceByValue(defaultValue);
+            }
+
+            // --- Google Fontsの読み込み ---
+            const apiKey = 'AIzaSyAW8eNXU_2rMxcstFUzwjw85fK-uJ2rRqk';
+            const googleFontsUrl = `https://www.googleapis.com/webfonts/v1/webfonts?key=${apiKey}&sort=popularity`;
+            fetch(googleFontsUrl)
+                .then(response => { if (!response.ok) throw new Error(`API request failed`); return response.json(); })
+                .then(data => {
+                    if (!data.items) throw new Error('No font items in API response.');
+                    data.items.forEach(font => { googleFontsData[font.family] = font; });
+                    const fontItems = data.items.map(font => ({ value: font.family, label: font.family }));
+                    const initialFonts = [ { value: 'Arial', label: 'Arial' }, { value: 'Verdana', label: 'Verdana' }, { value: 'Georgia', label: 'Georgia' }, { value: 'Times New Roman', label: 'Times New Roman' } ];
+                    
+                    fontFamilyChoices.setChoices([...initialFonts, ...fontItems], 'value', 'label', true);
+                    const secondaryFontChoices = [{ value: '', label: 'None' }, ...initialFonts, ...fontItems];
+                    fontFamilyChoices2.setChoices(secondaryFontChoices, 'value', 'label', true);
+
+                    const initialPrimaryFont = 'Arial';
+                    const initialSecondaryFont = '';
+                    fontFamilyChoices.setChoiceByValue(initialPrimaryFont);
+                    fontFamilyChoices2.setChoiceByValue(initialSecondaryFont);
+                    
+                    updateFontWeightOptions(initialPrimaryFont, fontWeightChoices, null);
+                    updateFontWeightOptions(initialSecondaryFont, fontWeightChoices2, fontWeightGroup2);
+
+                    applyStyles();
+                })
+                .catch(error => {
+                    console.error('Error fetching/processing Google Fonts:', error);
+                    const fallbackFonts = [ { value: 'Arial', label: 'Arial', selected: true }, { value: 'Verdana', label: 'Verdana' } ];
+                    fontFamilyChoices.setChoices(fallbackFonts, 'value', 'label', false);
+                    fontFamilyChoices.setChoiceByValue('Arial');
+                    const secondaryFallback = [{ value: '', label: 'None' }, ...fallbackFonts];
+                    fontFamilyChoices2.setChoices(secondaryFallback, 'value', 'label', false);
+                    fontFamilyChoices2.setChoiceByValue('');
+
+                    updateFontWeightOptions('Arial', fontWeightChoices, null);
+                    updateFontWeightOptions('', fontWeightChoices2, fontWeightGroup2);
+                    applyStyles();
+                });
+            
+            // --- スタイル適用とフォント読み込み ---
+            function applyStyles() {
+                const fontFamily1 = fontFamilyChoices.getValue(true);
+                const fontWeight1 = fontWeightChoices.getValue(true);
+                const fontFamily2 = fontFamilyChoices2.getValue(true);
+                const fontWeight2 = fontWeightChoices2.getValue(true);
+
+                // --- Google FontsのURLを構築 ---
+                const baseGoogleFontUrl = 'https://fonts.googleapis.com/css2';
+                const families = [];
+
+                if (fontFamily1 && googleFontsData[fontFamily1] && fontWeight1) {
+                    families.push(`family=${fontFamily1.replace(/ /g, '+')}:wght@${fontWeight1}`);
+                }
+                if (fontFamily2 && googleFontsData[fontFamily2] && fontWeight2) {
+                    if (!families.some(f => f.startsWith(`family=${fontFamily2.replace(/ /g, '+')}`))) {
+                         families.push(`family=${fontFamily2.replace(/ /g, '+')}:wght@${fontWeight2}`);
+                    }
+                }
+                
+                // --- フォントを読み込む ---
+                if (families.length > 0) {
+                    const finalUrl = `${baseGoogleFontUrl}?${families.join('&')}&display=swap`;
+                    if (googleFontLink.href !== finalUrl) {
+                        googleFontLink.href = finalUrl;
+                    }
+                } else {
+                    googleFontLink.href = '';
+                }
+
+                // --- CSSをプレビューに適用 ---
+                let fontCss = "";
+                if (fontFamily1) fontCss += `'${fontFamily1}'`;
+                if (fontFamily2) fontCss += `, '${fontFamily2}'`;
+                fontCss += `, sans-serif`;
+
+                previewText.style.fontFamily = fontCss;
+                settingsPanel.style.fontFamily = fontCss;
+                
+                if (fontWeight1) {
+                    previewText.style.fontWeight = fontWeight1;
+                }
+                
+                previewText.style.color = textColorInput.value;
+                document.getElementById('preview-panel').style.backgroundColor = bgColorInput.value;
+                previewText.style.fontSize = `${fontSizeInput.value}px`;
+                fontSizeValue.textContent = `${fontSizeInput.value}px`;
+                previewText.style.lineHeight = lineHeightInput.value;
+                lineHeightValue.textContent = lineHeightInput.value;
+                previewText.style.letterSpacing = `${letterSpacingInput.value}px`;
+                letterSpacingValue.textContent = `${letterSpacingInput.value}px`;
+            }
+
+            function applyCustomCss() {
+                customCssStyleTag.textContent = `#preview-text { ${customCssInput.value} }`;
+            }
+
+            // --- イベントリスナーの設定 ---
+            fontSelectElement.addEventListener('change', () => { 
+                updateFontWeightOptions(fontFamilyChoices.getValue(true), fontWeightChoices, null);
+                applyStyles();
+            });
+            fontSelectElement2.addEventListener('change', () => {
+                updateFontWeightOptions(fontFamilyChoices2.getValue(true), fontWeightChoices2, fontWeightGroup2);
+                applyStyles();
+            });
+            
+            fontWeightSelectElement.addEventListener('change', applyStyles);
+            fontWeightSelectElement2.addEventListener('change', applyStyles);
+
+            customCssInput.addEventListener('input', applyCustomCss);
+            ['input', 'change'].forEach(eventType => {
+                textColorInput.addEventListener(eventType, applyStyles);
+                bgColorInput.addEventListener(eventType, applyStyles);
+                fontSizeInput.addEventListener(eventType, applyStyles);
+                lineHeightInput.addEventListener(eventType, applyStyles);
+                letterSpacingInput.addEventListener(eventType, applyStyles);
+            });
+            
+            applyCustomCss();
+        });
+    </script>
+</body>
+</html>
