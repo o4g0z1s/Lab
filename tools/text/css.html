@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rich Text Previewer</title>
+    <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Official_CSS_Logo.svg/2048px-Official_CSS_Logo.svg.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
     <link id="google-fonts-link" rel="stylesheet" href="">
+    <title>𝐓𝐞𝐱𝐭𝐲𝐥𝐞𝐫</title>
     <style>
         :root {
             --bg-color: #1a1a1a;
@@ -52,7 +53,7 @@
         }
 
         /* --- 設定パネル内の要素 --- */
-        .settings-panel h1 { font-size: 24px; margin-bottom: 30px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        .settings-panel h1 { font-size: 32px; margin-bottom: 30px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
         .control-group { margin-bottom: 25px; }
         .control-group label { display: block; margin-bottom: 10px; color: var(--label-color); font-size: 14px; }
         .control-group .label-with-value { display: flex; justify-content: space-between; align-items: center; }
@@ -92,8 +93,8 @@
 
         /* --- サイドバートグルボタン (デスクトップ) --- */
         #sidebar-toggle {
-            position: absolute; top: 50%; left: 350px;
-            transform: translate(-50%, -50%); z-index: 1001;
+            position: absolute; top: 10px; left: 350px;
+            transform: translate(-50%, 0); z-index: 1001;
             background-color: var(--border-color); border: 1px solid var(--bg-color);
             color: var(--text-color); width: 28px; height: 28px; border-radius: 50%;
             cursor: pointer; display: flex; justify-content: center; align-items: center;
@@ -102,8 +103,8 @@
         #sidebar-toggle:hover { background-color: var(--primary-color); }
         .container.sidebar-collapsed .settings-panel { margin-left: -350px; }
         .container.sidebar-collapsed #sidebar-toggle {
+            transform: translate(0, 0);
             left: 5px;
-            transform: translateY(-50%);
         }
         
         #overlay { display: none; }
@@ -119,11 +120,12 @@
             
             #sidebar-toggle {
                 position: fixed;
-                top: 20px;
+                top: 7px;
                 left: min(80vw, 350px);
                 transform: translate(-50%, 0);
             }
             .container.sidebar-collapsed #sidebar-toggle {
+                transform: translate(0, 0);
                 left: 5px;
             }
 
@@ -134,6 +136,8 @@
                 display: block;
             }
             .container:not(.sidebar-collapsed) #overlay { opacity: 1; visibility: visible; }
+
+            #custom-css { margin-bottom: 10px; }
         }
     </style>
 </head>
@@ -141,7 +145,7 @@
     <div id="overlay"></div>
     <div class="container" id="container">
         <div class="settings-panel" id="settings-panel">
-            <h1>Rich Text Previewer</h1>
+            <h1>Textyler</h1>
             <div class="control-group"> <label for="font-select">Font Family</label> <select id="font-select"></select> </div>
             <div class="control-group"> <label for="font-weight-select">Font Weight</label> <select id="font-weight-select"></select> </div>
             <div class="control-group"> <label for="font-select-2">Fallback Font</label> <select id="font-select-2"></select> </div>
@@ -168,7 +172,7 @@
 
         <div class="preview-panel" id="preview-panel">
             <textarea id="preview-text">
-Welcome to the RTP! Type or paste your own text here to see how it looks with the selected settings. You can change the font family, weight, colors, size, line height, and letter spacing in the panel on the left. All changes will be applied in real-time.</textarea>
+Welcome to the Textyler! Type or paste your own text here to see how it looks with the selected settings. You can change the font family, weight, colors, size, line height, and letter spacing in the panel on the left. All changes will be applied in real-time.</textarea>
         </div>
         
         <button id="sidebar-toggle" title="Toggle Sidebar">
@@ -259,7 +263,7 @@ Welcome to the RTP! Type or paste your own text here to see how it looks with th
                     if (!data.items) throw new Error('No font items in API response.');
                     data.items.forEach(font => { googleFontsData[font.family] = font; });
                     const fontItems = data.items.map(font => ({ value: font.family, label: font.family }));
-                    const initialFonts = [ { value: 'Arial', label: 'Arial' }, { value: 'Verdana', label: 'Verdana' }, { value: 'Georgia', label: 'Georgia' }, { value: 'Times New Roman', label: 'Times New Roman' } ];
+                    const initialFonts = [ { value: 'Arial', label: 'Arial' }, { value: 'Arial Black', label: 'Arial Black' }, { value: 'Book Antiqua', label: 'Book Antiqua' }, { value: 'Century', label: 'Century' }, { value: 'Century Gothic', label: 'Century Gothic' }, { value: 'Comic Sans MS', label: 'Comic Sans MS' }, { value: 'Courier', label: 'Courier' }, { value: 'Courier New', label: 'Courier New' }, { value: 'Franklin Gothic', label: 'Franklin Gothic' }, { value: 'Georgia', label: 'Georgia' }, { value: 'Helvetica', label: 'Helvetica' }, { value: 'Impact', label: 'Impact' }, { value: 'Lucida Console', label: 'Lucida Console' }, { value: 'Lucida Sans Unicode', label: 'Lucida Sans Unicode' }, { value: 'Palatino Linotype', label: 'Palatino Linotype' }, { value: 'Sylfaen', label: 'Sylfaen' }, { value: 'Tahoma', label: 'Tahoma' }, { value: 'Times', label: 'Times' }, { value: 'Times New Roman', label: 'Times New Roman' }, { value: 'Trebuchet MS', label: 'Trebuchet MS' }, { value: 'Verdana', label: 'Verdana' }, { value: 'serif', label: 'serif' }, { value: 'sans-serif', label: 'sans-serif' }, { value: 'monospace', label: 'monospace' }, { value: 'cursive', label: 'cursive' }, { value: 'fantasy', label: 'fantasy' } ];
                     
                     fontFamilyChoices.setChoices([...initialFonts, ...fontItems], 'value', 'label', true);
                     const secondaryFontChoices = [{ value: '', label: 'None' }, ...initialFonts, ...fontItems];
