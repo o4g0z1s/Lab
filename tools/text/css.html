@@ -6,7 +6,7 @@
     <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Official_CSS_Logo.svg/2048px-Official_CSS_Logo.svg.png">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
     <link id="google-fonts-link" rel="stylesheet" href="">
-    <title>𝐓𝐞𝐱𝐭𝐲𝐥𝐞𝐫</title>
+    <title>𝗧𝗲𝘅𝘁𝘆𝗹𝗲𝗿</title>
     <style>
         :root {
             --bg-color: #1a1a1a;
@@ -61,21 +61,21 @@
 
         /* --- フォーム要素のスタイル --- */
         textarea {
-            width: 100%; background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 5px;
+            width: 100%; background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 10px;
             color: var(--text-color); min-height: 40px; padding: 8px 12px; font-size: 14px;
             resize: vertical; min-height: 80px;
         }
         input[type="color"] {
-            width: 100%; height: 40px; border: 1px solid var(--border-color); border-radius: 3px; cursor: pointer;
+            width: 100%; height: 43px; border: 1px solid var(--border-color); border-radius: 10px; cursor: pointer;
             -webkit-appearance: none; -moz-appearance: none; appearance: none; background-color: transparent; padding: 0;
         }
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
-        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 3px; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 10px; }
         input[type="range"] { width: 100%; cursor: pointer; accent-color: var(--primary-color); }
 
         /* --- Choices.jsのスタイル上書き --- */
-        .choices { margin-bottom: 0; }
-        .choices__inner { background-color: var(--bg-color); border-color: var(--border-color); color: var(--text-color); }
+        .choices { margin-bottom: 0; border-radius: 10px; }
+        .choices__inner { background-color: var(--bg-color); border-color: var(--border-color); color: var(--text-color); border-radius: 10px; }
         .choices__list--dropdown { background-color: var(--bg-color); border-color: var(--border-color); }
         .choices__input--cloned { background-color: var(--bg-color) !important; color: var(--text-color); }
         .choices__list--dropdown .choices__item--choice { background-color: var(--bg-color) !important; color: var(--text-color) !important; }
@@ -166,7 +166,7 @@
             </div>
             <div class="control-group">
                 <label for="custom-css">Custom CSS</label>
-                <textarea id="custom-css" style="background-color: #1a1a1a;"></textarea>
+                <textarea id="custom-css" style="font-family: monospace;" wrap="off"></textarea>
             </div>
         </div>
 
@@ -256,7 +256,7 @@ Welcome to the Textyler! Type or paste your own text here to see how it looks wi
 
             // --- Google Fontsの読み込み ---
             const apiKey = 'AIzaSyAW8eNXU_2rMxcstFUzwjw85fK-uJ2rRqk';
-            const googleFontsUrl = `https://www.googleapis.com/webfonts/v1/webfonts?key=${apiKey}&sort=popularity`;
+            const googleFontsUrl = `https://www.googleapis.com/webfonts/v1/webfonts?key=${apiKey}`;
             fetch(googleFontsUrl)
                 .then(response => { if (!response.ok) throw new Error(`API request failed`); return response.json(); })
                 .then(data => {

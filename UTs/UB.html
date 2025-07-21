@@ -638,8 +638,8 @@
             if (charCount > 5000 && !(startCodePoint >= 0xE000 && startCodePoint <= 0xF8FF) /* PUA */ &&
                 !(startCodePoint >= 0xF0000 && startCodePoint <= 0x10FFFF) /* Supp PUA */ ) { 
                 console.warn(`Warning: Rendering a large block with ${charCount} characters. This might be slow.`);
-                searchMessageBottom.textContent = `警告: ${charCount}文字の巨大ブロックをレンダリング中...`;
-                setTimeout(() => { if (searchMessageBottom.textContent.startsWith("警告:")) searchMessageBottom.textContent = ""; }, 3000);
+                searchMessageBottom.textContent = `Warning: Large block`;
+                setTimeout(() => { if (searchMessageBottom.textContent.startsWith("Warning:")) searchMessageBottom.textContent = ""; }, 3000);
             }
         }
 
@@ -701,7 +701,8 @@
                 const charDisplay = (targetCodePoint >= 0x0000 && targetCodePoint <= 0x001F) || (targetCodePoint === 0x007F) ? "(制御文字)" : String.fromCodePoint(targetCodePoint);
             } else {
                 const charDisplay = (targetCodePoint >= 0x0000 && targetCodePoint <= 0x001F) || (targetCodePoint === 0x007F) ? "(制御文字)" : String.fromCodePoint(targetCodePoint);
-                searchMessageBottom.textContent = `文字 '${charDisplay}' (U+${targetCodePoint.toString(16).toUpperCase().padStart(4,'0')}) を含む定義済みブロックが見つかりません。`;
+                searchMessageBottom.textContent = `Not found`;
+                setTimeout(() => { if (searchMessageBottom.textContent.startsWith("Not")) searchMessageBottom.textContent = ""; }, 3000);
                 currentSearchedCodePoint = null; 
                 if (highlightedKeyElement) {
                     highlightedKeyElement.classList.remove('highlighted');

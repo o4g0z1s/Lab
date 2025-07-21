@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Unofficial_JavaScript_logo_2.svg/1200px-Unofficial_JavaScript_logo_2.svg.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
-    <title>𝐓𝐞𝐱𝐭𝐮𝐝𝐢𝐨</title>
+    <title>𝗧𝗲𝘅𝘁𝘂𝗱𝗶𝗼</title>
     <style>
         :root {
             --bg-color: #1e1e1e;
@@ -283,7 +283,7 @@
                     textarea.value = cell.text;
                     textarea.dataset.id = cell.id;
                     textarea.wrap = 'off';
-                    textarea.placeholder ='Welcome to the 𝐓𝐞𝐱𝐭𝐮𝐝𝐢𝐨!\n\n- Type text in a cell to edit.\n- Use the sidebar to split, replace, remove, or insert text.\n- Select multiple cells with Ctrl+Click (or Cmd+Click) or by using the Multi-Select button.\n- Drag the borders between cells to resize.';
+                    textarea.placeholder ='Welcome to the 𝗧𝗲𝘅𝘁𝘂𝗱𝗶𝗼!\n\n- Type text in a cell to edit.\n- Use the sidebar to split, replace, remove, or insert text.\n- Select multiple cells with Ctrl+Click (or Cmd+Click) or by using the Multi-Select button.\n- Drag the borders between cells to resize.';
                     textarea.addEventListener('input', e => { cells.find(c => c.id === cell.id).text = e.target.value; updateInfoBar(); });
                     textarea.addEventListener('focusout', saveState);
                     cellWrapper.appendChild(textarea);
