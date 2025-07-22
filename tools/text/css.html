@@ -72,6 +72,9 @@
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
         input[type="color"]::-webkit-color-swatch { border: none; border-radius: 10px; }
         input[type="range"] { width: 100%; cursor: pointer; accent-color: var(--primary-color); }
+        button {
+            width: 100%; height: 43px; background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 10px; color: var(--label-color); font-size: 14px; margin: 0; margin-bottom: 10px; padding: 0; text-align: center;
+        }
 
         /* --- Choices.jsのスタイル上書き --- */
         .choices { margin-bottom: 0; border-radius: 10px; }
@@ -88,7 +91,7 @@
             width: 100%; height: 99%; background-color: transparent; border: none;
             color: var(--text-color); font-size: 40px; line-height: 1.5; letter-spacing: 0px;
             resize: none; outline: none; white-space: pre-wrap; word-wrap: break-word;
-            padding: 35px;
+            padding: 35px; padding-left: 40px;
         }
 
         /* --- サイドバートグルボタン (デスクトップ) --- */
@@ -104,8 +107,8 @@
         .container.sidebar-collapsed .settings-panel { margin-left: -350px; }
         .container.sidebar-collapsed #sidebar-toggle {
             transform: translate(0, 0);
-            background-color: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
             left: 5px;
         }
         
@@ -135,7 +138,7 @@
             }
             .container:not(.sidebar-collapsed) #overlay { opacity: 1; visibility: visible; }
 
-            #custom-css { margin-bottom: 10px; }
+            button { margin-bottom: 25px; }
         }
     </style>
 </head>
@@ -166,6 +169,7 @@
                 <label for="custom-css">Custom CSS</label>
                 <textarea id="custom-css" style="font-family: monospace;" wrap="off"></textarea>
             </div>
+            <button id="copy">Copy Embed Code</button>
         </div>
 
         <div class="preview-panel" id="preview-panel">
@@ -205,6 +209,7 @@ Welcome to the Textyler! Type or paste your own text here to see how it looks wi
             const letterSpacingValue = document.getElementById('letter-spacing-value');
             const previewText = document.getElementById('preview-text');
             const googleFontLink = document.getElementById('google-fonts-link');
+            const copy = document.getElementById('copy');
             
             let googleFontsData = {};
             const customCssStyleTag = document.createElement('style');
@@ -292,6 +297,7 @@ Welcome to the Textyler! Type or paste your own text here to see how it looks wi
                 });
             
             // --- スタイル適用とフォント読み込み ---
+            let finalUrl = '';
             function applyStyles() {
                 const fontFamily1 = fontFamilyChoices.getValue(true);
                 const fontWeight1 = fontWeightChoices.getValue(true);
@@ -313,13 +319,18 @@ Welcome to the Textyler! Type or paste your own text here to see how it looks wi
                 
                 // --- フォントを読み込む ---
                 if (families.length > 0) {
-                    const finalUrl = `${baseGoogleFontUrl}?${families.join('&')}&display=swap`;
+                    finalUrl = `${baseGoogleFontUrl}?${families.join('&')}&display=swap`;
                     if (googleFontLink.href !== finalUrl) {
                         googleFontLink.href = finalUrl;
                     }
                 } else {
                     googleFontLink.href = '';
                 }
+
+                const embedCode = `<link href="${finalUrl}" rel="stylesheet">`;
+                copy.onclick = function() {
+                navigator.clipboard.writeText(embedCode).then(() => alert('Embed code copied.'));
+                };
 
                 // --- CSSをプレビューに適用 ---
                 let fontCss = "";
@@ -329,6 +340,7 @@ Welcome to the Textyler! Type or paste your own text here to see how it looks wi
 
                 previewText.style.fontFamily = fontCss;
                 settingsPanel.style.fontFamily = fontCss;
+                copy.style.fontFamily = fontCss;
                 
                 if (fontWeight1) {
                     previewText.style.fontWeight = fontWeight1;
@@ -342,6 +354,7 @@ Welcome to the Textyler! Type or paste your own text here to see how it looks wi
                 lineHeightValue.textContent = lineHeightInput.value;
                 previewText.style.letterSpacing = `${letterSpacingInput.value}px`;
                 letterSpacingValue.textContent = `${letterSpacingInput.value}px`;
+                iconClosed.style.color = textColorInput.value;
             }
 
             function applyCustomCss() {
