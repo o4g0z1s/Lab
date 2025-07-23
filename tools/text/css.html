@@ -108,7 +108,7 @@
         .container.sidebar-collapsed #sidebar-toggle {
             transform: translate(0, 0);
             background-color: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.25);
             left: 5px;
         }
         
@@ -138,7 +138,7 @@
             }
             .container:not(.sidebar-collapsed) #overlay { opacity: 1; visibility: visible; }
 
-            button { margin-bottom: 25px; }
+            button { margin-bottom: 30px; }
         }
     </style>
 </head>
@@ -308,12 +308,26 @@ Welcome to the Textyler! Type or paste your own text here to see how it looks wi
                 const baseGoogleFontUrl = 'https://fonts.googleapis.com/css2';
                 const families = [];
 
-                if (fontFamily1 && googleFontsData[fontFamily1] && fontWeight1) {
-                    families.push(`family=${fontFamily1.replace(/ /g, '+')}:wght@${fontWeight1}`);
+                if (fontWeight1 == 400) {
+                    if (fontFamily1 && googleFontsData[fontFamily1] && fontWeight1) {
+                        families.push(`family=${fontFamily1.replace(/ /g, '+')}`);
+                    }
+                } else {
+                    if (fontFamily1 && googleFontsData[fontFamily1] && fontWeight1) {
+                        families.push(`family=${fontFamily1.replace(/ /g, '+')}:wght@${fontWeight1}`);
+                    }
                 }
-                if (fontFamily2 && googleFontsData[fontFamily2] && fontWeight2) {
-                    if (!families.some(f => f.startsWith(`family=${fontFamily2.replace(/ /g, '+')}`))) {
-                         families.push(`family=${fontFamily2.replace(/ /g, '+')}:wght@${fontWeight2}`);
+                if (fontWeight2 == 400) {
+                    if (fontFamily2 && googleFontsData[fontFamily2] && fontWeight2) {
+                        if (!families.some(f => f.startsWith(`family=${fontFamily2.replace(/ /g, '+')}`))) {
+                             families.push(`family=${fontFamily2.replace(/ /g, '+')}`);
+                        }
+                    }
+                } else {
+                    if (fontFamily2 && googleFontsData[fontFamily2] && fontWeight2) {
+                        if (!families.some(f => f.startsWith(`family=${fontFamily2.replace(/ /g, '+')}`))) {
+                             families.push(`family=${fontFamily2.replace(/ /g, '+')}:wght@${fontWeight2}`);
+                        }
                     }
                 }
                 
@@ -327,9 +341,13 @@ Welcome to the Textyler! Type or paste your own text here to see how it looks wi
                     googleFontLink.href = '';
                 }
 
-                const embedCode = `<link href="${finalUrl}" rel="stylesheet">`;
                 copy.onclick = function() {
-                navigator.clipboard.writeText(embedCode).then(() => alert('Embed code copied.'));
+                    if (finalUrl == '') {
+                        alert('Select font family.');
+                    } else {
+                        const embedCode = `<link href="${finalUrl}" rel="stylesheet">`;
+                        navigator.clipboard.writeText(embedCode).then(() => alert('Embed code copied.'));
+                    }
                 };
 
                 // --- CSSをプレビューに適用 ---
