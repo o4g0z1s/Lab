@@ -296,7 +296,10 @@
 
             // --- Event Listeners ---
             showAdvancedToggle.addEventListener('change', toggleAdvancedUnits);
-            startButton.addEventListener('click', startQuiz);
+            startButton.addEventListener('click', () => { // この中を修正
+                alert('学習開始ボタンがクリックされました！'); // ← この行を追加
+                startQuiz(); // startQuiz()は一旦コメントアウトしてもOK
+            });
             resetSelectionButton.addEventListener('click', resetSelections);
             showAnswerButton.addEventListener('click', showAnswer);
             correctButton.addEventListener('click', () => handleAnswer(true));
