@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>世界史征服</title>
+    <link rel="icon" href="../../../0.png">
+    <title>‭</title>
     <!-- Bootstrap CSS (CDN) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
@@ -21,13 +22,13 @@
             font-family: 'Noto Sans JP', sans-serif;
             background-color: var(--bg-color);
             color: var(--primary-text-color);
-            min-height: 100vh;
             margin: 0;
         }
 
         .container {
             width: 100%;
             max-width: 900px;
+            min-height: 100dvh;
             margin: auto;
             background-color: var(--surface-color);
             padding: 1.5rem;
@@ -37,9 +38,11 @@
 
         h2 {
             color: #D70;
+            font-size: 2.5em;
             font-weight: bold;
             border-bottom: 2px solid var(--primary-accent-color);
             padding-bottom: 0.5rem;
+            margin-top: 0.5rem;
             margin-bottom: 1.5rem;
         }
 
@@ -74,7 +77,13 @@
         .correct-button:hover { background-color: var(--primary-accent-hover); }
         .incorrect-button { background-color: #6c757d; color: #ffffff; }
         .incorrect-button:hover { background-color: #5a6268; }
-
+        .back-button {
+            background-color: #1E1E1E;
+            border: none;
+            color: #666;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
 
         /* --- Selection Area --- */
         .controls-area { display: grid; grid-template-columns: 1fr; gap: 2rem; }
@@ -98,7 +107,7 @@
         .advanced-unit { display: none; } /* Initially hide advanced units */
 
 
-        .bottom-controls { display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; grid-column: 1 / -1; }
+        .bottom-controls { display: flex; justify-content: center; gap: 1rem; margin-top: 2.5rem; margin-bottom: 1.5rem; grid-column: 1 / -1; }
         
         /* --- Card Area --- */
         .card-area { text-align: center; }
@@ -106,7 +115,7 @@
         #progressBar { height: 100%; width: 0%; background-color: var(--primary-accent-color); transition: width 0.3s ease-in-out; }
         #questionNumberDisplay { position: absolute; top: -25px; right: 0; font-size: 0.9rem; color: var(--secondary-text-color); }
 
-        .card { background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 2rem; min-height: 250px; display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 1.5rem; }
+        .card { background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 2rem; padding-left: 0.5rem; padding-right: 0.5rem; min-height: 250px; display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 1.5rem; }
         .card-buttons { display: flex; justify-content: center; gap: 1rem; margin-bottom: 1rem; }
         
         /* --- Result Area --- */
@@ -117,16 +126,15 @@
         #incorrectWordsContainer li { background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; margin-bottom: 8px; list-style: none; }
         .incorrect-question { font-weight: 500; color: var(--primary-text-color); }
         .incorrect-answer { color: var(--primary-accent-color); font-weight: bold; }
-        .result-buttons { display: flex; justify-content: center; gap: 1rem; }
 
         /* --- Responsive Font & Padding Sizes --- */
         .primary-button, .secondary-button, .correct-button, .incorrect-button { font-size: 1rem; padding: 10px 20px; }
         
-        #question { font-size: 1rem; line-height: 1.4; color: #ffffff; }
-        #answer { font-size: 1.2rem; color: var(--primary-accent-color); font-weight: 700; }
+        #question { font-size: 1.2rem; line-height: 1.4; color: #ffffff; }
+        #answer { font-size: 1.5rem; color: var(--primary-accent-color); font-weight: 700; }
 
         @media (min-width: 768px) {
-            .container {margin: 1.5rem auto; border-radius: 12px;}
+            .container {margin: 1.5rem auto; border-radius: 12px; min-height: auto;}
             .primary-button, .secondary-button, .correct-button, .incorrect-button { font-size: 1.1rem; padding: 12px 25px; }
             #question { font-size: 1.6rem; }
             #answer { font-size: 2.2rem; }
@@ -171,6 +179,9 @@
 
         <!-- Card Area -->
         <section class="card-area hidden">
+            <div style="text-align: left;">
+                <button id="backToSelectionFromCardButton" class="back-button">￩</button>
+            </div>
             <div class="progress-bar-container">
                 <div id="progressBar"></div>
                 <span id="questionNumberDisplay"></span>
@@ -183,9 +194,6 @@
                 <button id="showAnswerButton" class="primary-button">答えを見る</button>
                 <button id="correctButton" class="correct-button hidden">正解</button>
                 <button id="incorrectButton" class="incorrect-button hidden">不正解</button>
-            </div>
-            <div class="back-to-selection-container mt-3">
-                <button id="backToSelectionFromCardButton" class="secondary-button">選択画面に戻る</button>
             </div>
         </section>
 
@@ -202,7 +210,7 @@
                 <h3>今回の不正解問題</h3>
                 <ul id="incorrectWordsContainer" class="p-0"></ul>
             </div>
-            <div class="result-buttons mt-4">
+            <div class="bottom-controls">
                 <button id="backToSelectionButton" class="secondary-button">戻る</button>
                 <button id="restartQuizButton" class="primary-button">もう一度</button>
             </div>
