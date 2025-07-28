@@ -323,6 +323,7 @@
             function updateMergeButton() { mergeBtn.disabled = selectedCellIds.size <= 1; }
 
             // --- Event Listeners ---
+            document.addEventListener('click', function() { updateInfoBar(); });
             gridContainer.addEventListener('click', e => { if (e.target.classList.contains('cell-textarea')) { toggleCellSelection(parseInt(e.target.dataset.id), e.ctrlKey || e.metaKey); } });
             undoBtn.addEventListener('click', undo);
             redoBtn.addEventListener('click', redo);
@@ -338,6 +339,17 @@
                     document.documentElement.style.setProperty('--textarea-font-size', `${newSize}px`);
                 }
             });
+
+    const elements = ['textArea', 'throwInButton1', 'throwInButton2', 'clearButton'];
+
+    elements.forEach(function(id) {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('click', () => {
+                updateInfoBar();
+            });
+        }
+    });
 
             // --- Cell Operations (Final Grid Model Logic) ---
             splitVBtn.addEventListener('click', () => {
