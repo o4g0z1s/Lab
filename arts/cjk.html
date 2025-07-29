@@ -114,6 +114,14 @@
                     <option value="Slow">遅</option>
                 </select>
             </div>
+            <div class="setting-group">
+                <label for="order-selector">順</label>
+                <select id="order-selector">
+                    <option value="normal" selected>普</option>
+                    <option value="reverse">逆</option>
+                    <option value="random">乱</option>
+                </select>
+            </div>
             <button id="start-button">始</button>
         </div>
     </div>
@@ -128,6 +136,7 @@
             const startButton = document.getElementById('start-button');
             const fontSelector = document.getElementById('font-selector');
             const speedSelector = document.getElementById('speed-selector');
+            const orderSelector = document.getElementById('order-selector');
             const kanjiDisplayWrapper = document.getElementById('kanji-display-wrapper');
             const kanjiDisplayElement = document.getElementById('kanji-display');
 
@@ -148,22 +157,41 @@
             }
             
             let currentIndex = 0;
+            let displayList = [];
             
             const speeds = {
                 'Fast': 20,
-                'Normal': 50,
+                'Normal': 60,
                 'Slow': 100
             };
             
+            function shuffle(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+
             function updateKanji() {
-                kanjiDisplayElement.textContent = kanjiList[currentIndex];
-                currentIndex = (currentIndex + 1) % kanjiList.length;
+                if (displayList.length === 0) return;
+                kanjiDisplayElement.textContent = displayList[currentIndex];
+                currentIndex = (currentIndex + 1) % displayList.length;
             }
 
             startButton.addEventListener('click', function() {
                 // 1. 設定値を取得
                 const selectedFont = fontSelector.value;
                 const selectedSpeed = speeds[speedSelector.value];
+                const selectedOrder = orderSelector.value;
+
+                // 順序に応じて表示リストを作成
+                displayList = [...kanjiList]; // 元のリストをコピー
+                if (selectedOrder === 'reverse') {
+                    displayList.reverse();
+                } else if (selectedOrder === 'random') {
+                    shuffle(displayList);
+                }
+
                 // 2. フォントを適用
                 const fontStack = selectedFont === 'serif' 
                     ? "serif" 
@@ -174,6 +202,7 @@
                 // 4. 漢字表示エリアを表示する
                 kanjiDisplayWrapper.style.display = 'flex';
                 // 5. 最初の漢字をすぐに表示
+                currentIndex = 0; // インデックスをリセット
                 updateKanji();
                 // 6. 選択された速度でアニメーションを開始
                 setInterval(updateKanji, selectedSpeed);
