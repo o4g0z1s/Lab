@@ -1,0 +1,107 @@
+<!DOCTYPE html>  
+<html lang="ja">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>☑</title>  
+    <style>  
+        body {  
+            display: flex;  
+            flex-direction: column;  
+            justify-content: center;  
+            align-items: center;  
+            height: 100vh;  
+            margin: 0;  
+            background: #eee;  
+            font-family: Arial, sans-serif;  
+            position: relative;  
+        }  
+        #gameArea {  
+            position: relative;  
+            width: 600px;  
+            height: 400px;  
+            border: 2px solid #333;  
+            overflow: hidden;
+            border-radius: 10px;
+        }  
+        #movingCheckbox {  
+            position: absolute;  
+            cursor: pointer;  
+        }  
+        #result {  
+            margin-top: 20px;  
+            font-size: 1.5rem;  
+        }  
+        button {  
+            margin-top: 10px;
+            padding: 20px 30px;
+            font-size: 1.5rem;
+            cursor: pointer;  
+            display: none;
+            border: none;
+            background-color: #ccc;
+            border-radius: 30px;
+        }  
+        #overlay {  
+            position: absolute;  
+            top: 0;  
+            left: 0;  
+            width: 100%;  
+            height: 100%;  
+            background: rgba(0, 0, 0, 0.8);  
+            color: white;  
+            display: flex;  
+            justify-content: center;  
+            align-items: center;  
+            font-size: 3rem;  
+            opacity: 0;
+            transition: opacity 0.5s;
+        }  
+    </style>  
+</head>  
+<body>  
+    <div id="gameArea">  
+        <input type="checkbox" id="movingCheckbox" style="position: relative; z-index: 5;">  
+        <div id="overlay">You win!</div>  
+    </div>   
+    <button id="replayButton">Replay</button>  
+    <div id="result"></div>  
+
+    <script>  
+        const checkbox = document.getElementById("movingCheckbox");  
+        const gameArea = document.getElementById("gameArea");  
+        const result = document.getElementById("result");  
+        const increaseSpeedButton = document.getElementById("increaseSpeed");  
+        const replayButton = document.getElementById("replayButton");  
+        const overlay = document.getElementById("overlay");  
+        let gameInterval;  
+        let speed = 800;
+
+        function moveCheckbox() {  
+            const x = Math.random() * (gameArea.clientWidth - 30);
+            const y = Math.random() * (gameArea.clientHeight - 30);
+            checkbox.style.left = `${x}px`;  
+            checkbox.style.top = `${y}px`;  
+        }  
+
+        checkbox.addEventListener("click", () => {  
+            clearInterval(gameInterval);  
+            overlay.style.opacity = 1;
+            replayButton.style.display = "block";
+            result.textContent = "";
+        });  
+
+        function startGame() {  
+            result.textContent = "";
+            overlay.style.opacity = 0;
+            replayButton.style.display = "none";
+            moveCheckbox();
+            gameInterval = setInterval(moveCheckbox, speed);
+        }
+
+        replayButton.addEventListener("click", startGame);  
+
+        startGame();
+    </script>  
+</body>  
+</html>

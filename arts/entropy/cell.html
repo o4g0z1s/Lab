@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><text x='16' y='24' font-size='24' text-anchor='middle' fill='orange'>🦠</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+1p&family=Noto+Sans+Anatolian+Hieroglyphs&family=Noto+Sans+Bamum&family=Noto+Sans+Batak&family=Noto+Sans+Buginese&family=Noto+Sans+Egyptian+Hieroglyphs&family=Noto+Sans+Linear+A&family=Noto+Sans+Linear+B&family=Noto+Sans+Telugu&family=Noto+Sans+Vai&display=swap" rel="stylesheet">
+    <title>𝙲𝚎𝚕𝚕</title>
+    <style>
+        body {
+            font-family:"M PLUS 1p","Noto Sans Anatolian Hieroglyphs","Noto Sans Bamum","Noto Sans Batak","Noto Sans Buginese","Noto Sans Egyptian Hieroglyphs","Noto Sans Linear A","Noto Sans Linear B","Noto Sans Telugu","Noto Sans Vai";
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #ffd;
+            color: #222;
+        }
+
+        #cell-container {
+            width: 85vmin;
+            height: 85vmin;
+            position: relative;
+        }
+
+        .organelle {
+            position: absolute;
+            line-height: 1;
+            display: inline-block;
+            transform-origin: center center;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="cell-container"></div>
+
+    <script>
+    // --- JavaScriptロジック ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const container = document.getElementById('cell-container');
+
+        const CHARS = {
+            membrane: '𔑘',
+            nucleus: '⚈',
+            nuclear_envelope: '◌',
+            er: 'ᯤ',
+            vacuole: '𓄹',
+            golgi: ['ᨎ', 'ᨒ', 'ᯐ', 'ᯓ', '᯾'],
+            mitochondria: ['ꕇ', '𖡧', '𖣵', '𖤎', '𖤒', '𖤖'],
+            centrosome: ['✺', '✷', '＊', '❊', '⦀'],
+            ribosome: '●',
+            others: [
+                '𖠏', '𖠣', '𖠽', '𖡊', '𖡎', '𖡼', '𖢨', '𖣹', '𖤶', '𖥈', '𖥚', '𖥡',
+                '𖥾', '𖦄', '𖦧', '𖦹', '𖧠', '𖧪', '𖧰', '𖧻', 'ᨖ', '᨟', 'ᯅ',
+                'ᯆ', 'ᯡ', 'ᯣ', '౾', '𓇠', '𓇡', '𓇢', '𓇾', '𓈁', '𓈖', '𓊗', '𓋉',
+                '𓍰', '𓎂', '𓎥', '𓏗', '𓏹', '𔒦', '𔒧', '𔒪', '𔒫', '𔒭', '𔓇', '𔓏',
+                '𔓗', '𔓡', '𔘞', '𔘶', '𔙄', '𐃗', '𐃚', '𐙦'
+            ],
+        };
+
+        function getRandomInt(min, max) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function getRandomFrom(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function generateCell() {
+            container.innerHTML = '';
+
+            const containerRect = container.getBoundingClientRect();
+            const centerX = containerRect.width / 2;
+            const centerY = containerRect.height / 2;
+            
+            const baseSize = containerRect.width;
+            
+            const cellRadius = Math.min(centerX, centerY) * 0.9;
+
+            function createOrganelle(char, { size, x, y, rotation, zIndex }) {
+                const el = document.createElement('div');
+                el.textContent = char;
+                el.classList.add('organelle');
+                el.style.fontSize = `${size}px`;
+                el.style.left = `${x}px`;
+                el.style.top = `${y}px`;
+                el.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
+                el.style.zIndex = zIndex;
+                container.appendChild(el);
+                return el;
+            }
+
+            function getRandomPointInCell() {
+                const angle = Math.random() * 2 * Math.PI;
+                const radius = cellRadius * Math.sqrt(Math.random());
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+                return { x, y };
+            }
+
+            // --- 各要素の生成 ---
+
+            createOrganelle(CHARS.membrane, {
+                size: baseSize * 2.2,
+                x: centerX, y: centerY, rotation: getRandomInt(0, 360), zIndex: 2,
+            });
+
+            const nucleusAreaRadius = baseSize * 0.06;
+            const nucleusX = centerX + getRandomInt(-nucleusAreaRadius, nucleusAreaRadius);
+            const nucleusY = centerY + getRandomInt(-nucleusAreaRadius, nucleusAreaRadius);
+            
+            const nucleusSize = getRandomInt(baseSize * 0.4, baseSize * 0.5);
+
+            createOrganelle(CHARS.nuclear_envelope, {
+                size: nucleusSize * 1.2,
+                x: nucleusX, y: nucleusY, rotation: getRandomInt(0, 360), zIndex: 19,
+            });
+
+            createOrganelle(CHARS.nucleus, {
+                size: nucleusSize,
+                x: nucleusX, y: nucleusY, rotation: getRandomInt(0, 360), zIndex: 20,
+            });
+
+            const nucleusOffsetX = nucleusX - centerX;
+            const nucleusOffsetY = nucleusY - centerY;
+            const vacuoleX = centerX - nucleusOffsetX * 5;
+            const vacuoleY = centerY - nucleusOffsetY * 5;
+
+            createOrganelle(CHARS.vacuole, {
+                size: baseSize * 1,
+                x: vacuoleX, y: vacuoleY, rotation: getRandomInt(0, 360), zIndex: 1,
+            });
+
+            const erCount = getRandomInt(3, 5);
+            for (let i = 0; i < erCount; i++) {
+                const angle = Math.random() * 2 * Math.PI;
+                const radius = (nucleusSize / 2) + getRandomInt(0, baseSize * 0.025);
+                const erX = nucleusX + radius * Math.cos(angle);
+                const erY = nucleusY + radius * Math.sin(angle);
+
+                createOrganelle(CHARS.er, {
+                    size: getRandomInt(baseSize * 0.3, baseSize * 0.35),
+                    x: erX, y: erY, rotation: getRandomInt(0, 360), zIndex: 18,
+                });
+            }
+
+            const golgiCount = getRandomInt(2, 3);
+            for (let i = 0; i < golgiCount; i++) {
+                const { x, y } = getRandomPointInCell();
+                createOrganelle(getRandomFrom(CHARS.golgi), {
+                    size: getRandomInt(baseSize * 0.1, baseSize * 0.15),
+                    x, y, rotation: getRandomInt(0, 360), zIndex: 15,
+                });
+            }
+
+            const mitoCount = getRandomInt(2, 3);
+            for (let i = 0; i < mitoCount; i++) {
+                const { x, y } = getRandomPointInCell();
+                createOrganelle(getRandomFrom(CHARS.mitochondria), {
+                    size: getRandomInt(baseSize * 0.15, baseSize * 0.2),
+                    x, y, rotation: getRandomInt(0, 360), zIndex: 16,
+                });
+            }
+
+            const centroCount = getRandomInt(2, 3);
+            for (let i = 0; i < centroCount; i++) {
+                const { x, y } = getRandomPointInCell();
+                createOrganelle(getRandomFrom(CHARS.centrosome), {
+                    size: getRandomInt(baseSize * 0.05, baseSize * 0.08),
+                    x, y, rotation: getRandomInt(0, 360), zIndex: 17,
+                });
+            }
+            
+            const othersCount = getRandomInt(4, 6);
+            for (let i = 0; i < othersCount; i++) {
+                const { x, y } = getRandomPointInCell();
+                createOrganelle(getRandomFrom(CHARS.others), {
+                    size: getRandomInt(baseSize * 0.04, baseSize * 0.075),
+                    x, y, rotation: getRandomInt(0, 360), zIndex: 10,
+                });
+            }
+            
+            const ribosomeCount = getRandomInt(100, 150);
+            for (let i = 0; i < ribosomeCount; i++) {
+                const { x, y } = getRandomPointInCell();
+                createOrganelle(CHARS.ribosome, {
+                    size: getRandomInt(baseSize * 0.005, baseSize * 0.02), 
+                    x, y, rotation: 0, zIndex: 5,
+                });
+            }
+        }
+
+        generateCell();
+    });
+    </script>
+</body>
+</html>

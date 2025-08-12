@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="https://symbl-cdn.com/i/webp/bc/b5ecd7f7b68682bc123c7c344be86f.webp">
+    <title>wwwaaavvveee</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #1a1a1a;
+            overflow: hidden;
+        }
+
+        #text-container p {
+            font-family: Helvetica, Arial, sans-serif;
+            color: #eee;
+            font-size: 20px;
+            line-height: 1.2;
+            letter-spacing: 0.1em;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            white-space: pre;
+        }
+    </style>
+</head>
+<body>
+    <div id="text-container"></div>
+
+    <script>
+        const ROWS = 20;
+        const COLS = 50;
+        const ALPHABET_SEQUENCE = "wvyxklijtfrnmuhbdpqgoceasz".split('');
+        // 【変更点1】定数名を変更し、意味をより明確にしました。
+        const STEP_DELAY = 40;   // ms (各ステップ、つまりセル1つが変化するまでの基本遅延)
+        const CYCLE_WAIT = 100;  // ms (全セル変化後、次の文字セットへの変化開始までの待機時間)
+
+        const container = document.getElementById('text-container');
+        const lineElements = []; // 各行の<p>要素を格納
+        // charMatrix[row][col] で各位置の文字を保持
+        const charMatrix = Array(ROWS).fill(null).map(() => Array(COLS).fill('')); 
+
+        let currentAlphabetIndex = 0;
+        let isForward = true; // true: 順方向, false: 逆方向
+
+        // 初期セットアップ：10行分のp要素を作成し、charMatrixを初期化
+        // （少し効率的な書き方に修正しましたが、動作は同じです）
+        function setupTextDisplay() {
+            const initialChar = ALPHABET_SEQUENCE[currentAlphabetIndex];
+            for (let r = 0; r < ROWS; r++) {
+                const pElement = document.createElement('p');
+                const initialLine = Array(COLS).fill(initialChar);
+                charMatrix[r] = initialLine;
+                pElement.textContent = initialLine.join('');
+                container.appendChild(pElement);
+                lineElements.push(pElement);
+            }
+        }
+
+        // 【変更点2】新しい関数を定義。指定された「1つのセル」を更新し、その行を再描画します。
+        // 元の updateColumnAndRefreshDisplay は不要になります。
+        function updateCellAndRefreshRow(rowIndex, colIndex, newChar) {
+            // 1. charMatrixの該当セルを更新
+            if (charMatrix[rowIndex] && charMatrix[rowIndex][colIndex] !== undefined) {
+                charMatrix[rowIndex][colIndex] = newChar;
+            }
+
+            // 2. 表示を更新 (該当行のtextContentをcharMatrixから再構築)
+            if (lineElements[rowIndex] && charMatrix[rowIndex]) {
+                lineElements[rowIndex].textContent = charMatrix[rowIndex].join('');
+            }
+        }
+
+
+        function startNextAnimationCycle() {
+            // 1. 次の表示アルファベットを決定 (この部分は変更なし)
+            if (isForward) {
+                currentAlphabetIndex++;
+                if (currentAlphabetIndex >= ALPHABET_SEQUENCE.length) {
+                    currentAlphabetIndex = ALPHABET_SEQUENCE.length - 2;
+                    isForward = false;
+                }
+            } else { // isBackward
+                currentAlphabetIndex--;
+                if (currentAlphabetIndex < 0) {
+                    currentAlphabetIndex = 1;
+                    isForward = true;
+                }
+            }
+            
+            if (currentAlphabetIndex < 0 || currentAlphabetIndex >= ALPHABET_SEQUENCE.length) {
+                console.error("Alphabet index out of bounds:", currentAlphabetIndex, "Resetting.");
+                currentAlphabetIndex = 0;
+                isForward = true; 
+            }
+            
+            const nextChar = ALPHABET_SEQUENCE[currentAlphabetIndex];
+
+            // 【変更点3】セルごとのアニメーションをスケジュールします。
+            // 二重ループで行と列を回し、各セルの更新タイミングを計算します。
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    // 遅延時間は、行インデックス(r)と列インデックス(c)の和に比例させます。
+                    // これにより、(0,0)が最も早く、(ROWS-1, COLS-1)が最も遅く更新される、
+                    // 斜めの波のようなエフェクトが生まれます。
+                    const delay = (r + c) * STEP_DELAY;
+                    setTimeout(() => {
+                        updateCellAndRefreshRow(r, c, nextChar);
+                    }, delay);
+                }
+            }
+
+            // 【変更点4】次のサイクル開始までの時間を再計算します。
+            // 最も遅いセル（右下隅）の更新が開始されるまでの時間を計算します。
+            const maxDelay = ((ROWS - 1) + (COLS - 1)) * STEP_DELAY;
+            // その処理が完了したとみなし、そこから CYCLE_WAIT 待機します。
+            const timeUntilNextCycleStart = maxDelay + CYCLE_WAIT;
+            setTimeout(startNextAnimationCycle, timeUntilNextCycleStart);
+        }
+
+        // DOMが読み込まれたら実行
+        document.addEventListener('DOMContentLoaded', () => {
+            setupTextDisplay(); // 初期表示をセットアップ
+            startNextAnimationCycle(); // 最初の文字セットから次の文字セットへの変化をすぐに開始
+        });
+    </script>
+</body>
+</html>
