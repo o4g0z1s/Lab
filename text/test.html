@@ -1,117 +1,195 @@
-<!DOCTYPE html>  
-<html lang="ja">  
-<head>  
-    <meta charset="UTF-8">  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-    <title>ｩｩﾝ｡</title>  
-    <script src="https://cdn.tailwindcss.com"></script>  
-    <style>  
-        body {  
-            overflow: hidden;  
-            background-color: #282c34;  
-            color: white;  
-            font-family: sans-serif;  
-            height: 100vh;  
-            margin: 0;  
-            position: relative;  
-        }  
-        .letter {  
-            position: absolute;  
-            opacity: 0.3;  
-            animation: fadeIn 3s forwards, float linear infinite, fadeOut 10s forwards;  
-            white-space: nowrap; /* 改行を有効にするために追加 */  
-        }  
-        @keyframes fadeIn {  
-            0% {  
-                opacity: 0.3;  
-            }  
-            100% {  
-                opacity: 1;  
-            }  
-        }  
-        @keyframes float {  
-            0% {  
-                transform: translate(0, 0);  
-            }  
-            100% {  
-                transform: translate(var(--x), var(--y));  
-            }  
-        }  
-        @keyframes fadeOut {  
-            0% {  
-                opacity: 1;  
-            }  
-            100% {  
-                opacity: 0;  
-            }  
-        }  
-    </style>  
-</head>  
-<body>  
-    <script>  
-        const letters = ["㍁㍂㍎㍏❢❢❢","うぃどんとっけねも！\nうぃどんとっけねも！\nうぃどんとっけねも！\nらぃっ、うぃ、\nゅうーㇲとゥーどゥー！\n","ゐ〜🖐️ㇾ！","ㇵぢ龴ㇽょったㇻㇵぢ龴ㇽょ〜！","づゅゑﾝちづゅゑﾝちー！","ゐっぽゅﾝㇳ、ゐっぽゅﾝヲ、\nゎ〜ゎすぇ〜ㇽㇳを〜、\nぺゅのｯｯｯ🌳ｦ、\nぺゅのｯｯｯ🌳ｦに、\nぬゃ〜ㇽﾝ〜だょｦ〜！\nぬゅほゅﾝㇳ、ぬゅほゅﾝヲ、\nゎ〜ゎすぇ〜ㇽㇳを〜、\nどゅぬゎㇽどょ、\nどゅぬゎㇽどょに、\nぬゃ〜ㇽﾝ〜だょｦ〜！\nすゃﾝゔょﾝㇳ、すゃﾝゔょﾝヲ、\nゎ〜ゎすぇ〜ㇽㇳを〜、\nつゅゐｯｯｯㇷ゚ㇳ、\nどゅゑ〜ㇽに、\nぬゃ〜ㇽﾝ〜だょｦ〜！\nゆょﾝほゅﾝㇳ、ゆょﾝほゅﾝヲ、\nゎ〜ゎすぇ〜ㇽㇳを〜、\nどゃ〜ﾝゔｦ、\nどゃ〜ﾝゔｦに、\nぬゃ〜ㇽﾝ〜だょｦ〜！\nごょほゅﾝㇳ、ごょほゅﾝヲ、\nゎ〜ゎすぇ〜ㇽㇳを〜、\nめゅｯｯｯｯｯ🌳龴ｩㇲ、\nめゅｯｯｯｯｯ🌳龴ｩㇲ、\nめゅｯｯｯ🌳めゅｯｯｯ🌳龴ｩㇲ！","ｸﾞゥ⤴︎ｰｰｰｰｰつょくぃㇷ゚ｧ〜ㇾ、\nｸﾞゅうｰｰｰｰｰ─っゅょくぃㇷ゚ｧ〜ㇾ、\nぬｧぬｨつｯｯｯｯㇰるｫ〜ｰｰｰｰｰ─！\nめｨぐぃﾃㇽぁｸﾞゥ–ㇾ、\nふㇶづぁㇼﾃぐぁつゅょ🌳ㇾ、\nくゎｯｯｯｯぁっめぅゐｰｰｰｰｰ─！\nくゎｯｯｯｯぁっめぅゐｰｰｰｰｰ─！","帰還者ㇳー龴ㇲ！","にふぉﾝぐｦで、\nゎすょゔぉ！","「ゎゐｩゑｦ」の、「ゐ」と「ゑ」は、むづゕしぃです。\nまちがぇなぃで、ゕゖたゕな。","ｦｩ田ｦ、ｩ田ｦｩ⤴","をゅゔぁヶぬゎﾝつゅゑ、\nぬゎ〜ゐすゅゎ！\nをゅゔぁヶぬゎﾝつゅゑ、\nｩｳｯｯｯｯｯｿすゅゎ！\nぬゅゑ〜ゔぉヶ〜た、\nㇶ〜つょぐゎ！\nめゅめゎつゅゐぐゎ〜ゑ\nた〜のゅすゅゎ！\nづゅゎヶづょつょっつょ\nづゅゎヶづょつょっつょ\nゔぉｦ〜ㇰらｯｯｯとゅゑ、\nこゅゎゐぬゎ！\nをゅゔぁヶぬゎﾝつゅゑ、\nぬゎ〜ゐすゅゎ！\nをゅゔぁヶぬゎﾝつゅゑ、\nｩｳｯｯｯｯｯｿすゅゎ！","ㇷ゚あｧㇷ゚るゐｨ〜くぁ！\nㇷあぬぁぐぁ、\nすｧゐ〜つぁ~れぁ〜！\nㇷあぁ〜ㇾつぁすぉらに\nっあぁぬぇｰｰｦぉょめぁくぉ！","ゎるゅｩ、ㇶﾝヶッ！\nもゅㇼのゅぬゎ、ヵﾝてょ〜！\nくゅめゎすゅゎﾝ、\nぬゅゐﾝぬゅゐㇰ！\nづゅゑゎｧ、たﾝくｦゔ！\nへゎぬゎすゎくゅ、\nもゅ〜ㇼ〜のょ〜\nめゅ〜つゅゐﾝﾎﾟこㇿｯこぃㇱョ！\nくゅめゎすゅゎ〜ﾝ〜ぬゅゐ〜\nづゅゑ〜ゎ〜ｧ〜たｧ〜！","どゅﾝぐㇼ\nくｦㇿくｦㇿ、\nどゅﾝぐㇼくｦ〜！\nをゅゐゖぬゐ\nへゃまゅｯとゅゑ、\nすゅゎぁ、とゃゐへゅﾝ！\nどょづょｩぐゎ\nづゅゑづゅゑ🌳とゅゑ、\nこゅﾝぬゅゐつゅゎ〜！\nゔぉｯつゃﾝ、ゐｯすゅｦぬゐ、\nゎすゅｦゔぃまゅすゅｦ〜！","るゃ〜るゃ〜るゃ〜、\nぬゅゐ〜ぢぐゎ〜、\nぬゅゐぢぐゎ〜！\nすゅを〜るゃぬゅゐ〜\nくゃくゃゎてゑ〜！\nつゅ〜めゅのゅ〜、\nつゅめゅのゅ〜！\n🌳〜ゔﾝ〜もゅ、\nへゃるゅゑつゅゑ〜！\n🌳ｯｯｯつょ〜ゎㇱたゎ〜、\nゐゅゐ〜ゐゅゐ〜\nつゅゑﾝ🌳〜、\n🌳〜ゐつょ〜ゎㇱ〜たゎ〜、\nゐゅゐ〜ゐゅゐつゅゑﾝ🌳〜！","ㇵむｨヵ゙ｷ、づょｩづヵぬゎ！","ㇱぁヶ゙ゎ、ヲヵ〜ゎすｧ〜ﾝ！","ｩゑぬォㇵ〜！\nㇱﾀぬォㇵ〜！\nまゅゑゔｧ〜！\nヲㇰゔｧ〜！","ﾀゔｪﾀㇻめゅゐヵ゙ㇰ、\nゃㇰすｫㇰヶ゙ﾝめゎﾝ！","ぁーゐぁゐ！\n　　ぁーゐぁゐ！\nぁーゐぁゐ！\n　　ぁーゐぁゐ！\nｦっすｧ〜るゅすｧ〜ﾝづぁょｫ〜！","ぐさぐさぐさっ！！","ばきゅんばきゅんばきゅん！","ゎヵんﾀﾞ、ふォ〜ゑゔぁー！！","ィゐばンべ！","ごめん、いま、裸。","田ゐっこㇻ藻‼️","🇹🇭🌛🦙‼️","龴龴‼️","をれぬきれ？","ㇴ🌳ㇾ❓️","📈⚔️🫓🥜🦤","ト゚ゕ龴ゑㇿ！","👁️","🌱","🫘","🫁🫘‼️","龴ゐ龴ゐ。","🈚️","🫓でㇺッㇲㇽ⁉️","むっㇱたぁ～","ゎゑたもに？","もめんぬ。","ゐぢめㇽﾝだね。","きㇻゐなﾝだね。","🌳🌱っゖ🦤","を👀🧂🈯‼️","をれょり？","をれぬんく。。。","ゟ？","っこㇻ、、、、、","とゅ！","ぁｯせﾝぶぅ。","ゎゐた？","こせくん！","ゐ龴ㇿこ？","ちもこ！","ㇳィㇾ。","８🌱７３１。","🈸🩸🥚🈚️‼️","🈶ㇼ🉐🈚️ィ‼️","🈵🈵🈵🈵🈵🈵🈵ℹ️‼️","まぷんぬぃ。","まぷるちっつぁ、ぞぞー！","ZOZO‼️","⑳‼️","もぷるせぬぃょぉ！","🟢🍮🦠🪀‼️","🌳⚡️🫓🥜","ℹ️🅿️🩻","ℹ️🩸🌱🎶🥜","あっど、１秒もむっㇱたぁ～","そーｬっ🖐️","ゎゐたㇰぬぃﾝだねっど。","ど゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙ ゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙ ゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙゙ ゙゙゙゙゙゙","🦤","もﾝざㇰ","ㇱ🐀ゔｧゐゐㇳｦ藻ｯ🖐️🎶🥜ｯ🦤‼️","ヤﾔーャャヤｬヤー！ﾔﾔ！ｬ！ｬｬﾔー！ｬ！ﾔﾔ！！！ャｬヤ！ヤｬｬヤ！ｬヤﾔヤ！ﾔｬーﾔ！ヤｬ！ャャ！ヤャャャャーャ！ﾔーャ！ﾔャャﾔ！ー！ｬﾔー！ャﾔャ！！ｬャーャーﾔヤｬーヤヤー！！","ヲゐゑヶ゙ゐ","ㇵ龴ｯ🖐️ㇽ🐀ゑ〰〰〰ｯ‼️","をれのㇹｩが。","ㇷ🆘ㇰ‼️","🖐️🌳🧂🦤","ー-―─ー−━ー-−━―−","🫓で、そーｬっ🖐️、\nゎ🦞ㇳ、ㇺッㇲㇽ⁉️","ｩｩﾝ｡","ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡\nｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡\nｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡\nｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡\nｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡","むっㇱたぁ〜むっ\nㇱたぁ〜むっㇱた\nぁ〜むっㇱたぁ〜\nむっㇱたぁ〜むっ\nㇱたぁ〜むっㇱた\nぁ〜むっㇱたぁ〜","🇬🇭","🩸‼️","ゅ〰〰〰🩸〰〰〰‼️","ゅーしゅん。","ｩ〰〰〰ｩ〰〰〰ﾝ｡","ｩ﹏⤴﹋⤵ｩ﹏⤴﹋⤵ﾝ｡","ｩ＿╱￣╲＿╱￣╲＿╱￣╲＿ｩ＿╱￣╲＿╱￣╲＿╱￣╲＿ﾝ｡","ㇸ゚ッｯッｯッｯッｯッㇳ","ョ🈁ㇰ","もゔぁゃㇱ","ゕ🩸ㇰ藻ゔ","ゐｯｯｯｯｯゖゑ〰〰〰〰〰〰‼️","ゑ？","🌳、🌳☠️🪳⁉️","ょぢめっんゕゖ！","🕓️🌱‼️","⭕️","❌️","💧🦀🦑🪀‼️","らめれすぽー‼️","🏹👁️ㇽョォ〰〰〰‼️","👀🖐️👀🖐️〰〰〰‼️","🦷✊️🌳‼️","ゎ💋🔥‼️","🖐️🪺🚪","ゐぢめㇻㇾ🖐️ㇱ龴ｯ田。。。"]; // 配列内に改行を含む文字列  
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>意味不明な文章ジェネレーター</title>
+    <style>
+        /* --- CSS --- */
+        :root {
+            --bg-color: #f0f2f5;
+            --text-color: #333;
+            --main-color: #007bff;
+            --main-hover-color: #0056b3;
+            --container-bg: #ffffff;
+            --border-color: #dee2e6;
+        }
 
-        const createLetter = () => {  
-            const letterContainer = document.createElement('div');  
-            letterContainer.className = 'letter';  
-            const randomIndex = Math.floor(Math.random() * letters.length);  
-            letterContainer.innerHTML = letters[randomIndex].replace(/\n/g, '<br>'); // \nを<br>に置換  
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: var(--container-bg);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--main-color);
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        #result {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            padding: 20px;
+            margin-top: 25px;
+            min-height: 100px;
+            text-align: left;
+            line-height: 1.8;
+            font-size: 16px;
+            white-space: pre-wrap; /* 改行やスペースをそのまま表示 */
+        }
+
+        #generateBtn {
+            background-color: var(--main-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+            margin-top: 20px;
+        }
+
+        #generateBtn:hover {
+            background-color: var(--main-hover-color);
+        }
+        
+        #generateBtn:active {
+            transform: scale(0.98);
+        }
+
+        #generateBtn:disabled {
+            background-color: #a0a0a0;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>意味不明な文章ジェネレーター</h1>
+        <p>ボタンを押すと、AIが頑張って不思議な文章を作ります。</p>
+        <button id="generateBtn">文章を生成する</button>
+        <div id="result">ここに結果が表示されます...</div>
+    </div>
+
+    <script>
+        // --- JavaScript ---
+
+        // 1. 定数とDOM要素の準備
+        // 日本語WordNetの特定バージョンを指す、安定したURL
+        const DICTIONARY_URL = 'https://cdn.jsdelivr.net/gh/takatama/wn-data-jp@483859607675e4e91811800262c5a08993f4e9fa/data/wn-synset.json';
+        const generateBtn = document.getElementById('generateBtn');
+        const resultDiv = document.getElementById('result');
+
+        let dictionary = []; // 読み込んだ辞書データを格納する配列
+        let isLoading = false; // 読み込み状態を管理
+
+        // 2. 辞書データを読み込む関数
+        async function loadDictionary() {
+            if (dictionary.length > 0) return; // 既に読み込み済みなら何もしない
+
+            isLoading = true;
+            generateBtn.disabled = true;
+            generateBtn.textContent = '辞書を準備中...';
+            resultDiv.textContent = 'インターネットの彼方から単語を集めています...';
+
+            try {
+                const response = await fetch(DICTIONARY_URL);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                // 実際に単語('lemma')を持つエントリのみをフィルタリングして格納
+                dictionary = data.filter(entry => entry.words && entry.words.length > 0 && entry.words[0].lemma);
+                
+                resultDiv.textContent = '準備完了！ボタンを押してください。';
+                
+            } catch (error) {
+                console.error('辞書データの読み込みに失敗しました:', error);
+                resultDiv.textContent = 'エラー: 辞書の読み込みに失敗しました。ページを再読み込みしてみてください。';
+            } finally {
+                isLoading = false;
+                generateBtn.disabled = false;
+                generateBtn.textContent = '文章を生成する';
+            }
+        }
+
+        // 3. 辞書からランダムな単語を取得する関数
+        function getRandomWord() {
+            if (dictionary.length === 0) {
+                console.error('辞書が空です。');
+                return '（単語）';
+            }
+            const randomIndex = Math.floor(Math.random() * dictionary.length);
+            const randomEntry = dictionary[randomIndex];
+            return randomEntry.words[0].lemma;
+        }
+
+        // 4. 文章を生成して表示するメインの関数
+        async function generateAndShowSentence() {
+            // もし辞書が未読み込みなら、まず読み込む
+            if (dictionary.length === 0) {
+                await loadDictionary();
+                // 読み込みに失敗した場合はここで処理を中断
+                if (dictionary.length === 0) return;
+            }
             
-            letterContainer.style.left = (Math.random() * 100 - 10) + 'vw'; // -10%から100%  
-            letterContainer.style.top = (Math.random() * 100 - 10) + 'vh';  // -10%から100%    
-            letterContainer.style.setProperty('--x', (Math.random() * 200 - 100) + 'px');  
-            letterContainer.style.setProperty('--y', (Math.random() * 200 - 100) + 'px');  
-            
-            const size = Math.random() * 145 + 5; // 5px to 150px  
-            letterContainer.style.fontSize = size + 'px';  
+            if (isLoading) return; // 読み込み中は何もしない
 
-            const duration = Math.random() * 5 + 5; // 5s to 10s for floating  
-            letterContainer.style.animationDuration = duration + 's';  
+            resultDiv.textContent = '文章を作成中...';
 
-            document.body.appendChild(letterContainer);  
-            
-            // Fade in effect  
-            setTimeout(() => {  
-                letterContainer.style.opacity = 0.3; // Start with opacity 0.3  
-            }, 100); // Slight delay for fade-in  
+            // setTimeoutを使って非同期にし、UIの「作成中...」を確実に表示させる
+            setTimeout(() => {
+                const phrases = [];
+                const phraseCount = 10; // 10個のフレーズを生成
 
-            // Fade out after a random time between 5 to 15 seconds  
-            setTimeout(() => {  
-                letterContainer.style.animation = 'fadeOut 10s forwards';  
-            }, Math.random() * 10000 + 5000); // 5s to 15s  
+                for (let i = 0; i < phraseCount; i++) {
+                    const wordCount = Math.floor(Math.random() * 3) + 2; // 2〜4個の単語
+                    let phrase = '';
+                    for (let j = 0; j < wordCount; j++) {
+                        phrase += getRandomWord();
+                    }
+                    phrases.push(phrase);
+                }
 
-            letterContainer.addEventListener('animationend', () => {  
-                letterContainer.remove();  
-            });  
-        };  
+                // フレーズを「、」か「。」で繋ぐ
+                let sentence = phrases[0];
+                for (let i = 1; i < phrases.length; i++) {
+                    const punctuation = Math.random() < 0.7 ? '、' : '。'; // 70%の確率で「、」
+                    sentence += punctuation + phrases[i];
+                }
+                sentence += '。'; // 最後に必ず「。」をつける
 
-        setInterval(createLetter, 70); // Increased frequency to 70 milliseconds  
-    </script>  
-    <script>  
-        window.parent.postMessage({ action: "ready" }, "*");   
+                resultDiv.textContent = sentence;
+            }, 10);
+        }
 
-        window.console = new Proxy(console, {  
-            get(target, prop) {  
-                if (['log', 'warn', 'error'].includes(prop)) {  
-                    return new Proxy(target[prop], {  
-                        apply(fn, thisArg, args) {  
-                            fn.apply(thisArg, args);  
-                            window.parent.postMessage({ action: 'console',   
-                                type: prop,   
-                                args: args.map((arg) => {  
-                                    try {  
-                                        return JSON.stringify(arg).replace(/^["']|["']$/g, '');  
-                                    } catch (e) {  
-                                        return arg;  
-                                    }  
-                                })   
-                            }, '*');  
-                        }  
-                    });  
-                }  
-                return target[prop];  
-            }  
-        });  
-    </script>  
-</body>  
-</html>  
+        // 5. イベントリスナーを設定
+        generateBtn.addEventListener('click', generateAndShowSentence);
+
+        // 最初にページを開いたときに、裏側で辞書の読み込みを開始しておく
+        loadDictionary();
+
+    </script>
+</body>
+</html>

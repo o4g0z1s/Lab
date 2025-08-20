@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<title>𝙲𝚘𝚕𝚘𝚗𝚒𝚎𝚜</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><text x='16' y='24' font-size='24' text-anchor='middle' fill='orange'>👾</text></svg>">
+<meta charset="UTF-8">
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #ffd;
+    }
+
+    #simulationCanvas {
+        border: none;
+        background-color: none;
+        height: 70vmin;
+        width: 70vmin;
+    }
+</style>
+</head>
+<body>
+
+<canvas id="simulationCanvas"></canvas>
+
+<script>
+    // --- シミュレーションの基本設定 ---
+    const GRID_SIZE = 150;          // 画面のピクセル数（一辺）。
+    const CELL_SIZE = 5;            // 1ピクセルの描画サイズ（単位: px）。
+    const INITIAL_FACTIONS = 3;     // 初期勢力の数。
+    const EXPANSION_CHANCE = 0.7;   // 各フレームで、それぞれの勢力が拡大を試みる確率。
+    const NEW_FACTION_THRESHOLD = 0.1; // 全体の何割が占領されたら新興勢力が現れ始めるか。
+    const NEW_FACTION_CHANCE = 0.05; // 条件を満たした後の各フレームで新興勢力が新たに出現する確率。
+    const SIMULATION_SPEED = 50;    // シミュレーションの更新間隔（ミリ秒）。数値が大きいほど遅くなる。
+
+    // --- グローバル変数 ---
+    const canvas = document.getElementById('simulationCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let grid = [];      // 各ピクセルの所有者情報を格納する2次元配列
+    let factions = [];  // 各勢力の情報（ID, 色, サイズ, 年齢）を格納する配列
+    let nextFactionId = 1; // 次に生成される勢力のID
+
+    /**
+     * ランダムな16進数のカラーコードを生成する関数
+     */
+    function getRandomColor() {
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+
+    /**
+     * グリッド内のランダムな座標を返す関数
+     */
+    function getRandomCell() {
+        const x = Math.floor(Math.random() * GRID_SIZE);
+        const y = Math.floor(Math.random() * GRID_SIZE);
+        return { x, y };
+    }
+
+    /**
+     * シミュレーションを初期化する関数
+     */
+    function init() {
+        canvas.width = GRID_SIZE * CELL_SIZE;
+        canvas.height = GRID_SIZE * CELL_SIZE;
+        grid = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(0));
+        factions = [];
+        nextFactionId = 1;
+
+        for (let i = 0; i < INITIAL_FACTIONS; i++) {
+            createFaction();
+        }
+
+        gameLoop();
+    }
+
+    /**
+     * 新しい勢力を生成し、ランダムなピクセルに配置する関数
+     */
+    function createFaction() {
+        const startPos = getRandomCell();
+        if (!startPos) return;
+
+        const originalFactionId = grid[startPos.y][startPos.x];
+        if (originalFactionId !== 0) {
+            const originalFaction = factions.find(f => f.id === originalFactionId);
+            if (originalFaction) {
+                originalFaction.size--;
+            }
+        }
+        
+        const newFaction = {
+            id: nextFactionId,
+            color: getRandomColor(), // 全ての勢力がランダムな色を持つ
+            size: 1,
+            age: 0,
+            // isImmortal プロパティは廃止
+        };
+
+        factions.push(newFaction);
+        grid[startPos.y][startPos.x] = newFaction.id;
+        nextFactionId++;
+    }
+
+    /**
+     * 現在のグリッドの状態をキャンバスに描画する関数
+     */
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (let y = 0; y < GRID_SIZE; y++) {
+            for (let x = 0; x < GRID_SIZE; x++) {
+                const factionId = grid[y][x];
+                if (factionId !== 0) {
+                    const faction = factions.find(f => f.id === factionId);
+                    if (faction) {
+                        ctx.fillStyle = faction.color;
+                        ctx.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
+     * 各勢力の拡大ロジックを処理する関数
+     */
+    function expandFactions() {
+        factions = factions.filter(f => f.size > 0);
+
+        factions.forEach(faction => {
+            faction.age++;
+
+            if (Math.random() > EXPANSION_CHANCE) return;
+
+            // ★★★ 新しい勢力ほど強くなるように、拡大能力の計算式を変更 ★★★
+            // 基本強度に、勢力IDに基づいたボーナスを加算する。
+            // これにより、後から生まれた勢力ほど初期の最大拡大能力が高くなる。
+            // ただし、時間経過(age)による衰退は全ての勢力に適用される。
+            const initialPower = 15 + (faction.id * 2); // IDが上がるごとに基本強度が増える
+            const decay = Math.exp(-faction.age / 1800);  // 衰退率は少し早めに調整
+            
+            const maxExpansion = Math.max(1, Math.round(initialPower * decay)) + 1;
+            const expansionCount = Math.floor(Math.random() * maxExpansion) + 1;
+
+            let candidates = [];
+            for (let y = 0; y < GRID_SIZE; y++) {
+                for (let x = 0; x < GRID_SIZE; x++) {
+                    if (grid[y][x] === faction.id) {
+                        const neighbors = [
+                            { nx: x, ny: y - 1 }, { nx: x, ny: y + 1 },
+                            { nx: x - 1, ny: y }, { nx: x + 1, ny: y },
+                        ];
+                        neighbors.forEach(({ nx, ny }) => {
+                            if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE && grid[ny][nx] !== faction.id) {
+                                candidates.push({ x: nx, y: ny });
+                            }
+                        });
+                    }
+                }
+            }
+            
+            if (candidates.length === 0) return;
+
+            const uniqueCandidates = [...new Set(candidates.map(c => JSON.stringify(c)))].map(s => JSON.parse(s));
+            shuffleArray(uniqueCandidates);
+
+            for (let i = 0; i < expansionCount && i < uniqueCandidates.length; i++) {
+                const cell = uniqueCandidates[i];
+                const originalFactionId = grid[cell.y][cell.x];
+
+                if (originalFactionId !== faction.id) {
+                    if (originalFactionId !== 0) {
+                        const originalFaction = factions.find(f => f.id === originalFactionId);
+                        if (originalFaction) {
+                            originalFaction.size--;
+                        }
+                    }
+                    grid[cell.y][cell.x] = faction.id;
+                    faction.size++;
+                }
+            }
+        });
+    }
+
+    /**
+     * 配列の要素をランダムに並び替える関数
+     */
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    /**
+     * 新興勢力の出現条件をチェックし、必要であれば生成する関数
+     */
+    function spawnNewFaction() {
+        const totalCells = GRID_SIZE * GRID_SIZE;
+        const occupiedCells = factions.reduce((sum, f) => sum + f.size, 0);
+
+        if (occupiedCells / totalCells > NEW_FACTION_THRESHOLD && Math.random() < NEW_FACTION_CHANCE) {
+            createFaction();
+        }
+    }
+
+    /**
+     * シミュレーションのメインループ関数
+     */
+    function gameLoop() {
+        expandFactions();
+        spawnNewFaction();
+        draw();
+        
+        setTimeout(gameLoop, SIMULATION_SPEED);
+    }
+
+    // --- シミュレーション開始 ---
+    init();
+</script>
+
+</body>
+</html>
