@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="../0.png">
+    <title>ｭﾂｨ</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #1a1a1a;
+            margin-bottom: 50px;
+            font-size: 3em;
+        }
+
+        .btn {
+            font-family: sans-serif;
+            color: #000000;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            line-height: 1.4;
+            text-align: left;
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        #generate-btn {
+            background-color: #6fe57d;
+            margin-bottom: 30px;
+        }
+
+        #copy-btn {
+            display: none;
+            background-color: #6fe57d;
+            margin-top: 30px;
+            margin-bottom: 30px;
+            white-space: pre-wrap;
+        }
+
+        #output {
+            margin-top: 30px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            min-height: 100px;
+            text-align: left;
+            line-height: 1.8;
+            font-size: 16px;
+            color: #444;
+        }
+
+        @media only screen and (max-width:500px) 
+        {
+        .container {padding: 30px 20px;}
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>ㇹｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯｯ🈂️｡</h1>
+        <button id="generate-btn" class="btn">ゐｯｯｯｯｯゖぇ〰‼️<br>📳💥👈👈👈<br>押せッ‼️押せッ‼️</button>
+        <p id="output"></p>
+        <button id="copy-btn" class="btn"></button>
+    </div>
+
+    <script src="words.js"></script>
+
+    <script>
+        const generateBtn = document.getElementById('generate-btn');
+        const outputParagraph = document.getElementById('output');
+        const copyBtn = document.getElementById('copy-btn');
+
+        const copyButtonTexts = [
+            "あッ。\nうわあああああ\nﾎｯｻ、やめようね！もゔぅッ！\nあれ？\nもしかしてこれってボタン？\nよし、おしてみようっ！", 
+            "ゃぁ。ぼくゎ、ゔゥｫたﾝ。\nをㇱたㇻ、ゎくょ❤\nもっもっ⤴⤴⤴⤴⤴", 
+            "ぁ〰〰〰〰〰〰‼️\n♨️〰🩸〰ﾝ🥜ｯ🦤‼️\nゑ⁉️🫓⚡️、🅾️🍋🐃🌳⁉️\nをれぬきれ、ㇹｯｯｯ🈂️ゎ🌳‼️\nｯｯｯｯｯｯｯｯｯｯ🦤‼️",
+            "ﾎﾎﾎﾎﾎﾎﾎｯｯｯｯｯｻ⤴⤴⤴\nﾎﾎﾎﾎﾎﾎﾎｯｯｯｯｯｻ⤴⤴⤴\nﾎﾎﾎﾎﾎﾎﾎｯｯｯｯｯｻ⤴⤴⤴\nㇳゕ龴ゑㇿ‼️"
+        ];
+        const copySuccessMessages = [
+            "すげえええ\nこぴーできてるよ！むんむん", 
+            "ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡", 
+            "ｭﾂｨ!", 
+            "あｯ🦤。をれぬきれ、🈁🅿️。🌳⚡️🫓🥜。"
+        ];
+
+        function generateNonsenseSentence() {
+            if (typeof words === 'undefined' || words.length === 0) {
+                outputParagraph.textContent = "っど。";
+                return;
+            }
+
+            const phrases = [];
+            const numberOfPhrases = 30;
+
+            for (let i = 0; i < numberOfPhrases; i++) {
+                const numberOfWords = Math.floor(Math.random() * 3) + 1;
+                let currentPhrase = '';
+                for (let j = 0; j < numberOfWords; j++) {
+                    const randomIndex = Math.floor(Math.random() * words.length);
+                    currentPhrase += words[randomIndex];
+                }
+                phrases.push(currentPhrase);
+            }
+
+            let fullSentence = '';
+            for (let i = 0; i < phrases.length - 1; i++) {
+                fullSentence += phrases[i];
+                const separator = Math.random() < 0.7 ? '、' : '。';
+                fullSentence += separator;
+            }
+
+            fullSentence += phrases[phrases.length - 1] + '。';
+            outputParagraph.textContent = fullSentence;
+            
+            copyBtn.style.display = 'inline-block';
+            
+            const randomBtnIndex = Math.floor(Math.random() * copyButtonTexts.length);
+            copyBtn.innerText = copyButtonTexts[randomBtnIndex];
+        }
+
+        function copyToClipboard() {
+            const textToCopy = outputParagraph.textContent;
+
+            if (!textToCopy || textToCopy === "") {
+                return;
+            }
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const randomMsgIndex = Math.floor(Math.random() * copySuccessMessages.length);
+                alert(copySuccessMessages[randomMsgIndex]);
+            }).catch(err => {
+                console.error('Error: ', err);
+                alert('っど。');
+            });
+        }
+
+        generateBtn.addEventListener('click', generateNonsenseSentence);
+        copyBtn.addEventListener('click', copyToClipboard);
+    </script>
+
+</body>
+</html>
