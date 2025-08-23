@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><text x='16' y='24' font-size='24' text-anchor='middle' fill='orange'>✴️</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Emoji:wght@300..700&display=swap" rel="stylesheet">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-E675FYQ3DK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+    
+      gtag('config', 'G-E675FYQ3DK');
+    </script>
+    <title>𝙺𝚊𝚕𝚎𝚒𝚍𝚘𝚜𝚌𝚘𝚙𝚎 - 𝚓𝚊</title>
+    <style>
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+        }
+        body {
+            font-family: "Noto Emoji", Helvetica;
+            background-color: #000;
+        }
+
+        #kaleidoscope-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .text {
+            position: absolute;
+            white-space: nowrap;
+            transform-origin: center center;
+        }
+    </style>
+</head>
+<body>
+
+<div id="kaleidoscope-container"></div>
+
+<script>
+    // --- 設定値 ---
+    const KALEIDOSCOPE_SEGMENTS = 6; 
+
+    const isSmallScreen = window.innerWidth < 768;
+
+    let maxFontSize;
+    let numberOfBasePatterns;
+
+    if (isSmallScreen) {
+        maxFontSize = 60; 
+        numberOfBasePatterns = 20; 
+    } else {
+        maxFontSize = 150;
+        numberOfBasePatterns = 30; 
+    }
+    
+    // --- コンテナのセットアップ ---
+    const container = document.getElementById('kaleidoscope-container');
+    const artboardSize = Math.min(window.innerWidth, window.innerHeight);
+    container.style.width = `${artboardSize}px`;
+    container.style.height = `${artboardSize}px`;
+
+    const centerX = artboardSize / 2;
+    const centerY = artboardSize / 2;
+
+    // --- ユーティリティ関数 ---
+function getRandomColor() {
+    const hue = Math.floor(Math.random() * 360);
+    const saturation = Math.floor(30 + Math.random() * 60);
+    const lightness = Math.floor(50 + Math.random() * 20);
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+}
+    function getRandomUnicodeChar() {
+        const unicodeRange = [ [0x3041, 0x3096], [0x30A1, 0x30FA] ];
+        let codePoint;
+        const range = unicodeRange[Math.floor(Math.random() * unicodeRange.length)];
+        codePoint = Math.floor(Math.random() * (range[1] - range[0] + 1)) + range[0];
+        return String.fromCharCode(codePoint);
+    }
+
+    // --- 万華鏡アート生成関数 ---
+    function createTextElement(x, y, char, color, fontSize, rotation, isMirrored) {
+        const textElement = document.createElement('div');
+        textElement.className = 'text';
+        textElement.textContent = char;
+        textElement.style.fontSize = `${fontSize}px`;
+        textElement.style.color = color;
+        textElement.style.left = `${x}px`;
+        textElement.style.top = `${y}px`;
+        
+        let transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
+        if (isMirrored) {
+            transform += ' scaleY(-1)';
+        }
+        textElement.style.transform = transform;
+        
+        container.appendChild(textElement);
+    }
+
+    function createSymmetricalGroup() {
+        const char = getRandomUnicodeChar();
+        const color = getRandomColor();
+        const initialRotation = Math.random() * 360;
+        
+        const safeMargin = maxFontSize / 2;
+        const maxRadius = (artboardSize / 2) - safeMargin;
+        if (maxRadius <= 0) return;
+
+        const radius = Math.sqrt(Math.random()) * maxRadius;
+
+        const minFontSize = 50;
+        
+        const fontSizeFactor = radius / maxRadius; // 0.0 (中心) ~ 1.0 (外縁) の値
+        const dynamicMaxFontSize = (maxFontSize - minFontSize) * fontSizeFactor;
+        const fontSize = Math.random() * dynamicMaxFontSize + minFontSize;
+
+        const segmentAngleRad = 2 * Math.PI / KALEIDOSCOPE_SEGMENTS;
+        const angleRad = Math.random() * segmentAngleRad;
+
+        for (let i = 0; i < KALEIDOSCOPE_SEGMENTS; i++) {
+            const currentSegmentAngleRad = i * segmentAngleRad;
+
+            const currentAngleRad = angleRad + currentSegmentAngleRad;
+            const x = centerX + radius * Math.cos(currentAngleRad);
+            const y = centerY + radius * Math.sin(currentAngleRad);
+            const rotationDeg = initialRotation + (currentSegmentAngleRad * 180 / Math.PI);
+            createTextElement(x, y, char, color, fontSize, rotationDeg, false);
+
+            const mirroredAngleRad = -angleRad + currentSegmentAngleRad;
+            const mirroredX = centerX + radius * Math.cos(mirroredAngleRad);
+            const mirroredY = centerY + radius * Math.sin(mirroredAngleRad);
+            const mirroredRotationDeg = -initialRotation + (currentSegmentAngleRad * 180 / Math.PI);
+            createTextElement(mirroredX, mirroredY, char, color, fontSize, mirroredRotationDeg, true);
+        }
+    }
+
+    function generateKaleidoscopeArt() {
+        for (let i = 0; i < numberOfBasePatterns; i++) {
+            createSymmetricalGroup();
+        }
+    }
+
+    // --- 初期化処理 ---
+    generateKaleidoscopeArt();
+
+</script>
+</body>
+</html>
