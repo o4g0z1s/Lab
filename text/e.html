@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Noto+Sans+JP&display=swap" rel="stylesheet">
+    <title>ゐ〜🖐️ㇾ！</title>
+    <style>
+        /* === 全体のスタイル === */
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Noto Sans JP', 'Noto Color Emoji', sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            cursor: pointer;
+        }
+        .page-wrapper {
+            position: relative;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        /* === ヘッダーとタイトルのスタイル === */
+        header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #ffc0cb, #87cefa, #98fb98);
+        }
+
+        .main-title {
+            font-size: 12vw;
+            color: white;
+            text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.3);
+            transform: scale(0);
+            opacity: 0;
+            animation: pop-in 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            animation-delay: 0.5s;
+        }
+
+        @keyframes pop-in {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* === コンテンツ全体のスタイル === */
+        main {
+            padding: 50px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content-section {
+            max-width: 800px;
+            margin: 100px auto;
+            padding: 40px;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 1s, transform 1s;
+            text-align: center;
+        }
+
+        .content-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        h2, h3 {
+            text-align: center;
+        }
+        h2 { font-size: 2em; color: #f00; margin-bottom: 20px; }
+        h3 { font-size: 1.5em; color: #1e90ff; margin-bottom: 10px; }
+
+        p {
+            font-size: 1.1em;
+            line-height: 1.8;
+        }
+
+        strong {
+            font-size: 5em;
+            line-height: 0.8;
+        }
+
+        /* === ボタンのスタイル === */
+        button {
+            font-family: 'Noto Color Emoji', 'Noto Sans JP', sans-serif;
+        }
+
+        .program-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        #btn-song { background-color: #ff6347; }
+        #btn-teasobi { background-color: #32cd32; }
+        #btn-inaiinai { background-color: #ffa500; }
+
+        /* === 右から流れる文字列 === */
+        .marquee-container {
+            width: 100%;
+            overflow: hidden;
+            background-color: #ffd700;
+            color: #4b0082;
+            padding: 10px 0;
+            white-space: nowrap;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 50px 0;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+
+        .marquee-text {
+            display: inline-block;
+            padding-left: 100%;
+            animation: marquee 20s linear infinite;
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-200%); }
+        }
+
+        /* === 浮遊するオブジェクト === */
+        .floating-object {
+            position: absolute;
+            opacity: 0.7;
+            pointer-events: none;
+            z-index: 0;
+            animation: poyon-poyon 7s ease-in-out infinite;
+            font-family: 'Noto Color Emoji', 'Noto Sans JP', sans-serif;
+        }
+
+        @keyframes poyon-poyon {
+            0%, 100% { transform: scale(1); }
+            10%, 30% { transform: scale(0.9); }
+            20%, 40%, 60%, 80% { transform: scale(1.1); }
+            50%, 70%, 90% { transform: scale(1); }
+        }
+
+        /* === ポップアップ === */
+        #popup {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0.5);
+            width: 320px; padding: 30px; background: white;
+            border: 5px solid #ff69b4; border-radius: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            text-align: center; z-index: 1000; opacity: 0;
+            visibility: hidden; transition: transform 0.5s, opacity 0.5s;
+            white-space: pre-line;
+        }
+        #popup.show { transform: translate(-50%, -50%) scale(1); opacity: 1; visibility: visible; }
+        #popup h3 { margin-top: 0; }
+        #popup-emoji { font-size: 3em; margin-top: 10px; font-weight: bold; }
+        #close-popup { position: absolute; top: 10px; right: 15px; font-size: 1.5em; background: none; border: none; cursor: pointer; }
+
+        /* === 歌詞コンテナ共通スタイル === */
+        .lyrics-container {
+            margin-top: 30px; padding: 20px; background-color: #e6e6fa;
+            border-radius: 10px; text-align: center; font-size: 1.2em;
+            line-height: 2; font-weight: bold; display: none; white-space: pre-wrap;
+        }
+        .lyrics-container.poyon-active { animation: poyon-container 0.5s infinite ease-in-out; }
+        @keyframes poyon-container {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        /* === オーバーレイキャンバス === */
+        #overlay-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; pointer-events: none; }
+
+        /* === いないいないばあ イベント用スタイル === */
+        #inaiinai-overlay {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: white;
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1001;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease-out;
+        }
+        #inaiinai-overlay.show { opacity: 1; }
+
+        .inaiinai-text {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0.1);
+            font-weight: bold; color: #000;
+            text-shadow: 3px 3px 5px rgba(0,0,0,0.2);
+            opacity: 0;
+            z-index: 1002;
+        }
+        .inaiinai-text.inai {
+            font-size: 5vw;
+            animation: inai-anim 4s forwards cubic-bezier(0.5, 0, 0.5, 1);
+        }
+        @keyframes inai-anim {
+            0% { transform: translate(-50%, -50%) scale(0.1); opacity: 0; }
+            20% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            99% { transform: translate(-50%, -50%) scale(20) rotate(5deg); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(20); opacity: 0; }
+        }
+        .inaiinai-text.baa {
+            font-size: 2vw;
+            animation: baa-anim-poyon-and-hold 0.8s ease-out forwards;
+        }
+        @keyframes baa-anim-poyon-and-hold {
+            0%   { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            60%  { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+        }
+        .inaiinai-text.fade-out {
+            opacity: 0 !important;
+            transition: opacity 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="page-wrapper">
+
+        <header><h1 class="main-title">ゐ〜🖐️ㇾ！</h1></header>
+
+        <main>
+            <div class="marquee-container">
+                <span class="marquee-text">ㇵぢ龴ㇽょったㇻㇵぢ龴ㇽょ〜！ㇵぢ龴ㇽょったㇻㇵぢ龴ㇽょ〜！</span>
+                <span class="marquee-text">︀めゅﾝぬゎー〜ー！︀ぢぇんちーー〜ーー？︀ｦぬゅゐ〜すゅゎﾝも、︀ｦのゅゑ〜すゅゎﾝも、︀めゅゐ〜〜ﾝぬゎ、︀づゅゑﾝちづゅゑﾝちー！ </span>
+            </div>
+
+            <section class="content-section">
+                <h2>めゅんなぁっ‼️ぁのねぇ、ねぇ、〜ん、んねぇ〜、ゎのねぇっ‼️これゎ、ねぇ〰〰〰っ‼️‼️、、ゐ〜🖐️ㇾの、ㇹーㇺㇸ゚ーㇱ゙🫓だょぉっ‼️ㇲぐぉゐㇾㇱョォ〰〰〰〰〰〰ｯｯｯｯｯ‼️そぇでさぁっ、さぁ〜っ、っー。ん、ぬんく、ぬんくねぇ、ㇲっごゐんだょぉっ‼️</h2>
+                <p>ぬんくさぁっ、ㇱたに、ぁㇽ、ゔゥｫたﾝを、をㇱたㇻぁ、<strong>ゎ🌳ィ〰〰〰〰〰〰っ‼️‼️‼️</strong><br><br><strong>ｭﾂｨ‼️</strong>っ🖐️、なㇽもぉ〜っ‼️<br>ぁとゎねぇ、ぬんくぅ、た龴に、<strong>ゎ🌳‼️‼️‼️<br>ゎゐ🖐️ㇽ、ゎ🌳が、ゎゐ🖐️、ゎ🌳ゎ🌳ㇲㇽゎ🌳🫓だもぉ〜っ‼️♨️〰〰〰🩸〰〰〰ㇾㇱョォっ‼️</strong></p>
+                <div class="program-buttons">
+                    <button class="btn" id="btn-inaiinai">ゐなゐゐなぁ〜ゐ⋯</button>
+                </div>
+            </section>
+
+            <div class="marquee-container">
+                <span class="marquee-text">︀ふぁっ🌳ﾝょゐｺのめゅﾝぬゎ〜！　　めぁㇽめぁㇽめぉㇼめぉㇼ！　　⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴⤴</span>
+                <span class="marquee-text">くょぅの、ゎっ龴ㇾ！ㇵ田ㇻㇰ、ㇰㇽ龴！︀ゎ、帰還者ㇳー龴ㇲ！︀帰還者ㇳー龴ㇲは、めゅﾝなを、🖐️ﾝぐぉㇰに、ㇵこゔｩ⤴︀　きょぅも、をㇱぐぉㇳ、がんゔぁって龴〜ㇲ！</span>
+            </div>
+
+            <section class="content-section">
+                <h2>ｦｩ田ｦ、ｩ田ｦｩ⤴</h2>
+                <p>ゔゥｫたﾝを、をㇱ🖐️、ｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩ⤴⤴⤴⤴⤴</p>
+                    <button class="btn" id="btn-song">ゐｯｯｯｯｯゖぇ〰‼️<br>📱💥👈👈👈<br>押せッ‼️押せッ‼️</button>
+                <div id="lyrics-container-song" class="lyrics-container">
+                    <h3 id="song-title"></h3>
+                    <p id="song-lyrics"></p>
+                </div>
+            </section>
+
+            <div class="marquee-container">
+                <span class="marquee-text">をｫっ🌳な ㇰｩㇼのｫ〰〰〰🎶‼️　🌳ｨのｫㇱｨ田ｧでｪ〰〰〰‼️🎶‼️</span>
+                <span class="marquee-text">︀つょ〜ｦ〜つょ〜、つょ〜ｦ〜つょ〜、ぬゎ〜のょ〜へゃ〜ぬゅゐ〜、つょ〜めゎ〜るゅゑ〜〜！</span>
+            </div>
+            
+            <section class="content-section">
+                <h2>🖐️ぁ🆘ゔィ‼️</h2>
+                <p>ゔゥｫたﾝを、をㇱ🖐️、🖐️ぁ🆘ゔィ、ゃってみょぅっ‼️</p>
+                    <button class="btn" id="btn-teasobi">ゐｯｯｯｯｯゖぇ〰‼️<br>📱💥👈👈👈<br>押せッ‼️押せッ‼️</button>
+                <div id="lyrics-container-teasobi" class="lyrics-container">
+                    <h3 id="teasobi-title"></h3>
+                    <p id="teasobi-lyrics"></p>
+                </div>
+            </section>
+
+            <div class="marquee-container">
+                <span class="marquee-text"> ︀ ㇰテｨｭㇰテｨｭ(テｨｭ) ㇱｭゎㇱｭゎ(ゎー〜ー)ㇰテｨｭㇰテｨｭㇰテｨｭㇰテｨｭ ㇱｭゎㇱｭゎ(ㇱｭゎㇱｭゎ)ㇰテｨｭㇰテｨｭ(ㇵむｨヵ゙ｷ) ㇰ゙ㇼㇰ゙ㇼ ㇱｬヵㇱｬヵㇰ゙ㇼㇰ゙ㇼ ㇱｬヵㇱｬヵ ㇱｭゎー〜ー！！</span>
+                <span class="marquee-text">︀ｦｫぅゐっつぃ、ぬぃ、すぁあﾝ、ㇱ！︀ぐぉ〜ㇿㇰ、ㇱっつぃ、ㇵつぃ！︀すぃんくぉ🌳ゅぅㇱてゑ、︀ㇱｭｯｯｯｯㇱｭｯｯｯｯㇷ゚ｫｯｯｯｯㇷ゚ｫ！︀ㇱｭｯｯｯｯㇷ゚ｫｯｯｯｯㇷ゚ｫｯｯｯｯ！</span>
+            </div>
+
+        </main>
+        
+        <div id="popup"><button id="close-popup">&times;</button><h3 id="popup-title"></h3><p id="popup-text"></p><div id="popup-emoji"></div></div>
+        <div id="floating-container"></div>
+        <div id="inaiinai-overlay"></div>
+        <canvas id="overlay-canvas"></canvas>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // === 0. 初期化 ===
+                window.history.scrollRestoration = 'manual';
+                window.scrollTo(0, 0);
+
+                // === 1. スクロール表示 ===
+                const sections = document.querySelectorAll('.content-section');
+                const observer = new IntersectionObserver(entries => { entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); }); }, { threshold: 0.1 });
+                sections.forEach(section => observer.observe(section));
+
+                // === 2. 浮遊絵文字 ===
+                const floatingContainer = document.getElementById('floating-container');
+                const emojis = ["🆘","🍮","🪀","🐄","🫁","🈚️","🦙","🥚","❤","💚","☠️","⭐","💦","💤","🎶","🧠","👄","👅","🌴","🪨","🌈","🕑","🌊","🌀","⚡","🌧️","☔️","🦓","🐢","🐊","🐍","🐸","🐃","🦏","🥬","🐦","🦤","🦈","🦀","🕷","☁️","🐜","🪳","🦋","🍑","🈁","🥒","🫘","🍠","🥜","🫓","🍳","🦘","🎯","🍜","🧂","🎍","🎋","🀄","🃏","🇹🇭","☎️","🐌","🖊️","📈","🕓","🕔","🕘","⚔️","🉐","ℹ️","🅿️","🈳","🇬🇭","🇰🇵","🇲🇲","🕳️","💋","📚️","🍃","💪","🦠","🅰️","🐜","🐗","🐇","🖼️","🅾️","🉑","🦟","🌳","🈂️","🈯","🪺","💰️","🪟","🩸","🌛","🖐️","🚪","🐀","🦷","🔥","💨","🌾","🈵","🐎","👀","🌱","👁️","🍑","🏹","♨️","🪀","🎺","🍎","🎶","🍋","🦞","🦤","🦤","🦤","🦤","🦤","🦤","🦤","🦤","🦤","🦤","🦤","🦤","🦤","🅱️","🐖","💥","🦵","🔹","⭕️","➖️","〰️","‼️","❓️","🔟","1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","0️⃣"];
+                for (let i = 0; i < 200; i++) {
+                    const obj = document.createElement('div');
+                    obj.classList.add('floating-object');
+                    obj.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                    obj.style.top = `${Math.random() * 700}vh`; obj.style.left = `${Math.random() * 95}vw`;
+                    obj.style.fontSize = `${Math.random() * 2 + 1.5}em`;
+                    obj.style.animationDuration = `${Math.random() * 15 + 20}s, ${Math.random() * 5 + 5}s`;
+                    obj.style.animationDelay = `${Math.random() * 10}s, ${Math.random() * 5}s`;
+                    floatingContainer.appendChild(obj);
+                }
+
+                // === 3. ポップアップ ===
+                const popup = document.getElementById('popup');
+                const popupData = [
+                    { title: '', text: '', emoji: 'ｭﾂｨ‼️' },
+                    { title: '', text: '', emoji: '🦤‼️' },
+                    { title: "にふぉﾝぐｦで、\nゎすょゔぉ！", text: "「ゎゐｩゑｦ」の、「ゐ」と「ゑ」は、むづゕしぃです。\nまちがぇなぃで、ゕゖたゕな。", emoji: 'はぁ〜ゐ‼️' },
+                    { title: 'もゔぁゃㇱ、参上‼️', text: 'てか何なんだこのサイト', emoji: 'むんむん！' },
+                    { title: 'ゃぁ、もゔぁゃㇱだよ^^', text: 'るる！、！！たのちぃね！っ！', emoji: 'もゔぅっッ！' },
+                    { title: 'ㇵむｨヵ゙ｷ、\nづょｩづヵぬゎ！', text: 'ㇱぁヶ゙ゎ、ヲヵ〜ゎすｧ〜ﾝ！\nｩゑぬォㇵ〜！\nㇱﾀぬォㇵ〜！\nまゅゑゔｧ〜！\nヲㇰゔｧ〜！', emoji: 'ﾀゔｪﾀㇻめゅゐヵ゙ㇰ、\nゃㇰすｫㇰヶ゙ﾝめゎﾝ！' },
+                    { title: 'あ〰〰〰っ‼️', text: 'まゐまゐぜみが、\nㇳんでㇽぅ〰〰〰っ‼️', emoji: 'ト゚ゕ龴ゑㇿ！' },
+                    { title: 'あ〰〰〰っ‼️', text: 'るゅﾅｪるゅﾅｪぜみが、\nㇳんでㇽぅ〰〰〰っ‼️', emoji: 'ト゚ゕ龴ゑㇿ！' },
+                    { title: 'ごㇵㇺの、ぢヵㇺ‼️', text: 'はゐ、みぬゎさん！\n🖐️を、そㇿぇ🖐️〜！\n🫓🖐️ゅぅんですか⁉️\n\nはぁゐ！', emoji: 'ゅ〜た〜ㇽ〜き〜も‼️' },
+                    { title: '【お詫び】', text: '糸井アナ：えーただいま、このウェブサイトは教育に悪影響があるとのご意見をいただきました。我々はこのご意見を真剣に受け止め、今後のゐ〜🖐️ㇾのあり方について検討して行きたいと存じます。この度は、視聴者の皆様にご迷惑をおかけしましたことを、深くお詫び申し上げます。誠に申し訳ございませんでした。', emoji: '' }
+                ];
+                function showRandomPopup() {
+                    if (popup.classList.contains('show')) return;
+                    const data = popupData[Math.floor(Math.random() * popupData.length)];
+                    document.getElementById('popup-title').textContent = data.title;
+                    document.getElementById('popup-text').textContent = data.text;
+                    document.getElementById('popup-emoji').textContent = data.emoji;
+                    popup.classList.add('show');
+                }
+                document.getElementById('close-popup').addEventListener('click', () => popup.classList.remove('show'));
+                (function schedulePopup() { setTimeout(() => { showRandomPopup(); schedulePopup(); }, Math.random() * 10000 + 10000); })();
+
+                // === 4. ボタンイベントリスナー ===
+                function setupLyricsButton(buttonId, containerId, titleId, lyricsId, data) {
+                    document.getElementById(buttonId).addEventListener('click', (e) => {
+                        e.stopPropagation();
+
+                        const item = data[Math.floor(Math.random() * data.length)];
+                        const container = document.getElementById(containerId);
+                        document.getElementById(titleId).textContent = "♪ " + item.title + " ♪";
+                        document.getElementById(lyricsId).textContent = item.lyrics;
+                        container.style.display = 'block';
+
+                        const alreadyExists = noteEmitters.some(emitter => emitter.element === container);
+                        if (!alreadyExists) {
+                            noteEmitters.push({ element: container });
+                        }
+
+                        container.classList.remove('poyon-active');
+                        void container.offsetWidth;
+                        container.classList.add('poyon-active');
+                    });
+                }
+
+                const songs = [ { title: "うぃどんとっけねも。", lyrics: "うぃどんとっけねも！\nうぃどんとっけねも！\nうぃどんとっけねも！\nらぃっ、うぃ、\nゅうーㇲとゥーどゥー！\nうぃどんとっけねも！\nうぃどんとっけねも！\nうぃどんとっけねも！\nらぃっ、うぃ、\nゅうーㇲとゥーどゥー！" }, { title: "👻", lyrics: "をゅゔぁヶぬゎﾝつゅゑ、\nぬゎ〜ゐすゅゎ！\nをゅゔぁヶぬゎﾝつゅゑ、\nｩｳｯｯｯｯｯｿすゅゎ！\nぬゅゑ〜ゔぉヶ〜た、\nㇶ〜つょぐゎ！\nめゅめゎつゅゐぐゎ〜ゑ\nた〜のゅすゅゎ！\nづゅゎヶづょつょっつょ\nづゅゎヶづょつょっつょ\nゔぉｦ〜ㇰらｯｯｯとゅゑ、\nこゅゎゐぬゎ！\nをゅゔぁヶぬゎﾝつゅゑ、\nぬゎ〜ゐすゅゎ！\nをゅゔぁヶぬゎﾝつゅゑ、\nｩｳｯｯｯｯｯｿすゅゎ！" }, { title: "ㇷ゚あｧㇷ゚るゐｨくぁ‼️", lyrics: "ㇷ゚あｧㇷ゚るゐｨ〜くぁ！\nㇷあぬぁぐぁ、\nすｧゐ〜つぁ~れぁ〜！\nㇷあぁ〜ㇾつぁすぉらに\nっあぁぬぇｰｰｦぉょめぁくぉ！" }, { title: "🐻", lyrics: "ゎるゅｩ、ㇶﾝヶッ！\nもゅㇼのゅぬゎ、ヵﾝてょ〜！\nくゅめゎすゅゎﾝ、\nぬゅゐﾝぬゅゐㇰ！\nづゅゑゎｧ、たﾝくｦゔ！\nへゎぬゎすゎくゅ、\nもゅ〜ㇼ〜のょ〜\nめゅ〜つゅゐﾝﾎﾟこㇿｯこぃㇱョ！\nくゅめゎすゅゎ〜ﾝ〜ぬゅゐ〜\nづゅゑ〜ゎ〜ｧ〜たｧ〜！" }, { title: "どゅﾝぐㇼ‼️", lyrics: "どゅﾝぐㇼ\nくｦㇿくｦㇿ、\nどゅﾝぐㇼくｦ〜！\nをゅゐゖぬゐ\nへゃまゅｯとゅゑ、\nすゅゎぁ、とゃゐへゅﾝ！\nどょづょｩぐゎ\nづゅゑづゅゑ🌳とゅゑ、\nこゅﾝぬゅゐつゅゎ〜！\nゔぉｯつゃﾝ、ゐｯすゅｦぬゐ、\nゎすゅｦゔぃまゅすゅｦ〜！" }, { title: "🌈", lyrics: "るゃ〜るゃ〜るゃ〜、\nぬゅゐ〜ぢぐゎ〜、\nぬゅゐぢぐゎ〜！\nすゅを〜るゃぬゅゐ〜\nくゃくゃゎてゑ〜！\nつゅ〜めゅのゅ〜、\nつゅめゅのゅ〜！\n🌳〜ゔﾝ〜もゅ、\nへゃるゅゑつゅゑ〜！\n🌳ｯｯｯつょ〜ゎㇱたゎ〜、\nゐゅゐ〜ゐゅゐ〜\nつゅゑﾝ🌳〜、\n🌳〜ゐつょ〜ゎㇱ〜たゎ〜、\nゐゅゐ〜ゐゅゐつゅゑﾝ🌳〜！" }, { title: "ぁゐぁゐ‼️", lyrics: "ぁーゐぁゐ！\n　　ぁーゐぁゐ！\nぁーゐぁゐ！\n　　ぁーゐぁゐ！\nｦっすｧ〜るゅすｧ〜ﾝづぁょｫ〜！" }, { title: "をめぉつゃのつゃつゃつゃ‼️", lyrics: "をめぉつゃのつゃつゃつゃ！\nをめぉつゃのつゃつゃつゃ！\nつゃつゃつゃをめぉつゃの\nつゃっつゃっつゃっ！" }, { title: "ㇷㇽㇳヶィ‼️", lyrics: "ヲを〜ヲを〜っｷぬゎのゅっぽの、\nㇷㇽㇳヶィ！\nヲぢゐ〜すゎﾝのを〜\nㇳヶィ〜〜〜〜〜！" }, { title: "🐌", lyrics: "︀でゑぇ〜ﾝでゑぇﾝ、\nㇺｩ〜ｯㇱㇺｯㇱ、\n︀くゎｧ〜ﾀｯﾂｯㇺｯるｨ〜！\n︀をｦ〜まゑｯのゅｯ、\nめゅ〜だㇺゎｯゎｯ、\n︀づォ〜ｺぬィｯぁｯるｩ〜！\n︀っのゅ、だすｪ！\n︀ゃㇼ、だすｪ！！\n︀ゎﾀむゎぁ〜、だすｪ〜っ！！！" }, { title: "🐘", lyrics: "︀︀ずｫを〜ヲすｧﾝ、\nずｫを〜ヲすｧﾝ、\n︀をｦ〜ㇵぬゎが、\n︀ぬゎがゐのゅぬゅゑ！\n︀そｦｫ〜〜ｮ、\n︀ヵｧすｧﾝむｫ、\n︀ぬゎｧ〜〜ぐゎゐのゅｮｦ〜！！" } ];
+                setupLyricsButton('btn-song', 'lyrics-container-song', 'song-title', 'song-lyrics', songs);
+
+                const teasobiSongs = [ { title: "めゅｯｯｯｯｯ🌳〜龴ｩㇲ龴〜🩸‼️", lyrics: "ゐっぽゅﾝㇳ、ゐっぽゅﾝヲ、\nゎ〜ゎすぇ〜ㇽㇳを〜、\nぺゅのｯｯｯ🌳ｦ、\nぺゅのｯｯｯ🌳ｦに、\nぬゃ〜ㇽﾝ〜だょｦ〜！\nぬゅほゅﾝㇳ、ぬゅほゅﾝヲ、\nゎ〜ゎすぇ〜ㇽㇳを〜、\nどゅぬゎㇽどょ、\nどゅぬゎㇽどょに、\nぬゃ〜ㇽﾝ〜だょｦ〜！\nすゃﾝゔょﾝㇳ、すゃﾝゔょﾝヲ、\nゎ〜ゎすぇ〜ㇽㇳを〜、\nつゅゐｯｯｯㇷ゚ㇳ、\nどゅゑ〜ㇽに、\nぬゃ〜ㇽﾝ〜だょｦ〜！\nゆょﾝほゅﾝㇳ、ゆょﾝほゅﾝヲ、\nゎ〜ゎすぇ〜ㇽㇳを〜、\nどゃ〜ﾝゔｦ、\nどゃ〜ﾝゔｦに、\nぬゃ〜ㇽﾝ〜だょｦ〜！\nごょほゅﾝㇳ、ごょほゅﾝヲ、\nゎ〜ゎすぇ〜ㇽㇳを〜、\nめゅｯｯｯｯｯ🌳龴ｩㇲ、\nめゅｯｯｯｯｯ🌳龴ｩㇲ、\nめゅｯｯｯ🌳めゅｯｯｯ🌳龴ｩㇲ！" }, { title: "ｸ゙ゥ⤴︎ｰｰｰｰｰつょくぃㇷ゚ｧ〜‼️", lyrics: "ｸ゙ゥ⤴︎ｰｰｰｰｰつょくぃㇷ゚ｧ〜ㇾ、\nｸ゙ゅうｰｰｰｰｰ─っゅょくぃㇷ゚ｧ〜ㇾ、\nぬｧぬｨつｯｯｯｯㇰるｫ〜ｰｰｰｰｰ─！\nぬｧぬｨつｯｯｯｯㇰるｫ〜ｰｰｰｰｰ─！\nめｨぐぃﾃㇽぁｸ゙ゥ–ㇾ、\nふㇶづぁㇼﾃゎぁつゅょ🌳ㇾ、\nくゎｯｯｯｯぁっめぅゐｰｰｰｰｰ─！\nくゎｯｯｯｯぁっめぅゐｰｰｰｰｰ─！" } ];
+                setupLyricsButton('btn-teasobi', 'lyrics-container-teasobi', 'teasobi-title', 'teasobi-lyrics', teasobiSongs);
+
+                // === 5. オーバーレイキャンバスのエフェクト ===
+                const canvas = document.getElementById('overlay-canvas');
+                const ctx = canvas.getContext('2d');
+                let width = canvas.width = window.innerWidth;
+                let height = canvas.height = window.innerHeight;
+                let effects = [];
+                let feverMode = null;
+                let canClickFever = true;
+                let noteEmitters = [];
+
+                window.addEventListener('resize', () => { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; });
+
+                document.body.addEventListener('click', () => { if (canClickFever && !feverMode) { startFever(); canClickFever = false; setTimeout(() => { canClickFever = true; }, 3000); } });
+
+                function createNormalEffect() {
+                    const messages = ['ゐっゖぇ〰〰！', 'ゎぁ〰っ！！！', 'ｭﾂｨ!', 'ゐっゖぇ〰〰！', 'ゎぁ〰っ！！！', 'ｭﾂｨ!', 'ゐっゖぇ〰〰！', 'ゎぁ〰っ！！！', 'ｭﾂｨ!', 'ゐっゖぇ〰〰！', 'ゎぁ〰っ！！！', 'ｭﾂｨ!', 'ゐっゖぇ〰〰！', 'ゎぁ〰っ！！！', 'ｭﾂｨ!', 'ゐっゖぇ〰〰！', 'ゎぁ〰っ！！！', 'ｭﾂｨ!', 'ゐっゖぇ〰〰！', 'ゎぁ〰っ！！！', 'ｭﾂｨ!', 'ゐっゖぇ〰〰！', 'ゎぁ〰っ！！！', 'ｭﾂｨ!', 'づゅゑﾝちづゅゑﾝちー‼️', '帰還者ㇳー龴ㇲ！', 'ｦｩ田ｦ、ｩ田ｦｩ⤴', "ぐさぐさぐさっ！！","ばきゅんばきゅんばきゅん！","ゎヵんﾀﾞ、ふォ〜ゑゔぁー‼️","ィゐばンべ‼️","ト゚ゕ龴ゑㇿ！","とゅ！","ぁｯせﾝぶぅ。","ゎゐた？","ㇷ🆘ㇰ‼️","ゐ龴ㇿこ？","ちもこ！","ゎゐたぁ〰〰〰‼️","ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡","ゎ💋🔥‼️","むっㇱたぁ〜","🇬🇭","🩸‼️","ゅ〰〰〰🩸〰〰〰‼️","🦤","㍁㍂㍎㍏❢❢❢"];
+                    effects.push({ type: 'normal', text: messages[Math.floor(Math.random() * messages.length)], x: Math.random() * width, y: Math.random() * height, size: Math.random() * 25 + 40, scale: 0.1, life: 1.0, phase: 'in' });
+                }
+
+                function startFever(forceFeverType = null) {
+                    if (feverMode) return;
+                    const feverTypes = ['giant', 'giant','giant', 'rush', 'poyon-rush', 'emoji-cross', 'emoji-cross'];
+                    feverMode = forceFeverType || feverTypes[Math.floor(Math.random() * feverTypes.length)];
+                    effects = effects.filter(e => e.type === 'normal');
+                    if (feverMode === 'giant') { effects.push({ type: 'giant', text: ['ゐっけぇ〰〰！', 'ゎぁ〰っ！', 'ｭﾂｨ!'][Math.floor(Math.random()*2)], x: width/2, y: height/2, size: 10, life: 1.0 }); } 
+                    else if (feverMode === 'rush') { for(let i=0; i<50; i++) { effects.push({ type: 'rush', text: 'うわあああああああああああああああ', x: width + Math.random() * 500 + 100, y: Math.random() * height, size: Math.random() * 30 + 20, speed: Math.random() * 5 + 3 }); } } 
+                    else if (feverMode === 'poyon-rush') { for(let i=0; i<30; i++) { effects.push({ type: 'poyon-rush', text: 'ｷｨｬﾊﾊﾊｯｯｯ!', x: Math.random() * width, y: Math.random() * height, size: Math.random() * 70 + 60, scale: 0.1, alpha: 1, delay: Math.random() * 2500, phase: 'delay', poyons: Math.floor(Math.random() * 5) + 3, poyonState: 0, decay: Math.random() * 0.02 + 0.015 }); } } 
+                    else if (feverMode === 'emoji-cross') {
+                        const emojiSize = 400; const startSide = Math.floor(Math.random() * 4); let sx, sy;
+                        if (startSide === 0) { sx = Math.random() * width; sy = -emojiSize; } 
+                        else if (startSide === 1) { sx = width + emojiSize; sy = Math.random() * height; } 
+                        else if (startSide === 2) { sx = Math.random() * width; sy = height + emojiSize; } 
+                        else { sx = -emojiSize; sy = Math.random() * height; }
+                        const targetX = width / 2; const targetY = height / 2;
+                        const dx = targetX - sx; const dy = targetY - sy;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        const speed = Math.random() * 3 + 4;
+                        const speedX = (dx / distance) * speed; const speedY = (dy / distance) * speed;
+                        effects.push({ type: 'emoji-cross', text: emojis[Math.floor(Math.random() * emojis.length)], x: sx, y: sy, size: emojiSize, speedX, speedY, rotation: 0, rotationSpeed: Math.random() > 0.5 ? 0.15 : -0.15 });
+                    }
+                }
+                setInterval(createNormalEffect, 400);
+                setInterval(startFever, 12000);
+
+                function animate() {
+                    ctx.clearRect(0, 0, width, height);
+                    if (noteEmitters.length > 0 && Math.random() < 0.5) { // 50%の確率で毎フレーム生成
+                        noteEmitters.forEach(emitter => {
+                            const rect = emitter.element.getBoundingClientRect();
+                            if (rect.top < height && rect.bottom > 0) { // 画面内に表示されている時だけ
+                                effects.push({
+                                    type: 'note',
+                                    text: ['♪', '♫', '♩', '♬', '🎵', '🎶'][Math.floor(Math.random() * 3)],
+                                    x: rect.left + Math.random() * rect.width,
+                                    y: rect.top + Math.random() * rect.height,
+                                    size: Math.random() * 20 + 15,
+                                    alpha: 1,
+                                    speedX: Math.random() * 2 - 1,
+                                    speedY: -(Math.random() * 1.5 + 0.5),
+                                    rotation: 0
+                                });
+                            }
+                        });
+                    }
+                    for (let i = effects.length - 1; i >= 0; i--) {
+                        const e = effects[i]; ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+if (e.type === 'note') {
+            e.x += e.speedX; e.y += e.speedY; e.alpha -= 0.02; e.rotation += 0.01;
+            if (e.alpha <= 0) { effects.splice(i, 1); continue; }
+            ctx.translate(e.x, e.y); ctx.rotate(e.rotation);
+            ctx.font = `${e.size}px sans-serif`; ctx.fillStyle = `rgba(255, 165, 0, ${e.alpha})`;
+            ctx.fillText(e.text, 0, 0);
+        } else
+                        if (e.type === 'normal') {
+                            if (e.phase === 'in') { e.scale += 0.08; if (e.scale >= 1.2) { e.scale = 1.2; e.phase = 'out'; } } else { e.scale -= 0.02; e.life -= 0.025; }
+                            if (e.scale <= 0) { effects.splice(i, 1); continue; }
+                            ctx.font = `bold ${e.size * e.scale}px sans-serif`; ctx.fillStyle = `rgba(255, 105, 180, ${e.life})`; ctx.fillText(e.text, e.x, e.y);
+                        } else if (e.type === 'giant') {
+                            e.size += 15; e.life -= 0.015; if (e.life <= 0) { effects.splice(i, 1); feverMode = null; continue; }
+                            ctx.font = `bold ${e.size}px sans-serif`; ctx.fillStyle = `rgba(255, 215, 0, ${e.life})`; ctx.strokeStyle = `rgba(255, 255, 255, ${e.life})`; ctx.lineWidth = 5; ctx.strokeText(e.text, e.x, e.y); ctx.fillText(e.text, e.x, e.y);
+                        } else if (e.type === 'rush') {
+                            e.x -= e.speed; if (e.x < -300) { effects.splice(i, 1); continue; }
+                            ctx.font = `bold ${e.size}px sans-serif`; ctx.fillStyle = `rgba(0, 0, 0, 0.8)`; ctx.fillText(e.text, e.x, e.y);
+                        } else if (e.type === 'poyon-rush') {
+                            if (e.phase === 'delay') { e.delay -= 1000/60; if (e.delay <= 0) e.phase = 'in'; } 
+                            else {
+                                if (e.phase === 'in') { e.scale += 0.1; if (e.scale >= 1.2) { e.scale = 1.2; e.phase = 'poyon'; } } else if (e.phase === 'poyon') { e.poyonState += 0.2; e.scale = 1.2 + Math.sin(e.poyonState) * 0.2; if(e.poyonState > Math.PI * e.poyons) e.phase = 'out'; } else if (e.phase === 'out') { e.scale -= e.decay; e.alpha -= e.decay; }
+                                if (e.scale <= 0 || e.alpha <= 0) { effects.splice(i, 1); continue; }
+                                ctx.font = `bold ${e.size * e.scale}px sans-serif`; ctx.fillStyle = `rgba(50, 205, 50, ${e.alpha})`; ctx.fillText(e.text, e.x, e.y);
+                            }
+                        } else if (e.type === 'emoji-cross') {
+                            e.x += e.speedX; e.y += e.speedY; e.rotation += e.rotationSpeed;
+                            if (e.x < -e.size || e.x > width + e.size || e.y < -e.size || e.y > height + e.size) { effects.splice(i, 1); feverMode = null; continue; }
+                            ctx.translate(e.x, e.y); ctx.rotate(e.rotation); ctx.font = `${e.size}px sans-serif`; ctx.fillText(e.text, 0, 0);
+                        }
+                        ctx.restore();
+                    }
+                    if (feverMode && effects.filter(e => e.type !== 'normal').length === 0) { feverMode = null; }
+                    requestAnimationFrame(animate);
+                }
+                animate();
+                
+                // === 6. いないいないばあ イベント ===
+                document.getElementById('btn-inaiinai').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (feverMode) return;
+                    feverMode = 'inaiinai-sequence'; // ★イベント開始時にロックをかける
+                
+                    const inaiText = document.createElement('div');
+                    inaiText.textContent = 'ゐなゐゐなァ〜ゐ⋯';
+                    inaiText.className = 'inaiinai-text inai';
+                    document.body.appendChild(inaiText);
+                
+                    inaiText.addEventListener('animationend', () => {
+                        const overlay = document.getElementById('inaiinai-overlay');
+                        overlay.classList.add('show');
+                        if(document.body.contains(inaiText)) document.body.removeChild(inaiText);
+                
+                        const baaText = document.createElement('div');
+                        baaText.textContent = 'ﾊ゙あｯ';
+                        baaText.className = 'inaiinai-text baa';
+                        document.body.appendChild(baaText);
+                
+                        setTimeout(() => {
+                            canvas.style.zIndex = '1002';
+                            feverMode = null; // ★poyon-rushを開始する直前にロックを解除
+                            startFever('poyon-rush');
+                            
+                            const checkFeverEnd = setInterval(() => {
+                                if (!feverMode) {
+                                    clearInterval(checkFeverEnd);
+                                    overlay.classList.remove('show');
+                                    baaText.classList.add('fade-out');
+                                    
+                                    setTimeout(() => {
+                                        if(document.body.contains(baaText)) {
+                                            document.body.removeChild(baaText);
+                                        }
+                                        canvas.style.zIndex = '999';
+                                    }, 500);
+                                }
+                            }, 100);
+                        }, 2000);
+                    });
+                }); 
+            });
+        </script>
+
+    </div>
+</body>
+</html>

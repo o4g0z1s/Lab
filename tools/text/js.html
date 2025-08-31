@@ -120,7 +120,7 @@
                 flex-shrink: 1;
             }
             .main-content { height: auto; flex-grow: 1; }
-            #font-size-input { margin-bottom: 50px; }
+            #settings { margin-bottom: 50px; }
         }
     </style>
 </head>
@@ -190,12 +190,12 @@
                   <button id="insert-line-end-btn">Insert at End of Lines</button>
                 </div>
             </div>
-            <h3>Setting</h3>
+            <h3>Settings</h3>
             <div class="control-group">
                 <label for="font-size-input">Font Size (px):</label>
                 <input type="number" id="font-size-input" min="4" max="24" value="16">
             </div>
-            <div class="control-group">
+            <div class="control-group" id="settings">
                 <label style="display: flex; align-items: center; cursor: pointer;">
                     <input type="checkbox" id="wrap-toggle-checkbox" style="margin-right: 8px;"> Enable Text Wrapping
                 </label>
