@@ -15,73 +15,117 @@
     </script>
     <title>School</title>
     <style>
-        body {  
-            font-family: "Reso";  
-            text-align: center;  
-            margin-top: 70px;
-            margin-bottom: 70px;
-            background-color: #b60;
-            overflow-x: hidden;
-            white-space: nowrap;
+        :root {
+            --b: #B60;
+            --t: #FAF9F6;
         }
 
-        p {font-size: 100px;}
-        a {font-size: 70px;}
-        
-        @media only screen and (min-width:500px) 
-        {
-        p {font-size: 150px;}
-        a {font-size: 100px;}	
+        body {
+            font-family: "Reso", sans-serif;
+            text-align: center;
+            margin: 80px 0;
+            background-color: var(--b);
+            color: var(--t);
+            overflow-x: hidden;
+            white-space: nowrap;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        p {
+            font-size: 150px;
+            margin: 0;
+        }
+
+        a {
+            font-size: 100px;
+            color: var(--t);
+            text-decoration: none;
+        }
+
+        hr {
+            width: 99%;
+            border-color: var(--t);
+            background-color: var(--t);
+            border-width: 1px;
+            border-style: solid;
         }
         
+        @media only screen and (max-width: 500px) {
+            p {
+                font-size: 100px;
+            }
+            a {
+                font-size: 70px;
+            }
+        }
+
+        body.dark-mode {
+            --b: #000;
+            --t: #B60;
+        }
     </style>
-    </head>
-    <body>
-        <p style="color: #FAF9F6; margin: 0;">School</p>
-        <br><br>
-        <hr style="width: 99%; border-color: #FAF9F6; background-color: white;" size="1" noshade>
-        <br><br>
-        <a href="schLab/index.html" style="color: #FAF9F6; text-decoration: none;">
-            [&#x200A;<span style="text-decoration: underline;">Lab</span>&#x200A;]
-        </a>
-        <br>
-        <br>
-        <a href="https://wdsd.net/ho-yu/ssl.php" style="color: #FAF9F6; text-decoration: none;">
-            [&#x200A;<span style="text-decoration: underline;">Web</span>&#x200A;]
-        </a>
-        <br>
-        <br>
-        <a href="https://classroom.google.com/u/0/h?hl=ja" style="color: #FAF9F6; text-decoration: none;">
-            [&#x200A;<span style="text-decoration: underline;">Class</span>&#x200A;]
-        </a>
-        <br>
-        <br>
-        <a href="https://as.ho-yu.ed.jp/" style="color: #FAF9F6; text-decoration: none;">
-            [&#x200A;@<span style="text-decoration: underline;">Sch</span>&#x200A;]
-        </a>
-        <br>
-        <br>
-        <a href="https://hoyugakuin:0305@hoyugakuin.school.glats.online/" style="color: #FAF9F6; text-decoration: none;">
-            [&#x200A;<span style="text-decoration: underline;">Kimini</span>&#x200A;]
-        </a>
-        <br>
-        <br>
-        <a href="https://manabi.benesse.ne.jp/" style="color: #FAF9F6; text-decoration: none;">
-            [&#x200A;<span style="text-decoration: underline;">ManaV</span>&#x200A;]
-        </a>
-        <br>
-        <br>
-        <a href="https://learn.studysapuri.jp/" style="color: #FAF9F6; text-decoration: none;">
-            [&#x200A;<span style="text-decoration: underline;">StuSup</span>&#x200A;]
-        </a>
-        <br>
-        <br>
-        <a href="https://tbqr.sanseido-publ.co.jp/05-crown-ec2/contents/" style="color: #FAF9F6; text-decoration: none;">
-            [&#x200A;<span style="text-decoration: underline;">CROWN2</span>&#x200A;]
-        </a>
-        <br>
-        <br>
-        <a href="https://maps.gsi.go.jp" style="color: #FAF9F6; text-decoration: none;">
-            [&#x200A;<span style="text-decoration: underline;">GSI&#x200A;Maps</span>&#x200A;]
-        </a>
-    </body>
+</head>
+<body>
+    <p>School</p>
+    <br><br>
+    <hr noshade>
+    <br><br>
+    <a href="schLab/index.html">
+        [&#x200A;<u>Lab</u>&#x200A;]
+    </a>
+    <br>
+    <br>
+    <a href="https://wdsd.net/ho-yu/ssl.php">
+        [&#x200A;<u>Web</u>&#x200A;]
+    </a>
+    <br>
+    <br>
+    <a href="https://classroom.google.com/u/0/h?hl=ja">
+        [&#x200A;<u>Class</u>&#x200A;]
+    </a>
+    <br>
+    <br>
+    <a href="https://as.ho-yu.ed.jp/">
+        [&#x200A;@<u>Sch</u>&#x200A;]
+    </a>
+    <br>
+    <br>
+    <a href="https://hoyugakuin:0305@hoyugakuin.school.glats.online/">
+        [&#x200A;<u>Kimini</u>&#x200A;]
+    </a>
+    <br>
+    <br>
+    <a href="https://manabi.benesse.ne.jp/">
+        [&#x200A;<u>ManaV</u>&#x200A;]
+    </a>
+    <br>
+    <br>
+    <a href="https://learn.studysapuri.jp/">
+        [&#x200A;<u>StuSup</u>&#x200A;]
+    </a>
+    <br>
+    <br>
+    <a href="https://tbqr.sanseido-publ.co.jp/05-crown-ec2/contents/">
+        [&#x200A;<u>CROWN2</u>&#x200A;]
+    </a>
+    <br>
+    <br>
+    <a href="https://maps.gsi.go.jp">
+        [&#x200A;<u>GSI&#x200A;Maps</u>&#x200A;]
+    </a>
+
+    <script>
+        function applyDarkMode() {
+            const now = new Date();
+            const hour = now.getHours();
+            if (hour >= 19 || (hour >= 0 && hour < 5)) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+        applyDarkMode();
+        setInterval(applyDarkMode, 60 * 60 * 1000);
+    </script>
+</body>
+</html>

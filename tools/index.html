@@ -15,73 +15,117 @@
     </script>
     <title>Tools</title>
     <style>
-        body {  
-            font-family: "Reso";  
-            text-align: center;  
-            margin-top: 70px;
-            margin-bottom: 70px;
-            background-color: #171;
-            overflow-x: hidden;
-            white-space: nowrap;
+        :root {
+            --b: #171;
+            --t: #FAF9F6;
         }
 
-        p {font-size: 100px;}
-        a {font-size: 70px;}
-        
-        @media only screen and (min-width:500px) 
-        {
-        p {font-size: 150px;}
-        a {font-size: 100px;}	
+        body {
+            font-family: "Reso", sans-serif;
+            text-align: center;
+            margin: 80px 0;
+            background-color: var(--b);
+            color: var(--t);
+            overflow-x: hidden;
+            white-space: nowrap;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        p {
+            font-size: 150px;
+            margin: 0;
+        }
+
+        a {
+            font-size: 100px;
+            color: var(--t);
+            text-decoration: none;
+        }
+
+        hr {
+            width: 99%;
+            border-color: var(--t);
+            background-color: var(--t);
+            border-width: 1px;
+            border-style: solid;
         }
         
+        @media only screen and (max-width: 500px) {
+            p {
+                font-size: 100px;
+            }
+            a {
+                font-size: 70px;
+            }
+        }
+
+        body.dark-mode {
+            --b: #000;
+            --t: #171;
+        }
     </style>
-    </head>
-    <body>
-        <p style="color: #FAF9F6; margin: 0;">Tools</p>
-        <br><br>
-        <hr style="width: 99%; border-color: #FAF9F6; background-color: white;" size="1" noshade>
-        <br><br>
-        <a href="text/index.html" style="color: #FAF9F6; text-decoration: none;">
-        [&#x200A;<span style="text-decoration: underline;">Text</span>&#x200A;]
-        </a>
-        <br>
-        <br>
-        <a href="dvdr.html" style="color: #FAF9F6; text-decoration: none;">
-        [&#x200A;<span style="text-decoration: underline;">Dvdr</span>&#x200A;]
-        </a>
-        <br>
-        <br>
-        <a href="code.html" style="color: #FAF9F6; text-decoration: none;">
-        [&#x200A;<span style="text-decoration: underline;">Code</span>&#x200A;]
-        </a>
-        <br>
-        <br>
-        <a href="clsfy.html" style="color: #FAF9F6; text-decoration: none;">
-        [&#x200A;<span style="text-decoration: underline;">Clsfy</span>&#x200A;]
-        </a>
-        <br>
-        <br>
-        <a href="YTVP.html" style="color: #FAF9F6; text-decoration: none;">
-        [&#x200A;<span style="text-decoration: underline;">YTVP</span>&#x200A;]
-        </a>
-        <br>
-        <br>
-        <a href="rmvr.html" style="color: #FAF9F6; text-decoration: none;">
-        [&#x200A;<span style="text-decoration: underline;">Rmvr</span>&#x200A;]
-        </a>
-        <br>
-        <br>
-        <a href="mixer.html" style="color: #FAF9F6; text-decoration: none;">
-        [&#x200A;<span style="text-decoration: underline;">Mixer</span>&#x200A;]
-        </a>
-        <br>
-        <br>
-        <a href="insrtr.html" style="color: #FAF9F6; text-decoration: none;">
-        [&#x200A;<span style="text-decoration: underline;">Insrtr</span>&#x200A;]
-        </a>
-        <br>
-        <br>
-        <a href="paste.html" style="color: #FAF9F6; text-decoration: none;">
-        [&#x200A;<span style="text-decoration: underline;">Paste</span>&#x200A;]
-        </a>
-    </body>
+</head>
+<body>
+    <p>Tools</p>
+    <br><br>
+    <hr noshade>
+    <br><br>
+    <a href="text/index.html">
+    [&#x200A;<u>Text</u>&#x200A;]
+    </a>
+    <br>
+    <br>
+    <a href="dvdr.html">
+    [&#x200A;<u>Dvdr</u>&#x200A;]
+    </a>
+    <br>
+    <br>
+    <a href="code.html">
+    [&#x200A;<u>Code</u>&#x200A;]
+    </a>
+    <br>
+    <br>
+    <a href="clsfy.html">
+    [&#x200A;<u>Clsfy</u>&#x200A;]
+    </a>
+    <br>
+    <br>
+    <a href="YTVP.html">
+    [&#x200A;<u>YTVP</u>&#x200A;]
+    </a>
+    <br>
+    <br>
+    <a href="rmvr.html">
+    [&#x200A;<u>Rmvr</u>&#x200A;]
+    </a>
+    <br>
+    <br>
+    <a href="mixer.html">
+    [&#x200A;<u>Mixer</u>&#x200A;]
+    </a>
+    <br>
+    <br>
+    <a href="insrtr.html">
+    [&#x200A;<u>Insrtr</u>&#x200A;]
+    </a>
+    <br>
+    <br>
+    <a href="paste.html">
+    [&#x200A;<u>Paste</u>&#x200A;]
+    </a>
+
+    <script>
+        function applyDarkMode() {
+            const now = new Date();
+            const hour = now.getHours();
+            if (hour >= 19 || (hour >= 0 && hour < 5)) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+        applyDarkMode();
+        setInterval(applyDarkMode, 60 * 60 * 1000);
+    </script>
+</body>
+</html>

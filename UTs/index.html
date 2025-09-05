@@ -15,68 +15,103 @@
     </script>
     <title>Unicode Tools</title>
     <style>
-        body {  
-            font-family: "Reso";  
-            text-align: center;  
-            margin-top: 70px;
-            margin-bottom: 70px;
-            background-color: #000099;
-            overflow-x: hidden;
-            white-space: nowrap;
+        :root {
+            --b: #009;
+            --t: #FAF9F6;
         }
 
-        p {font-size: 70px;}
-        
-        @media only screen and (min-width:500px) 
-        {
+        body {
+            font-family: "Reso", sans-serif;
+            text-align: center;
+            margin: 80px 0;
+            background-color: var(--b);
+            color: var(--t);
+            overflow-x: hidden;
+            white-space: nowrap;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
         p {
-        font-size: 100px;
-        }	
+            font-size: 120px;
+            margin: 0;
         }
-        
-        a {font-size: 70px;}
-        
-        @media only screen and (min-width:500px) 
-        {
+
         a {
-        font-size: 100px;
-        }	
+            font-size: 100px;
+            color: var(--t);
+            text-decoration: none;
+        }
+
+        hr {
+            width: 99%;
+            border-color: var(--t);
+            background-color: var(--t);
+            border-width: 1px;
+            border-style: solid;
         }
         
+        @media only screen and (max-width: 500px) {
+            p {
+                font-size: 80px;
+            }
+            a {
+                font-size: 70px;
+            }
+        }
+
+        body.dark-mode {
+            --b: #000;
+            --t: #009;
+        }
     </style>
-    </head>
-    <body>
-        <p style="color: #FAF9F6; margin: 0;">Unicode<br>Tools</p>
-        <br><br>
-        <hr style="width: 99%; border-color: #FAF9F6; background-color: white;" size="1" noshade>
-        <br>
-        <br>
-        <a href="UB.html" style="color: #FAF9F6; text-decoration: none;">
-            [&#x200A;<span style="text-decoration: underline;">UB</span>&#x200A;]
-        </a>
-        <br>
-        <br>
-        <a href="https://raw.githubusercontent.com/o4g0z1s/Lab/main/UTs/UCD.txt" style="color: #FAF9F6; text-decoration: none;">
-            [&#x200A;<span style="text-decoration: underline;">UCD</span>&#x200A;]
-        </a>
-        <br>
-        <br>
-        <a href="https://raw.githubusercontent.com/o4g0z1s/Lab/main/UTs/UCD-1.txt" style="color: #FAF9F6; text-decoration: none;">
-            [&#x200A;<span style="text-decoration: underline;">UCD-1</span>&#x200A;]
-        </a>
-        <br>
-        <br>
-        <a href="https://raw.githubusercontent.com/o4g0z1s/Lab/main/UTs/UCD-2.txt" style="color: #FAF9F6; text-decoration: none;">
-            [&#x200A;<span style="text-decoration: underline;">UCD-2</span>&#x200A;]
-        </a>
-        <br>
-        <br>
-        <a href="US.html" style="color: #FAF9F6; text-decoration: none;">
-            [&#x200A;<span style="text-decoration: underline;">Sorter</span>&#x200A;]
-        </a>
-        <br>
-        <br>
-        <a href="UG.html" style="color: #FAF9F6; text-decoration: none;">
-            [&#x200A;<span style="text-decoration: underline;">Getter</span>&#x200A;]
-        </a>
-    </body>
+</head>
+<body>
+    <p>Unicode<br>Tools</p>
+    <br><br>
+    <hr noshade>
+    <br>
+    <br>
+    <a href="UB.html">
+        [&#x200A;<u>UB</u>&#x200A;]
+    </a>
+    <br>
+    <br>
+    <a href="https://raw.githubusercontent.com/o4g0z1s/Lab/main/UTs/UCD.txt">
+        [&#x200A;<u>UCD</u>&#x200A;]
+    </a>
+    <br>
+    <br>
+    <a href="https://raw.githubusercontent.com/o4g0z1s/Lab/main/UTs/UCD-1.txt">
+        [&#x200A;<u>UCD-1</u>&#x200A;]
+    </a>
+    <br>
+    <br>
+    <a href="https://raw.githubusercontent.com/o4g0z1s/Lab/main/UTs/UCD-2.txt">
+        [&#x200A;<u>UCD-2</u>&#x200A;]
+    </a>
+    <br>
+    <br>
+    <a href="US.html">
+        [&#x200A;<u>Sorter</u>&#x200A;]
+    </a>
+    <br>
+    <br>
+    <a href="UG.html">
+        [&#x200A;<u>Getter</u>&#x200A;]
+    </a>
+
+    <script>
+        function applyDarkMode() {
+            const now = new Date();
+            const hour = now.getHours();
+            if (hour >= 19 || (hour >= 0 && hour < 5)) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+        applyDarkMode();
+        setInterval(applyDarkMode, 60 * 60 * 1000);
+    </script>
+</body>
+</html>

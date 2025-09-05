@@ -17,60 +17,109 @@
     </script>
     <title>Home | o4g0z1s</title>
     <style>
-        body {  
-            font-family: "Reso";  
-            text-align: center;  
-            margin-top: 70px;
-            margin-bottom: 70px;
-            background-color: teal;
-            overflow-x: hidden;
-            white-space: nowrap;
+        :root {
+            --b: teal;
+            --t: #FAF9F6;
         }
 
-        p {font-size: 70px;}
-        span.title {font-size: 30px;}        
-        a {font-size: 70px;}
-        
-        @media only screen and (min-width:500px) 
-        {
-        p {font-size: 100px;}
-        span.title {font-size: 50px;}	
-        a {font-size: 100px;}
+        body {
+            font-family: "Reso", sans-serif;
+            text-align: center;
+            margin: 80px 0;
+            background-color: var(--b);
+            color: var(--t);
+            overflow-x: hidden;
+            white-space: nowrap;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        p {
+            font-size: 120px;
+            margin: 0;
+        }
+
+        .title {
+            font-size: 50px;
+        }
+
+        a {
+            font-size: 100px;
+            color: var(--t);
+            text-decoration: none;
+        }
+
+        hr {
+            width: 99%;
+            border-color: var(--t);
+            background-color: var(--t);
+            border-width: 1px;
+            border-style: solid;
         }
         
+        @media only screen and (max-width: 500px) {
+            p {
+                font-size: 80px;
+            }
+            .title {
+                font-size: 30px;
+            }
+            a {
+                font-size: 70px;
+            }
+        }
+
+        body.dark-mode {
+            --b: #000;
+            --t: teal;
+        }
     </style>
-    </head>
-    <body>
-        <p style="color: #FAF9F6; margin: 0;">o4g0z1s<br><span class="title">Lab - Home</span></p>
-        <br><br>
-        <hr style="width: 99%; border-color: #FAF9F6; background-color: white;" size="1" noshade>
-        <br><br>
-        <a href="https://o4g0z1s.github.io/Glyph_Garden/" style="color: #FAF9F6; text-decoration: none;">
-            [&#x200A;<span style="text-decoration: underline;">G-G</span>&#x200A;]
-        </a>
-        <br>
-        <br>
-        <a href="UTs/index.html" style="color: #FAF9F6; text-decoration: none;">
-            [&#x200A;<span style="text-decoration: underline;">UTs</span>&#x200A;]
-        </a>
-        <br>
-        <br>
-        <a href="arts/index.html" style="color: #FAF9F6; text-decoration: none;">
-            [&#x200A;<span style="text-decoration: underline;">Arts</span>&#x200A;]
-        </a>
-        <br>
-        <br>
-        <a href="tools/index.html" style="color: #FAF9F6; text-decoration: none;">
-            [&#x200A;<span style="text-decoration: underline;">Tools</span>&#x200A;]
-        </a>
-        <br>
-        <br>
-        <a href="fonts/index.html" style="color: #FAF9F6; text-decoration: none;">
-            [&#x200A;<span style="text-decoration: underline;">Fonts</span>&#x200A;]
-        </a>
-        <br>
-        <br>
-        <a href="games/index.html" style="color: #FAF9F6; text-decoration: none;">
-            [&#x200A;<span style="text-decoration: underline;">Games</span>&#x200A;]
-        </a>
-    </body>
+</head>
+<body>
+    <p>o4g0z1s<br><span class="title">Lab - Home</span></p>
+    <br><br>
+    <hr noshade>
+    <br><br>
+    <a href="https://o4g0z1s.github.io/Glyph_Garden/">
+        [&#x200A;<u>G-G</u>&#x200A;]
+    </a>
+    <br>
+    <br>
+    <a href="UTs/index.html">
+        [&#x200A;<u>UTs</u>&#x200A;]
+    </a>
+    <br>
+    <br>
+    <a href="arts/index.html">
+        [&#x200A;<u>Arts</u>&#x200A;]
+    </a>
+    <br>
+    <br>
+    <a href="tools/index.html">
+        [&#x200A;<u>Tools</u>&#x200A;]
+    </a>
+    <br>
+    <br>
+    <a href="fonts/index.html">
+        [&#x200A;<u>Fonts</u>&#x200A;]
+    </a>
+    <br>
+    <br>
+    <a href="games/index.html">
+        [&#x200A;<u>Games</u>&#x200A;]
+    </a>
+
+    <script>
+        function applyDarkMode() {
+            const now = new Date();
+            const hour = now.getHours();
+            if (hour >= 19 || (hour >= 0 && hour < 5)) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
+        applyDarkMode();
+        setInterval(applyDarkMode, 60 * 60 * 1000);
+    </script>
+</body>
+</html>

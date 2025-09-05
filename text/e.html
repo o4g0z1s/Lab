@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Noto+Sans+JP&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Noto+Sans+JP:wght@100..900&display=swap" rel="stylesheet">
     <title>ゐ〜🖐️ㇾ！</title>
     <style>
         /* === 全体のスタイル === */
@@ -11,7 +11,7 @@
             scroll-behavior: smooth;
         }
         body {
-            font-family: 'Noto Sans JP', 'Noto Color Emoji', sans-serif;
+            font-family: 'Noto Color Emoji', 'Noto Sans JP', sans-serif;
             background-color: #f0f8ff;
             color: #333;
             margin: 0;
@@ -125,6 +125,7 @@
 
         /* === 右から流れる文字列 === */
         .marquee-container {
+            font-family: 'Noto Sans JP', 'Noto Color Emoji', sans-serif;
             width: 100%;
             overflow: hidden;
             background-color: #ffd700;
@@ -167,6 +168,7 @@
 
         /* === ポップアップ === */
         #popup {
+            font-family: 'Noto Color Emoji', 'Noto Sans JP', sans-serif;
             position: fixed; top: 50%; left: 50%;
             transform: translate(-50%, -50%) scale(0.5);
             width: 320px; padding: 30px; background: white;
@@ -183,6 +185,7 @@
 
         /* === 歌詞コンテナ共通スタイル === */
         .lyrics-container {
+            font-family: 'Noto Color Emoji', 'Noto Sans JP', sans-serif;
             margin-top: 30px; padding: 20px; background-color: #e6e6fa;
             border-radius: 10px; text-align: center; font-size: 1.2em;
             line-height: 2; font-weight: bold; display: none; white-space: pre-wrap;
@@ -194,7 +197,7 @@
         }
         
         /* === オーバーレイキャンバス === */
-        #overlay-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; pointer-events: none; }
+        #overlay-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; pointer-events: none; font-family: 'Noto Color Emoji', 'Noto Sans JP', sans-serif; }
 
         /* === いないいないばあ イベント用スタイル === */
         #inaiinai-overlay {
@@ -255,8 +258,8 @@
             </div>
 
             <section class="content-section">
-                <h2>めゅんなぁっ‼️ぁのねぇ、ねぇ、〜ん、んねぇ〜、ゎのねぇっ‼️これゎ、ねぇ〰〰〰っ‼️‼️、、ゐ〜🖐️ㇾの、ㇹーㇺㇸ゚ーㇱ゙🫓だょぉっ‼️ㇲぐぉゐㇾㇱョォ〰〰〰〰〰〰ｯｯｯｯｯ‼️そぇでさぁっ、さぁ〜っ、っー。ん、ぬんく、ぬんくねぇ、ㇲっごゐんだょぉっ‼️</h2>
-                <p>ぬんくさぁっ、ㇱたに、ぁㇽ、ゔゥｫたﾝを、をㇱたㇻぁ、<strong>ゎ🌳ィ〰〰〰〰〰〰っ‼️‼️‼️</strong><br><br><strong>ｭﾂｨ‼️</strong>っ🖐️、なㇽもぉ〜っ‼️<br>ぁとゎねぇ、ぬんくぅ、た龴に、<strong>ゎ🌳‼️‼️‼️<br>ゎゐ🖐️ㇽ、ゎ🌳が、ゎゐ🖐️、ゎ🌳ゎ🌳ㇲㇽゎ🌳🫓だもぉ〜っ‼️♨️〰〰〰🩸〰〰〰ㇾㇱョォっ‼️</strong></p>
+                <h2>めゅんなぁっ‼️ぁのねぇ、ねぇ、〜ん、んねぇ〜、ゎのねぇっ‼️これゎ、ねぇ〜〜〜っ‼️‼️、、ゐ〜🖐️ㇾの、ㇹーㇺㇸ゚ーㇱ゙🫓だょぉっ‼️ㇲぐぉゐㇾㇱョォ〜〜〜〜〜〜ｯｯｯｯｯ‼️そぇでさぁっ、さぁ〜っ、っー。ん、ぬんく、ぬんくねぇ、ㇲっごゐんだょぉっ‼️</h2>
+                <p>ぬんくさぁっ、ㇱたに、ぁㇽ、ゔゥｫたﾝを、をㇱたㇻぁ、<strong>ゎ🌳ィ〜〜〜〜〜〜っ‼️‼️‼️</strong><br><br><strong>ｭﾂｨ‼️</strong>っ🖐️、なㇽもぉ〜っ‼️<br>ぁとゎねぇ、ぬんくぅ、た龴に、<strong>ゎ🌳‼️‼️‼️<br>ゎゐ🖐️ㇽ、ゎ🌳が、ゎゐ🖐️、ゎ🌳ゎ🌳ㇲㇽゎ🌳🫓だもぉ〜っ‼️♨️〜〜〜🩸〜〜〜ㇾㇱョォっ‼️</strong></p>
                 <div class="program-buttons">
                     <button class="btn" id="btn-inaiinai">ゐなゐゐなぁ〜ゐ⋯</button>
                 </div>
@@ -270,7 +273,7 @@
             <section class="content-section">
                 <h2>ｦｩ田ｦ、ｩ田ｦｩ⤴</h2>
                 <p>ゔゥｫたﾝを、をㇱ🖐️、ｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩｦｩ田ｦｩ田ｦｩ⤴⤴⤴⤴⤴</p>
-                    <button class="btn" id="btn-song">ゐｯｯｯｯｯゖぇ〰‼️<br>📱💥👈👈👈<br>押せッ‼️押せッ‼️</button>
+                    <button class="btn" id="btn-song">ゐｯｯｯｯｯゖぇ〜‼️<br>📱💥👈👈👈<br>押せッ‼️押せッ‼️</button>
                 <div id="lyrics-container-song" class="lyrics-container">
                     <h3 id="song-title"></h3>
                     <p id="song-lyrics"></p>
@@ -278,14 +281,14 @@
             </section>
 
             <div class="marquee-container">
-                <span class="marquee-text">をｫっ🌳な ㇰｩㇼのｫ〰〰〰🎶‼️　🌳ｨのｫㇱｨ田ｧでｪ〰〰〰‼️🎶‼️</span>
+                <span class="marquee-text">をｫっ🌳な ㇰｩㇼのｫ〜〜〜🎶‼️　🌳ｨのｫㇱｨ田ｧでｪ〜〜〜‼️🎶‼️</span>
                 <span class="marquee-text">︀つょ〜ｦ〜つょ〜、つょ〜ｦ〜つょ〜、ぬゎ〜のょ〜へゃ〜ぬゅゐ〜、つょ〜めゎ〜るゅゑ〜〜！</span>
             </div>
             
             <section class="content-section">
                 <h2>🖐️ぁ🆘ゔィ‼️</h2>
                 <p>ゔゥｫたﾝを、をㇱ🖐️、🖐️ぁ🆘ゔィ、ゃってみょぅっ‼️</p>
-                    <button class="btn" id="btn-teasobi">ゐｯｯｯｯｯゖぇ〰‼️<br>📱💥👈👈👈<br>押せッ‼️押せッ‼️</button>
+                    <button class="btn" id="btn-teasobi">ゐｯｯｯｯｯゖぇ〜‼️<br>📱💥👈👈👈<br>押せッ‼️押せッ‼️</button>
                 <div id="lyrics-container-teasobi" class="lyrics-container">
                     <h3 id="teasobi-title"></h3>
                     <p id="teasobi-lyrics"></p>
@@ -317,8 +320,8 @@
 
                 // === 2. 浮遊絵文字 ===
                 const floatingContainer = document.getElementById('floating-container');
-                const emojis = ["🆘","🍮","🪀","🐄","🫁","🈚️","🦙","🥚","❤","💚","☠️","⭐","💦","💤","🎶","🧠","👄","👅","🌴","🪨","🌈","🕑","🌊","🌀","⚡","🌧️","☔️","🦓","🐢","🐊","🐍","🐸","🐃","🦏","🥬","🐦","🦤","🦈","🦀","🕷","☁️","🐜","🪳","🦋","🍑","🈁","🥒","🫘","🍠","🥜","🫓","🍳","🦘","🎯","🍜","🧂","🎍","🎋","🀄","🃏","🇹🇭","☎️","🐌","🖊️","📈","🕓","🕔","🕘","⚔️","🉐","ℹ️","🅿️","🈳","🇬🇭","🇰🇵","🇲🇲","🕳️","💋","📚️","🍃","💪","🦠","🅰️","🐜","🐗","🐇","🖼️","🅾️","🉑","🦟","🌳","🈂️","🈯","🪺","💰️","🪟","🩸","🌛","🖐️","🚪","🐀","🦷","🔥","💨","🌾","🈵","🐎","👀","🌱","👁️","🍑","🏹","♨️","🪀","🎺","🍎","🎶","🍋","🦞","🦤","🦤","🦤","🦤","🦤","🦤","🦤","🦤","🦤","🦤","🦤","🦤","🦤","🅱️","🐖","💥","🦵","🔹","⭕️","➖️","〰️","‼️","❓️","🔟","1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","0️⃣"];
-                for (let i = 0; i < 200; i++) {
+                const emojis = ["🆘","🍮","🪀","🐄","🫁","🈚️","🦙","🥚","❤","💚","☠️","⭐","💦","💤","🎶","🧠","👄","👅","🌴","🪨","🌈","🕑","🌊","🌀","⚡","🌧️","☔️","🦓","🐢","🐊","🐍","🐸","🐃","🦏","🥬","🐦","🦤","🦈","🦀","🕷","☁️","🐜","🪳","🦋","🍑","🈁","🥒","🫘","🍠","🥜","🫓","🍳","🦘","🎯","🍜","🧂","🎍","🎋","🀄","🃏","🇹🇭","☎️","🐌","🖊️","📈","🕓","🕔","🕘","⚔️","🉐","ℹ️","🅿️","🈳","🇬🇭","🇰🇵","🇲🇲","🕳️","💋","📚️","🍃","💪","🦠","🅰️","🐜","🐗","🐇","🖼️","🅾️","🉑","🦟","🌳","🈂️","🈯","🪺","💰️","🪟","🩸","🌛","🖐️","🚪","🐀","🦷","🔥","💨","🌾","🈵","🐎","👀","🌱","👁️","🍑","🏹","♨️","🪀","🎺","🍎","🎶","🍋","🦞","🦤","🦤","🦤","🦤","🦤","🦤","🦤","🦤","🦤","🦤","🦤","🦤","🦤","🅱️","🐖","💥","🦵","🔹","⭕️","➖️","〜️","‼️","❓️","🔟","1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","0️⃣"];
+                for (let i = 0; i < 150; i++) {
                     const obj = document.createElement('div');
                     obj.classList.add('floating-object');
                     obj.textContent = emojis[Math.floor(Math.random() * emojis.length)];
@@ -338,8 +341,8 @@
                     { title: 'もゔぁゃㇱ、参上‼️', text: 'てか何なんだこのサイト', emoji: 'むんむん！' },
                     { title: 'ゃぁ、もゔぁゃㇱだよ^^', text: 'るる！、！！たのちぃね！っ！', emoji: 'もゔぅっッ！' },
                     { title: 'ㇵむｨヵ゙ｷ、\nづょｩづヵぬゎ！', text: 'ㇱぁヶ゙ゎ、ヲヵ〜ゎすｧ〜ﾝ！\nｩゑぬォㇵ〜！\nㇱﾀぬォㇵ〜！\nまゅゑゔｧ〜！\nヲㇰゔｧ〜！', emoji: 'ﾀゔｪﾀㇻめゅゐヵ゙ㇰ、\nゃㇰすｫㇰヶ゙ﾝめゎﾝ！' },
-                    { title: 'あ〰〰〰っ‼️', text: 'まゐまゐぜみが、\nㇳんでㇽぅ〰〰〰っ‼️', emoji: 'ト゚ゕ龴ゑㇿ！' },
-                    { title: 'あ〰〰〰っ‼️', text: 'るゅﾅｪるゅﾅｪぜみが、\nㇳんでㇽぅ〰〰〰っ‼️', emoji: 'ト゚ゕ龴ゑㇿ！' },
+                    { title: 'あ〜〜〜っ‼️', text: 'まゐまゐぜみが、\nㇳんでㇽぅ〜〜〜っ‼️', emoji: 'ト゚ゕ龴ゑㇿ！' },
+                    { title: 'あ〜〜〜っ‼️', text: 'るゅﾅｪるゅﾅｪぜみが、\nㇳんでㇽぅ〜〜〜っ‼️', emoji: 'ト゚ゕ龴ゑㇿ！' },
                     { title: 'ごㇵㇺの、ぢヵㇺ‼️', text: 'はゐ、みぬゎさん！\n🖐️を、そㇿぇ🖐️〜！\n🫓🖐️ゅぅんですか⁉️\n\nはぁゐ！', emoji: 'ゅ〜た〜ㇽ〜き〜も‼️' },
                     { title: '【お詫び】', text: '糸井アナ：えーただいま、このウェブサイトは教育に悪影響があるとのご意見をいただきました。我々はこのご意見を真剣に受け止め、今後のゐ〜🖐️ㇾのあり方について検討して行きたいと存じます。この度は、視聴者の皆様にご迷惑をおかけしましたことを、深くお詫び申し上げます。誠に申し訳ございませんでした。', emoji: '' }
                 ];
@@ -397,7 +400,7 @@
                 document.body.addEventListener('click', () => { if (canClickFever && !feverMode) { startFever(); canClickFever = false; setTimeout(() => { canClickFever = true; }, 3000); } });
 
                 function createNormalEffect() {
-                    const messages = ['ゐっゖぇ〰〰！', 'ゎぁ〰っ！！！', 'ｭﾂｨ!', 'ゐっゖぇ〰〰！', 'ゎぁ〰っ！！！', 'ｭﾂｨ!', 'ゐっゖぇ〰〰！', 'ゎぁ〰っ！！！', 'ｭﾂｨ!', 'ゐっゖぇ〰〰！', 'ゎぁ〰っ！！！', 'ｭﾂｨ!', 'ゐっゖぇ〰〰！', 'ゎぁ〰っ！！！', 'ｭﾂｨ!', 'ゐっゖぇ〰〰！', 'ゎぁ〰っ！！！', 'ｭﾂｨ!', 'ゐっゖぇ〰〰！', 'ゎぁ〰っ！！！', 'ｭﾂｨ!', 'ゐっゖぇ〰〰！', 'ゎぁ〰っ！！！', 'ｭﾂｨ!', 'づゅゑﾝちづゅゑﾝちー‼️', '帰還者ㇳー龴ㇲ！', 'ｦｩ田ｦ、ｩ田ｦｩ⤴', "ぐさぐさぐさっ！！","ばきゅんばきゅんばきゅん！","ゎヵんﾀﾞ、ふォ〜ゑゔぁー‼️","ィゐばンべ‼️","ト゚ゕ龴ゑㇿ！","とゅ！","ぁｯせﾝぶぅ。","ゎゐた？","ㇷ🆘ㇰ‼️","ゐ龴ㇿこ？","ちもこ！","ゎゐたぁ〰〰〰‼️","ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡","ゎ💋🔥‼️","むっㇱたぁ〜","🇬🇭","🩸‼️","ゅ〰〰〰🩸〰〰〰‼️","🦤","㍁㍂㍎㍏❢❢❢"];
+                    const messages = ['ゐっゖぇ〜〜！', 'ゎぁ〜っ！！！', 'ｭﾂｨ!', 'ゐっゖぇ〜〜！', 'ゎぁ〜っ！！！', 'ｭﾂｨ!', 'ゐっゖぇ〜〜！', 'ゎぁ〜っ！！！', 'ｭﾂｨ!', 'ゐっゖぇ〜〜！', 'ゎぁ〜っ！！！', 'ｭﾂｨ!', 'ゐっゖぇ〜〜！', 'ゎぁ〜っ！！！', 'ｭﾂｨ!', 'ゐっゖぇ〜〜！', 'ゎぁ〜っ！！！', 'ｭﾂｨ!', 'ゐっゖぇ〜〜！', 'ゎぁ〜っ！！！', 'ｭﾂｨ!', 'ゐっゖぇ〜〜！', 'ゎぁ〜っ！！！', 'ｭﾂｨ!', 'づゅゑﾝちづゅゑﾝちー‼️', '帰還者ㇳー龴ㇲ！', 'ｦｩ田ｦ、ｩ田ｦｩ⤴', "ぐさぐさぐさっ！！","ばきゅんばきゅんばきゅん！","ゎヵんﾀﾞ、ふォ〜ゑゔぁー‼️","ィゐばンべ‼️","ト゚ゕ龴ゑㇿ！","とゅ！","ぁｯせﾝぶぅ。","ゎゐた？","ㇷ🆘ㇰ‼️","ゐ龴ㇿこ？","ちもこ！","ゎゐたぁ〜〜〜‼️","ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡ｩｩﾝ｡","ゎ💋🔥‼️","むっㇱたぁ〜","🇬🇭","🩸‼️","ゅ〜〜〜🩸〜〜〜‼️","🦤","㍁㍂㍎㍏❢❢❢"];
                     effects.push({ type: 'normal', text: messages[Math.floor(Math.random() * messages.length)], x: Math.random() * width, y: Math.random() * height, size: Math.random() * 25 + 40, scale: 0.1, life: 1.0, phase: 'in' });
                 }
 
@@ -406,7 +409,7 @@
                     const feverTypes = ['giant', 'giant','giant', 'rush', 'poyon-rush', 'emoji-cross', 'emoji-cross'];
                     feverMode = forceFeverType || feverTypes[Math.floor(Math.random() * feverTypes.length)];
                     effects = effects.filter(e => e.type === 'normal');
-                    if (feverMode === 'giant') { effects.push({ type: 'giant', text: ['ゐっけぇ〰〰！', 'ゎぁ〰っ！', 'ｭﾂｨ!'][Math.floor(Math.random()*2)], x: width/2, y: height/2, size: 10, life: 1.0 }); } 
+                    if (feverMode === 'giant') { effects.push({ type: 'giant', text: ['ゐっけぇ〜〜！', 'ゎぁ〜っ！', 'ｭﾂｨ!'][Math.floor(Math.random()*2)], x: width/2, y: height/2, size: 10, life: 1.0 }); } 
                     else if (feverMode === 'rush') { for(let i=0; i<50; i++) { effects.push({ type: 'rush', text: 'うわあああああああああああああああ', x: width + Math.random() * 500 + 100, y: Math.random() * height, size: Math.random() * 30 + 20, speed: Math.random() * 5 + 3 }); } } 
                     else if (feverMode === 'poyon-rush') { for(let i=0; i<30; i++) { effects.push({ type: 'poyon-rush', text: 'ｷｨｬﾊﾊﾊｯｯｯ!', x: Math.random() * width, y: Math.random() * height, size: Math.random() * 70 + 60, scale: 0.1, alpha: 1, delay: Math.random() * 2500, phase: 'delay', poyons: Math.floor(Math.random() * 5) + 3, poyonState: 0, decay: Math.random() * 0.02 + 0.015 }); } } 
                     else if (feverMode === 'emoji-cross') {
