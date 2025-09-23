@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cursors</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        #fullscreen-div {
+            width: 100vw;
+            height: 100vh;
+            background-color: grey;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #speed-slider {
+            z-index: 10;
+            width: 300px;
+            margin-bottom: 40px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="fullscreen-div">
+        <input type="range" id="speed-slider" min="1" max="100" value="50">
+    </div>
+
+    <script>
+        const div = document.getElementById('fullscreen-div');
+        const slider = document.getElementById('speed-slider');
+
+        const cursorTypes = ['auto', 'default', 'none', 'context-menu', 'help', 'pointer', 'progress', 'wait', 'cell', 'crosshair', 'text', 'vertical-text', 'alias', 'copy', 'move', 'no-drop', 'not-allowed', 'grab', 'grabbing', 'zoom-in', 'zoom-out', 'context-menu', 'help', 'pointer', 'progress', 'wait', 'cell', 'crosshair', 'text', 'vertical-text', 'alias', 'copy', 'move', 'no-drop', 'not-allowed', 'grab', 'grabbing', 'zoom-in', 'zoom-out', 'context-menu', 'help', 'pointer', 'progress', 'wait', 'cell', 'crosshair', 'text', 'vertical-text', 'alias', 'copy', 'move', 'no-drop', 'not-allowed', 'grab', 'grabbing', 'zoom-in', 'zoom-out', 'all-scroll', 'col-resize', 'row-resize', 'n-resize', 'e-resize', 's-resize', 'w-resize', 'ne-resize', 'nw-resize', 'se-resize', 'sw-resize', 'ew-resize', 'ns-resize', 'nesw-resize', 'nwse-resize'];
+
+        let intervalId = null;
+
+        function changeCursor() {
+            const randomIndex = Math.floor(Math.random() * cursorTypes.length);
+            div.style.cursor = cursorTypes[randomIndex];
+        }
+
+        function startCursorChange() {
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+            const intervalTime = 505 - (slider.value * 5);
+            intervalId = setInterval(changeCursor, intervalTime);
+        }
+
+        function stopCursorChange() {
+            clearInterval(intervalId);
+            intervalId = null;
+        }
+
+        div.addEventListener('mouseenter', startCursorChange);
+        div.addEventListener('mouseleave', stopCursorChange);
+        slider.addEventListener('mouseenter', () => {
+            slider.style.cursor = div.style.cursor;
+            stopCursorChange();
+        });
+        slider.addEventListener('mouseleave', startCursorChange);
+        slider.addEventListener('input', () => {
+            if (intervalId) {
+                startCursorChange();
+            }
+        });
+    </script>
+
+</body>
+</html>

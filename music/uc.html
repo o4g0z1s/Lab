@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><text x='16' y='24' font-size='25' text-anchor='middle' fill='black'>🎶</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Emoji&family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <title>Tunicode</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --text-color: #e0e0e0;
+            --primary-color: #4a90e2;
+            --secondary-color: #252526;
+            --border-color: #444;
+            --highlight-bg: rgba(74, 144, 226, 0.3);
+            --font-family: 'Inter', 'Noto Emoji', monospace;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+
+        .header {
+            flex-shrink: 0;
+            text-align: left;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            color: #D70;
+            margin: 0 0 15px 0;
+            font-size: 3em;
+        }
+
+        h2 {
+            margin-top: 2px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .container {
+            display: flex;
+            flex-grow: 1;
+            gap: 20px;
+            min-height: 0;
+            margin-top: 15px;
+        }
+
+        .settings {
+            flex-basis: 300px;
+            flex-shrink: 0;
+            background-color: var(--secondary-color);
+            padding: 20px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .settings-group {
+            margin-bottom: 20px;
+        }
+
+        .settings-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .settings-group input,
+        .settings-group select {
+            width: 100%;
+            padding: 8px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-container input {
+            width: auto;
+        }
+
+        .instrument-settings {
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+        }
+
+        .instrument-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .instrument-row .line-label {
+            min-width: 50px;
+            font-size: 0.9em;
+        }
+
+        .instrument-row select {
+            flex-grow: 1;
+        }
+        
+        .editor-container {
+            position: relative;
+            flex-grow: 1;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        #editor, #highlighter {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 15px;
+            box-sizing: border-box;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: var(--font-family);
+            font-size: inherit;
+            line-height: inherit;
+            white-space: pre;
+            overflow: auto;
+            tab-size: 4;
+        }
+
+        #editor {
+            z-index: 2;
+            resize: none;
+            color: transparent;
+            background-color: transparent;
+            caret-color: var(--text-color);
+        }
+
+        #highlighter {
+            z-index: 1;
+            pointer-events: none;
+            color: var(--text-color);
+        }
+        
+        .playing-char {
+            font-weight: bold;
+            background-color: var(--highlight-bg);
+            border-radius: 2px;
+            color: #fff;
+        }
+
+        button {
+            font-family: var(--font-family);
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #5a9ee6;
+        }
+        
+        button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+        
+        button#stopBtn {
+            background-color: #e24a4a;
+        }
+        
+        button#stopBtn:hover {
+            background-color: #e65a5a;
+        }
+
+        button.secondary {
+            background-color: #555;
+        }
+        
+        button.secondary:hover {
+            background-color: #666;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body { padding: 10px; height: 100%; }
+            .container { flex-direction: column; min-height: 0; }
+            .settings { flex-basis: auto; flex-shrink: 1; max-height: 40vh; }
+            .main-content { min-height: 50vh; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎶Tunicode</h1>
+        <div class="controls">
+            <button id="playBtn">▶</button>
+            <button id="stopBtn">⏹</button>
+            <button id="exportBtn" class="secondary">Save</button>
+            <!--<button id="copyTagBtn" class="secondary">Copy Start Tag</button>-->
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="settings">
+            <h2>Settings</h2>
+            <div class="settings-group">
+                <label for="tempo">Tempo (BPM)</label>
+                <input type="number" id="tempo" value="120" min="20" max="400">
+            </div>
+            <div class="settings-group">
+                 <div class="checkbox-container">
+                    <input type="checkbox" id="loop">
+                    <label for="loop">Loop</label>
+                </div>
+            </div>
+            <div id="instrument-settings-container" class="instrument-settings">
+                <label>Instruments</label><br><br>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="editor-container">
+                <pre id="highlighter" aria-hidden="true"></pre>
+                <textarea id="editor" wrap="off" spellcheck="false" placeholder="Enter or paste your Unicode string here..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const editor = document.getElementById('editor');
+            const highlighter = document.getElementById('highlighter');
+            const playBtn = document.getElementById('playBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const exportBtn = document.getElementById('exportBtn');
+            const copyTagBtn = document.getElementById('copyTagBtn');
+            const tempoInput = document.getElementById('tempo');
+            const loopCheckbox = document.getElementById('loop');
+            const instrumentContainer = document.getElementById('instrument-settings-container');
+
+            const START_TAG = "𐀀";
+            const INSTRUMENT_TYPES = {
+                "sine": () => new Tone.Synth({ oscillator: { type: 'sine' } }).toDestination(),
+                "sawtooth": () => new Tone.Synth({ oscillator: { type: 'sawtooth' } }).toDestination(),
+                "synth": () => new Tone.FMSynth().toDestination(),
+                "piano": () => new Tone.PolySynth(Tone.Synth, { oscillator: { type: 'fmtriangle' } }).toDestination(),
+                "violin": () => new Tone.AMSynth({ harmonicity: 1.5, oscillator: { type: "fatsawtooth" } }).toDestination(),
+                "brass": () => new Tone.MonoSynth({ oscillator: { type: 'sawtooth' }, filter: { Q: 2 }, envelope: { attack: 0.1, release: 0.5 } }).toDestination(),
+                "woodwind": () => new Tone.MonoSynth({ oscillator: { type: 'triangle' }, filter: { Q: 3 }, envelope: { attack: 0.05, release: 0.3 } }).toDestination(),
+                "xylophone": () => new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.3, sustain: 0, release: 0.3 } }).toDestination(),
+                // *** IMPROVED METALLOPHONE SOUND ***
+                "metallophone": () => new Tone.FMSynth({
+                    harmonicity: 4.2, // Creates more complex, inharmonic overtones
+                    modulationIndex: 20, // Increases the richness of the metallic sound
+                    modulation: { type: 'square' }, // A harsher modulator adds metallic character
+                    envelope: { attack: 0.008, decay: 1, sustain: 0, release: 2 } // Sharp attack, long ringing release
+                }).toDestination(),
+                "pluck": () => new Tone.Synth({
+                    oscillator: { type: 'triangle8' },
+                    envelope: { attack: 0.005, decay: 0.4, sustain: 0.01, release: 0.8 }
+                }).toDestination(),
+                // "Drum" has been removed as requested
+            };
+
+            let synths = [];
+            let parts = [];
+            let isPlaying = false;
+            
+            const syncScroll = () => {
+                highlighter.scrollTop = editor.scrollTop;
+                highlighter.scrollLeft = editor.scrollLeft;
+            };
+            editor.addEventListener('scroll', syncScroll);
+            
+            const updateContent = () => {
+                updateHighlighter();
+                updateInstrumentSelectors();
+            };
+            editor.addEventListener('input', updateContent);
+
+            const updateHighlighter = (playingIndices = []) => {
+                const text = editor.value;
+                const lines = text.split('\n');
+                let html = '';
+                lines.forEach((line, lineIndex) => {
+                    let lineHtml = ' ';
+                    const playingIndex = playingIndices[lineIndex];
+                    if (line.length > 0) {
+                        lineHtml = '';
+                        for (let i = 0; i < line.length; i++) {
+                            const char = line[i];
+                            lineHtml += (i === playingIndex) 
+                                ? `<span class="playing-char">${escapeHtml(char)}</span>`
+                                : escapeHtml(char);
+                        }
+                    }
+                    html += lineHtml + '\n';
+                });
+                highlighter.innerHTML = html.slice(0, -1);
+                syncScroll();
+            };
+
+            const escapeHtml = (text) => text.replace(/[&<>"']/g, (m) => ({'&': '&amp;','<': '&lt;','>': '&gt;','"': '&quot;',"'": '&#039;'}[m]));
+            
+            const updateInstrumentSelectors = () => {
+                const lines = editor.value.split('\n').length;
+                let currentRows = Array.from(instrumentContainer.querySelectorAll('.instrument-row'));
+                const currentValues = currentRows.map(row => row.querySelector('select').value);
+                
+                while(currentRows.length > lines) currentRows.pop().remove();
+                
+                while(currentRows.length < lines) {
+                    const i = currentRows.length;
+                    const row = document.createElement('div');
+                    row.className = 'instrument-row';
+                    row.innerHTML = `
+                        <span class="line-label">Line ${i + 1}</span>
+                        <select class="instrument-selector" data-line-index="${i}">
+                            ${Object.keys(INSTRUMENT_TYPES).map(type => `<option value="${type}">${type}</option>`).join('')}
+                        </select>`;
+                    const select = row.querySelector('select');
+                    if (currentValues[i]) select.value = currentValues[i];
+                    instrumentContainer.appendChild(row);
+                    currentRows.push(row);
+                }
+            };
+            
+            tempoInput.addEventListener('input', (e) => Tone.Transport.bpm.value = parseInt(e.target.value, 10));
+            loopCheckbox.addEventListener('change', (e) => Tone.Transport.loop = e.target.checked);
+
+            instrumentContainer.addEventListener('change', (e) => {
+                if (e.target.classList.contains('instrument-selector')) {
+                    const rowIndex = parseInt(e.target.dataset.lineIndex, 10);
+                    const newInstrumentName = e.target.value;
+                    const oldSynth = synths[rowIndex];
+
+                    if (INSTRUMENT_TYPES[newInstrumentName]) {
+                        synths[rowIndex] = INSTRUMENT_TYPES[newInstrumentName]();
+                    }
+                    if (oldSynth && !oldSynth.disposed) {
+                        if (typeof oldSynth.releaseAll === 'function') oldSynth.releaseAll();
+                        setTimeout(() => { if (!oldSynth.disposed) oldSynth.dispose(); }, 500);
+                    }
+                }
+            });
+
+            const parseNote = (char) => {
+                const codePoint = char.codePointAt(0);
+                if (codePoint > 0xFFFF) return null;
+                const hex = codePoint.toString(16).padStart(4, '0');
+                const pitchMap = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+                const pitchIndex = parseInt(hex[3], 16);
+                
+                return {
+                    pitch: (pitchIndex < 12) ? `${pitchMap[pitchIndex]}${Math.floor(parseInt(hex[1], 16) / 2) + 1}` : null,
+                    duration: `${parseInt(hex[2], 16) + 1}n`,
+                    velocity: (parseInt(hex[0], 16) + 1) / 16
+                };
+            };
+            
+            const stopMusic = (clearHighlights = true) => {
+                Tone.Transport.stop();
+                Tone.Transport.cancel(0);
+                parts.forEach(part => part.dispose());
+                parts = [];
+                synths.forEach(synth => {
+                    if (synth && !synth.disposed) {
+                        if (typeof synth.releaseAll === 'function') synth.releaseAll();
+                        synth.dispose();
+                    }
+                });
+                synths = [];
+                isPlaying = false;
+                playBtn.textContent = "▶";
+                playBtn.disabled = false;
+                if (clearHighlights) updateHighlighter([]);
+            };
+
+            const playMusic = async () => {
+                if (isPlaying) return;
+                
+                playBtn.disabled = true;
+                await Tone.start();
+                stopMusic(false);
+
+                const lines = editor.value.split('\n');
+                const instrumentSelectors = document.querySelectorAll('.instrument-selector');
+                
+                synths = lines.map((_, i) => INSTRUMENT_TYPES[instrumentSelectors[i]?.value || 'sine']());
+                
+                Tone.Transport.bpm.value = parseInt(tempoInput.value, 10);
+                Tone.Transport.loop = loopCheckbox.checked;
+
+                let maxDuration = 0;
+                let currentHighlightIndices = [];
+
+                lines.forEach((line, lineIndex) => {
+                    const startIndex = line.indexOf(START_TAG);
+                    const musicString = (startIndex !== -1) ? line.substring(startIndex + START_TAG.length) : line;
+                    const offset = (startIndex !== -1) ? startIndex + START_TAG.length : 0;
+                    const noteEvents = [];
+                    let currentTime = 0;
+                    for (let i = 0; i < musicString.length; i++) {
+                        const note = parseNote(musicString[i]);
+                        if (note) {
+                            noteEvents.push({ time: currentTime, ...note, charIndex: offset + i });
+                            currentTime += Tone.Time(note.duration).toSeconds();
+                        }
+                    }
+                    
+                    if (currentTime > maxDuration) maxDuration = currentTime;
+
+                    parts.push(new Tone.Part((time, value) => {
+                        const currentSynth = synths[lineIndex];
+                        if (currentSynth && !currentSynth.disposed && value.pitch) {
+                            currentSynth.triggerAttackRelease(value.pitch, value.duration, time, value.velocity);
+                        }
+                        
+                        Tone.Draw.schedule(() => {
+                           currentHighlightIndices[lineIndex] = value.charIndex;
+                           updateHighlighter(currentHighlightIndices);
+                        }, time);
+                    }, noteEvents).start(0));
+                });
+                
+                Tone.Transport.loopEnd = maxDuration > 0 ? maxDuration : '1m';
+                Tone.Transport.start();
+                isPlaying = true;
+                playBtn.textContent = "⏸";
+                playBtn.disabled = false;
+                
+                if (!loopCheckbox.checked) {
+                    Tone.Transport.scheduleOnce(() => stopMusic(), maxDuration);
+                }
+            };
+            
+            playBtn.addEventListener('click', () => isPlaying ? stopMusic() : playMusic());
+            stopBtn.addEventListener('click', () => stopMusic());
+
+            exportBtn.addEventListener('click', () => {
+                const lines = editor.value.split('\n');
+                const instrumentSelectors = document.querySelectorAll('.instrument-selector');
+                let exportText = `Tempo:${tempoInput.value}\n` + lines.map((line, index) => {
+                    const instrumentName = `[${instrumentSelectors[index]?.value || 'sine'}]`;
+                    const startTagIndex = line.indexOf(START_TAG);
+                    if (startTagIndex !== -1) return line.substring(0, startTagIndex) + instrumentName + line.substring(startTagIndex);
+                    return instrumentName + line;
+                }).join('\n');
+                if (lines.length === 1) exportText = exportText.replace('\n', ' ');
+                navigator.clipboard.writeText(exportText).then(() => alert('Copied to clipboard!'));
+            });
+
+            copyTagBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(START_TAG).then(() => alert(`Start Tag "${START_TAG}" copied to clipboard!`));
+            });
+
+            editor.addEventListener('paste', (e) => {
+                e.preventDefault();
+                let pasteData = (e.clipboardData || window.clipboardData).getData('text');
+                const tempoMatch = pasteData.match(/Tempo:(\d+)\s*/);
+                if (tempoMatch) {
+                    tempoInput.value = tempoMatch[1];
+                    pasteData = pasteData.replace(tempoMatch[0], '');
+                }
+                const lines = pasteData.split('\n');
+                editor.value = lines.map(line => line.replace(/^\[[a-z]+\]\s*/, '')).join('\n');
+                updateContent();
+                const instrumentSelectors = document.querySelectorAll('.instrument-selector');
+                lines.forEach((line, index) => {
+                    const instrumentMatch = line.match(/^\[([a-z]+)\]/);
+                    if (instrumentMatch && instrumentSelectors[index] && INSTRUMENT_TYPES[instrumentMatch[1]]) {
+                        instrumentSelectors[index].value = instrumentMatch[1];
+                    }
+                });
+            });
+            updateContent();
+        });
+    </script>
+</body>
+</html>
