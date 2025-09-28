@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>y&hairsp;=&hairsp;♪(x)</title>
+    <style>
+        :root {
+            --bg-color: #202020;
+            --panel-bg-color: #2b2b2b;
+            --item-bg-color: #3a3a3a;
+            --text-color: #f0f0f0;
+            --primary-color: #DD7700;
+            --highlight-color: #ffdd00;
+            --border-color: #4a4a4a;
+            --input-bg-color: #333333;
+            --danger-color: #ff4757;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+        }
+
+        #controls-container {
+            width: 420px;
+            flex-shrink: 0;
+            height: 100%;
+            background-color: var(--panel-bg-color);
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 2px solid var(--border-color);
+        }
+
+        #plot-container {
+            flex-grow: 1;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #1a1a1a;
+            min-width: 0;
+        }
+
+        #plot-target {
+            width: 100%;
+            height: 100%;
+        }
+
+        .top-right-legend {
+            display: none !important;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+            text-align: center;
+            letter-spacing: 1.5px;
+            font-size: 3em;
+        }
+        
+        fieldset {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: var(--item-bg-color);
+        }
+        
+        legend {
+            color: var(--primary-color);
+            font-weight: bold;
+            padding: 0 10px;
+        }
+
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            margin: 10px 1px 6px;
+            font-size: 0.9em;
+            color: #ccc;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            font-family: serif;
+            width: 100%;
+            padding: 10px;
+            background-color: var(--input-bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            border-radius: 4px;
+            font-size: 1em;
+        }
+
+        input[type="color"] {
+            width: 100%;
+            height: 40px;
+            padding: 2px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--input-bg-color);
+            cursor: pointer;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        button {
+            font-family: serif;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: var(--primary-color);
+            color: #fff;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        
+        button:hover {
+            background-color: #ff9d3f;
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .delete-btn {
+            background-color: var(--danger-color);
+        }
+        .delete-btn:hover {
+            background-color: #ff6b81;
+        }
+
+        .flex-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .flex-row > div {
+            flex: 1;
+        }
+        
+        .animation-settings {
+            border-left: 3px solid var(--primary-color);
+            padding-left: 15px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height 0.4s ease-out, opacity 0.4s ease-out, margin-top 0.4s;
+        }
+        .animation-settings.visible {
+             max-height: 300px;
+             opacity: 1;
+        }
+        
+        .main-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .main-buttons button {
+            width: 100%;
+        }
+
+        @media (max-width: 900px) {
+            body {
+                flex-direction: column;
+            }
+            #controls-container {
+                width: 100%;
+                height: auto;
+                max-height: 50vh;
+                flex-shrink: 0;
+                border-right: none;
+                border-bottom: 2px solid var(--border-color);
+            }
+            #plot-container {
+                flex-grow: 1;
+                width: 100%;
+                height: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="controls-container">
+        <h1>y&hairsp;=&hairsp;♪(x)</h1>
+        
+        <fieldset>
+            <legend>Global Settings</legend>
+             <div class="main-buttons">
+                <button id="play-pause-btn">Play</button>
+                <button id="add-graph-btn">Add Graph</button>
+            </div>
+            <div class="control-group">
+                <label>Volume: <span id="volume-value">0.8</span></label>
+                <input type="range" id="master-volume" min="0" max="1" value="0.8" step="0.01">
+            </div>
+             <div class="control-group">
+                <label>Base Frequency (Hz): <span id="base-freq-value">512</span></label>
+                <input type="range" id="base-frequency" min="110" max="880" value="512" step="1">
+            </div>
+        </fieldset>
+        
+        <div id="graph-list"></div>
+    </div>
+
+    <div id="plot-container">
+        <div id="plot-target"></div>
+    </div>
+
+    <script src="https://unpkg.com/function-plot/dist/function-plot.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const plotTarget = document.getElementById('plot-target');
+            const graphList = document.getElementById('graph-list');
+            const addGraphBtn = document.getElementById('add-graph-btn');
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            const masterVolumeSlider = document.getElementById('master-volume');
+            const volumeValueSpan = document.getElementById('volume-value');
+            const baseFrequencySlider = document.getElementById('base-frequency');
+            const baseFreqValueSpan = document.getElementById('base-freq-value');
+
+            let graphs = [];
+            let isPlaying = false;
+            let animationFrameId = null;
+            let audioContext;
+            let masterGain;
+            let baseFrequency = 220;
+            let highlightedPoints = {};
+            let activeCollisions = new Set();
+            
+            const Y_AXIS_VIEW_RADIUS = 10;
+            const NOTE_COLLISION_THRESHOLD = 0.25;
+            const HIGHLIGHT_DURATION_MS = 150;
+
+            function initAudio() {
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    masterGain = audioContext.createGain();
+                    masterGain.gain.value = masterVolumeSlider.value;
+                    masterGain.connect(audioContext.destination);
+                }
+            }
+
+            masterVolumeSlider.addEventListener('input', (e) => {
+                 if (masterGain) masterGain.gain.setValueAtTime(e.target.value, audioContext.currentTime);
+                 volumeValueSpan.textContent = parseFloat(e.target.value).toFixed(2);
+            });
+            baseFrequencySlider.addEventListener('input', (e) => {
+                baseFrequency = parseFloat(e.target.value);
+                baseFreqValueSpan.textContent = baseFrequency;
+            });
+            
+            const initialGraphs = [
+                {
+                    id: Date.now() + 1,
+                    fullExpression: "x^2+y^2 = a",
+                    color: "#DD7700",
+                    isMoving: true, animation: { variable: 'a', min: 0, max: 25, speed: 0.1, value: 9, direction: 1 },
+                    divisionPoints: 0, sound: { waveform: 'sine', duration: 0.2 }, points: [],
+                },
+                {
+                    id: Date.now() + 2,
+                    fullExpression: "y = b*sin(x)",
+                    color: "#ff33a8",
+                    isMoving: false, animation: { variable: 'b', min: 1, max: 5, speed: 0.02, value: 4, direction: 1 },
+                    divisionPoints: 40, sound: { waveform: 'sine', duration: 0.15 }, points: [],
+                },
+                {
+                    id: Date.now() + 3,
+                    fullExpression: "x = c",
+                    color: "#00bfff",
+                    isMoving: true, animation: { variable: 'c', min: -8, max: 8, speed: 0.05, value: -5, direction: 1 },
+                    divisionPoints: 0, sound: { waveform: 'sine', duration: 0.2 }, points: [],
+                },
+            ];
+            
+            function parseFullExpression(expressionString) {
+                const trimmed = expressionString.replace(/\s/g, '');
+                const parts = trimmed.split('=');
+                if (parts.length !== 2) return { type: 'invalid' };
+                
+                const lhs = parts[0];
+                const rhs = parts[1];
+
+                if (lhs === 'y') return { type: 'explicit', rhs: rhs };
+                if (lhs === 'x') return { type: 'vertical', rhs: rhs };
+                if (lhs === 'x^2+y^2' || lhs === 'x*x+y*y') return { type: 'implicit-circle', rhs: rhs };
+
+                return { type: 'invalid' };
+            }
+
+            function createGraphItemUI(graph) {
+                const fieldset = document.createElement('fieldset');
+                fieldset.dataset.id = graph.id;
+                const legend = document.createElement('legend');
+                legend.textContent = `Graph Settings`;
+                fieldset.appendChild(legend);
+                const container = document.createElement('div');
+                container.innerHTML = `
+                    <div class="control-group">
+                        <label>Equation</label>
+                        <input type="text" class="full-expression" value="${graph.fullExpression}">
+                    </div>
+                    <div class="flex-row"><div><label>Color</label><input type="color" class="color" value="${graph.color}"></div><div><label>Number of Points</label><input type="number" class="division-points" value="${graph.divisionPoints}" min="0" max="100"></div></div>
+                    <div class="control-group"><label>Waveform</label><select class="waveform"><option value="sine" ${graph.sound.waveform === 'sine' ? 'selected' : ''}>Sine</option><option value="square" ${graph.sound.waveform === 'square' ? 'selected' : ''}>Square</option><option value="sawtooth" ${graph.sound.waveform === 'sawtooth' ? 'selected' : ''}>Sawtooth</option><option value="triangle" ${graph.sound.waveform === 'triangle' ? 'selected' : ''}>Triangle</option></select></div>
+                    <div class="control-group"><label>Note Duration: <span class="duration-value">${graph.sound.duration.toFixed(2)}</span>s</label><input type="range" class="duration" min="0.05" max="1.0" step="0.01" value="${graph.sound.duration}"></div>
+                    <div class="control-group"><label><input type="checkbox" class="is-moving" ${graph.isMoving ? 'checked' : ''}> Animate this graph</label></div>
+                    <div class="animation-settings ${graph.isMoving ? 'visible' : ''}"><div class="flex-row"><div><label>Variable Name</label><input type="text" class="anim-variable" value="${graph.animation.variable}"></div><div><label>Speed</label><input type="range" class="anim-speed" min="0.001" max="0.2" step="0.001" value="${graph.animation.speed}"></div></div><div class="flex-row"><div><label>Min Value</label><input type="number" class="anim-min" value="${graph.animation.min}" step="0.1"></div><div><label>Max Value</label><input type="number" class="anim-max" value="${graph.animation.max}" step="0.1"></div></div></div>
+                    <button class="delete-btn">Delete</button>`;
+                fieldset.appendChild(container);
+                
+                fieldset.querySelector('.full-expression').addEventListener('change', (e) => { graph.fullExpression = e.target.value; updateAndDraw(); });
+                fieldset.querySelector('.color').addEventListener('input', (e) => { graph.color = e.target.value; updateAndDraw(); });
+                fieldset.querySelector('.division-points').addEventListener('change', (e) => { graph.divisionPoints = parseInt(e.target.value, 10); updateAndDraw(); });
+                fieldset.querySelector('.waveform').addEventListener('change', (e) => { graph.sound.waveform = e.target.value; });
+                const durationSlider = fieldset.querySelector('.duration');
+                const durationValue = fieldset.querySelector('.duration-value');
+                durationSlider.addEventListener('input', (e) => { graph.sound.duration = parseFloat(e.target.value); durationValue.textContent = graph.sound.duration.toFixed(2); });
+                const isMovingCheckbox = fieldset.querySelector('.is-moving');
+                const animationSettings = fieldset.querySelector('.animation-settings');
+                isMovingCheckbox.addEventListener('change', (e) => { graph.isMoving = e.target.checked; animationSettings.classList.toggle('visible', graph.isMoving); updateAndDraw(); });
+                fieldset.querySelector('.anim-variable').addEventListener('change', (e) => { graph.animation.variable = e.target.value; });
+                fieldset.querySelector('.anim-speed').addEventListener('input', (e) => { graph.animation.speed = parseFloat(e.target.value); });
+                fieldset.querySelector('.anim-min').addEventListener('change', (e) => { graph.animation.min = parseFloat(e.target.value); updateAndDraw(); });
+                fieldset.querySelector('.anim-max').addEventListener('change', (e) => { graph.animation.max = parseFloat(e.target.value); updateAndDraw(); });
+                fieldset.querySelector('.delete-btn').addEventListener('click', () => { graphs = graphs.filter(g => g.id !== graph.id); renderGraphUI(); updateAndDraw(); });
+                return fieldset;
+            }
+            
+            function renderGraphUI() {
+                graphList.innerHTML = '';
+                graphs.forEach(graph => graphList.appendChild(createGraphItemUI(graph)));
+            }
+
+            function addGraph() {
+                graphs.push({
+                    id: Date.now(), fullExpression: "y = a*x",
+                    color: `#${Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')}`,
+                    isMoving: false, animation: { variable: 'a', min: -2, max: 2, speed: 0.01, value: 1, direction: 1 },
+                    divisionPoints: 10, sound: { waveform: 'triangle', duration: 0.2 }, points: []
+                });
+                renderGraphUI();
+                updateAndDraw();
+            }
+            
+            function calculateDivisionPoints(graph, xDomain, yDomain) {
+                if (graph.divisionPoints <= 0) { graph.points = []; return; }
+                graph.points = [];
+                const scope = { [graph.animation.variable]: graph.animation.value };
+                const parsed = parseFullExpression(graph.fullExpression);
+
+                switch(parsed.type) {
+                    case 'explicit':
+                        try {
+                            const compiled = math.compile(parsed.rhs);
+                            let samples = [], totalLength = 0, lastPoint = null;
+                            const sampleCount = 1000;
+                            const step = (xDomain[1] - xDomain[0]) / sampleCount;
+                            for (let i = 0; i <= sampleCount; i++) {
+                                const x = xDomain[0] + i * step;
+                                scope.x = x;
+                                const y = compiled.evaluate(scope);
+                                if (typeof y !== 'number' || !isFinite(y)) continue;
+                                const currentPoint = { x, y };
+                                if (lastPoint) totalLength += Math.hypot(currentPoint.x - lastPoint.x, currentPoint.y - lastPoint.y);
+                                samples.push({ point: currentPoint, length: totalLength });
+                                lastPoint = currentPoint;
+                            }
+                            if (totalLength === 0) return;
+                            const segmentLength = totalLength / graph.divisionPoints;
+                            for (let i = 1; i <= graph.divisionPoints; i++) {
+                                const targetLength = i * segmentLength;
+                                let closest = samples.reduce((p, c) => Math.abs(c.length - targetLength) < Math.abs(p.length - targetLength) ? c : p);
+                                graph.points.push([closest.point.x, closest.point.y]);
+                            }
+                        } catch (e) { console.error("Error calculating explicit points:", e); }
+                        break;
+                    
+                    case 'implicit-circle':
+                        try {
+                           const radiusSquared = math.evaluate(parsed.rhs, scope);
+                           if (typeof radiusSquared !== 'number' || radiusSquared < 0) return;
+                           const r = Math.sqrt(radiusSquared);
+                           for (let i = 0; i < graph.divisionPoints; i++) {
+                                const angle = i * (2 * Math.PI) / graph.divisionPoints;
+                                graph.points.push([r * Math.cos(angle), r * Math.sin(angle)]);
+                           }
+                        } catch (e) { console.error("Error calculating circle points:", e); }
+                        break;
+                    
+                    case 'vertical':
+                         try {
+                           const xConst = math.evaluate(parsed.rhs, scope);
+                           if (typeof xConst !== 'number' || graph.divisionPoints <= 1) return;
+                           for (let i = 0; i < graph.divisionPoints; i++) {
+                                const y = yDomain[0] + (i / (graph.divisionPoints - 1)) * (yDomain[1] - yDomain[0]);
+                                graph.points.push([xConst, y]);
+                           }
+                        } catch (e) { console.error("Error calculating vertical points:", e); }
+                        break;
+                }
+            }
+            
+            function draw() {
+                const width = plotTarget.clientWidth;
+                const height = plotTarget.clientHeight;
+                if (width === 0 || height === 0) return;
+
+                const ratio = width / height;
+                const xDomain = [-Y_AXIS_VIEW_RADIUS * ratio, Y_AXIS_VIEW_RADIUS * ratio];
+                const yDomain = [-Y_AXIS_VIEW_RADIUS, Y_AXIS_VIEW_RADIUS];
+
+                const plotData = [];
+                graphs.forEach(graph => {
+                    const scope = { [graph.animation.variable]: graph.animation.value };
+                    const parsed = parseFullExpression(graph.fullExpression);
+                    if (parsed.type === 'invalid') return;
+
+                    let plotItem = { color: graph.color, graphType: 'polyline', scope: scope };
+                    
+                    try {
+                        switch(parsed.type) {
+                            case 'explicit':
+                                plotItem.fn = parsed.rhs;
+                                break;
+                            case 'implicit-circle':
+                                plotItem.fnType = 'parametric';
+                                const r_sq = math.evaluate(parsed.rhs, scope);
+                                const r = (typeof r_sq === 'number' && r_sq >= 0) ? Math.sqrt(r_sq) : 0;
+                                plotItem.x = `${r} * cos(t)`;
+                                plotItem.y = `${r} * sin(t)`;
+                                break;
+                            case 'vertical':
+                                plotItem.fnType = 'parametric';
+                                const x_val = math.evaluate(parsed.rhs, scope);
+                                plotItem.x = (typeof x_val === 'number') ? `${x_val}` : '0';
+                                plotItem.y = 't';
+                                plotItem.range = [yDomain[0], yDomain[1]];
+                                break;
+                        }
+                    } catch(e) { return; }
+                    
+                    plotData.push(plotItem);
+
+                    if (!graph.isMoving && graph.points.length > 0) {
+                        const normalPoints = [], highlighted = [];
+                        graph.points.forEach((p, index) => { (highlightedPoints[`${graph.id}-${index}`] ? highlighted : normalPoints).push(p); });
+                        if (normalPoints.length > 0) plotData.push({ points: normalPoints, fnType: 'points', graphType: 'scatter', color: graph.color, attr: { r: 4 } });
+                        if (highlighted.length > 0) plotData.push({ points: highlighted, fnType: 'points', graphType: 'scatter', color: 'var(--highlight-color)', attr: { r: 6 } });
+                    }
+                });
+                try { 
+                    functionPlot({ 
+                        target: plotTarget, width: width, height: height, 
+                        yAxis: { domain: yDomain }, xAxis: { domain: xDomain }, 
+                        grid: true, data: plotData 
+                    });
+                } catch (e) { console.error("FunctionPlot error:", e); }
+            }
+            
+            function updateAndDraw() {
+                 const width = plotTarget.clientWidth;
+                 const height = plotTarget.clientHeight;
+                 if (width === 0 || height === 0) return;
+                 const ratio = width / height;
+                 const xDomain = [-Y_AXIS_VIEW_RADIUS * ratio, Y_AXIS_VIEW_RADIUS * ratio];
+                 const yDomain = [-Y_AXIS_VIEW_RADIUS, Y_AXIS_VIEW_RADIUS];
+
+                 graphs.forEach(graph => calculateDivisionPoints(graph, xDomain, yDomain) );
+                 draw();
+            }
+
+            function playSound(y, soundSettings) {
+                if (!audioContext || audioContext.state === 'suspended') audioContext.resume();
+                const freq = baseFrequency * Math.pow(2, (Math.max(-1, Math.min(1, y / Y_AXIS_VIEW_RADIUS))) * 2); 
+                const osc = audioContext.createOscillator(), gainNode = audioContext.createGain();
+                osc.connect(gainNode); gainNode.connect(masterGain);
+                osc.type = soundSettings.waveform;
+                osc.frequency.setValueAtTime(freq, audioContext.currentTime);
+                const now = audioContext.currentTime, duration = soundSettings.duration;
+                gainNode.gain.setValueAtTime(0, now);
+                gainNode.gain.linearRampToValueAtTime(0.5, now + 0.02);
+                gainNode.gain.linearRampToValueAtTime(0, now + duration);
+                osc.start(now); osc.stop(now + duration + 0.1);
+            }
+
+            function checkCollisions() {
+                const movingGraphs = graphs.filter(g => g.isMoving);
+                const staticGraphs = graphs.filter(g => !g.isMoving);
+                const newActiveCollisions = new Set();
+                const pointsToPlayInThisFrame = new Map();
+
+                movingGraphs.forEach(movingGraph => {
+                    const scope = { [movingGraph.animation.variable]: movingGraph.animation.value };
+                    const parsedMoving = parseFullExpression(movingGraph.fullExpression);
+                    if(parsedMoving.type === 'invalid') return;
+
+                    staticGraphs.forEach(staticGraph => {
+                        staticGraph.points.forEach((point, index) => {
+                            const pointId = `${staticGraph.id}-${index}`;
+                            const collisionId = `${movingGraph.id}-${pointId}`;
+                            let isCollision = false;
+                            
+                            try {
+                                switch(parsedMoving.type) {
+                                    case 'explicit':
+                                        scope.x = point[0];
+                                        const movingY = math.evaluate(parsedMoving.rhs, scope);
+                                        if (Math.abs(movingY - point[1]) < NOTE_COLLISION_THRESHOLD) isCollision = true;
+                                        break;
+                                    case 'implicit-circle':
+                                        const r_sq = math.evaluate(parsedMoving.rhs, scope);
+                                        const r = (typeof r_sq === 'number' && r_sq >= 0) ? Math.sqrt(r_sq) : -1;
+                                        if (r >= 0) {
+                                            const pointDist = Math.hypot(point[0], point[1]);
+                                            if (Math.abs(pointDist - r) < NOTE_COLLISION_THRESHOLD) isCollision = true;
+                                        }
+                                        break;
+                                    case 'vertical':
+                                        const movingX = math.evaluate(parsedMoving.rhs, scope);
+                                        if (Math.abs(movingX - point[0]) < NOTE_COLLISION_THRESHOLD) isCollision = true;
+                                        break;
+                                }
+                            } catch(e) {}
+                            
+                            if (isCollision) {
+                                newActiveCollisions.add(collisionId);
+                                const wasColliding = activeCollisions.has(collisionId);
+                                if (!wasColliding && !pointsToPlayInThisFrame.has(pointId)) {
+                                    pointsToPlayInThisFrame.set(pointId, { point: point, soundSettings: staticGraph.sound });
+                                }
+                            }
+                        });
+                    });
+                });
+                pointsToPlayInThisFrame.forEach((data, pointId) => {
+                    playSound(data.point[1], data.soundSettings);
+                    if(highlightedPoints[pointId]) clearTimeout(highlightedPoints[pointId]);
+                    highlightedPoints[pointId] = setTimeout(() => { delete highlightedPoints[pointId]; if (!isPlaying) draw(); }, HIGHLIGHT_DURATION_MS);
+                });
+                if (!isPlaying && pointsToPlayInThisFrame.size > 0) draw();
+                activeCollisions = newActiveCollisions;
+            }
+
+            function animationLoop() {
+                if (!isPlaying) return;
+                graphs.forEach(graph => {
+                    if (graph.isMoving) {
+                        const anim = graph.animation;
+                        anim.value += anim.speed * anim.direction;
+                        if (anim.value > anim.max || anim.value < anim.min) {
+                            anim.direction *= -1;
+                            anim.value = Math.max(anim.min, Math.min(anim.max, anim.value));
+                        }
+                    }
+                });
+                checkCollisions();
+                draw();
+                animationFrameId = requestAnimationFrame(animationLoop);
+            }
+
+            function togglePlay() {
+                initAudio();
+                isPlaying = !isPlaying;
+                playPauseBtn.textContent = isPlaying ? 'Stop' : 'Play';
+                if (isPlaying) {
+                    animationLoop();
+                } else {
+                    if (animationFrameId) cancelAnimationFrame(animationFrameId);
+                    activeCollisions.clear();
+                }
+            }
+
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => { clearTimeout(timeout); func(...args); };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+            const handleResize = () => { if (!isPlaying) updateAndDraw(); };
+            const debouncedResize = debounce(handleResize, 200);
+            window.addEventListener('resize', debouncedResize);
+
+            addGraphBtn.addEventListener('click', addGraph);
+            playPauseBtn.addEventListener('click', togglePlay);
+            
+            graphs = initialGraphs;
+            renderGraphUI();
+            updateAndDraw();
+        });
+    </script>
+</body>
+</html>

@@ -220,7 +220,6 @@
             background-color: #666;
         }
 
-        /* Responsive Design */
         @media (max-width: 768px) {
             body { padding: 10px; height: 100%; }
             .container { flex-direction: column; min-height: 0; }
@@ -236,7 +235,7 @@
             <button id="playBtn">▶</button>
             <button id="stopBtn">⏹</button>
             <button id="exportBtn" class="secondary">Save</button>
-            <!--<button id="copyTagBtn" class="secondary">Copy Start Tag</button>-->
+            <button id="copyTagBtn" class="secondary">Tag</button>
         </div>
     </div>
 
@@ -278,7 +277,7 @@
             const loopCheckbox = document.getElementById('loop');
             const instrumentContainer = document.getElementById('instrument-settings-container');
 
-            const START_TAG = "𐀀";
+            const START_TAG = "‭‎𐀀";
             const INSTRUMENT_TYPES = {
                 "sine": () => new Tone.Synth({ oscillator: { type: 'sine' } }).toDestination(),
                 "sawtooth": () => new Tone.Synth({ oscillator: { type: 'sawtooth' } }).toDestination(),
@@ -288,18 +287,16 @@
                 "brass": () => new Tone.MonoSynth({ oscillator: { type: 'sawtooth' }, filter: { Q: 2 }, envelope: { attack: 0.1, release: 0.5 } }).toDestination(),
                 "woodwind": () => new Tone.MonoSynth({ oscillator: { type: 'triangle' }, filter: { Q: 3 }, envelope: { attack: 0.05, release: 0.3 } }).toDestination(),
                 "xylophone": () => new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.01, decay: 0.3, sustain: 0, release: 0.3 } }).toDestination(),
-                // *** IMPROVED METALLOPHONE SOUND ***
                 "metallophone": () => new Tone.FMSynth({
-                    harmonicity: 4.2, // Creates more complex, inharmonic overtones
-                    modulationIndex: 20, // Increases the richness of the metallic sound
-                    modulation: { type: 'square' }, // A harsher modulator adds metallic character
-                    envelope: { attack: 0.008, decay: 1, sustain: 0, release: 2 } // Sharp attack, long ringing release
+                    harmonicity: 4.2,
+                    modulationIndex: 20,
+                    modulation: { type: 'square' },
+                    envelope: { attack: 0.008, decay: 1, sustain: 0, release: 2 }
                 }).toDestination(),
                 "pluck": () => new Tone.Synth({
                     oscillator: { type: 'triangle8' },
                     envelope: { attack: 0.005, decay: 0.4, sustain: 0.01, release: 0.8 }
                 }).toDestination(),
-                // "Drum" has been removed as requested
             };
 
             let synths = [];
@@ -397,19 +394,15 @@
                     velocity: (parseInt(hex[0], 16) + 1) / 16
                 };
             };
-            
+
             const stopMusic = (clearHighlights = true) => {
                 Tone.Transport.stop();
-                Tone.Transport.cancel(0);
-                parts.forEach(part => part.dispose());
-                parts = [];
                 synths.forEach(synth => {
-                    if (synth && !synth.disposed) {
-                        if (typeof synth.releaseAll === 'function') synth.releaseAll();
-                        synth.dispose();
+                    if (synth && !synth.disposed && typeof synth.releaseAll === 'function') {
+                        synth.releaseAll();
                     }
                 });
-                synths = [];
+
                 isPlaying = false;
                 playBtn.textContent = "▶";
                 playBtn.disabled = false;
@@ -418,16 +411,29 @@
 
             const playMusic = async () => {
                 if (isPlaying) return;
-                
+
                 playBtn.disabled = true;
                 await Tone.start();
-                stopMusic(false);
+
+                Tone.Transport.cancel(0);
+                parts.forEach(part => part.dispose());
+                parts = [];
+
+                const synthsToDispose = [...synths];
+                
+                setTimeout(() => {
+                    synthsToDispose.forEach(synth => {
+                        if (synth && !synth.disposed) {
+                            synth.dispose();
+                        }
+                    });
+                }, 500);
 
                 const lines = editor.value.split('\n');
                 const instrumentSelectors = document.querySelectorAll('.instrument-selector');
-                
+
                 synths = lines.map((_, i) => INSTRUMENT_TYPES[instrumentSelectors[i]?.value || 'sine']());
-                
+
                 Tone.Transport.bpm.value = parseInt(tempoInput.value, 10);
                 Tone.Transport.loop = loopCheckbox.checked;
 
@@ -447,7 +453,7 @@
                             currentTime += Tone.Time(note.duration).toSeconds();
                         }
                     }
-                    
+
                     if (currentTime > maxDuration) maxDuration = currentTime;
 
                     parts.push(new Tone.Part((time, value) => {
@@ -455,25 +461,25 @@
                         if (currentSynth && !currentSynth.disposed && value.pitch) {
                             currentSynth.triggerAttackRelease(value.pitch, value.duration, time, value.velocity);
                         }
-                        
+
                         Tone.Draw.schedule(() => {
                            currentHighlightIndices[lineIndex] = value.charIndex;
                            updateHighlighter(currentHighlightIndices);
                         }, time);
                     }, noteEvents).start(0));
                 });
-                
+
                 Tone.Transport.loopEnd = maxDuration > 0 ? maxDuration : '1m';
                 Tone.Transport.start();
                 isPlaying = true;
                 playBtn.textContent = "⏸";
                 playBtn.disabled = false;
-                
+
                 if (!loopCheckbox.checked) {
                     Tone.Transport.scheduleOnce(() => stopMusic(), maxDuration);
                 }
             };
-            
+
             playBtn.addEventListener('click', () => isPlaying ? stopMusic() : playMusic());
             stopBtn.addEventListener('click', () => stopMusic());
 
@@ -487,21 +493,22 @@
                     return instrumentName + line;
                 }).join('\n');
                 if (lines.length === 1) exportText = exportText.replace('\n', ' ');
-                navigator.clipboard.writeText(exportText).then(() => alert('Copied to clipboard!'));
+                navigator.clipboard.writeText(exportText).then(() => alert('Copied to clipboard.'));
             });
 
             copyTagBtn.addEventListener('click', () => {
-                navigator.clipboard.writeText(START_TAG).then(() => alert(`Start Tag "${START_TAG}" copied to clipboard!`));
+                navigator.clipboard.writeText(START_TAG).then(() => alert(`Start Tag "${START_TAG}" copied to clipboard.`));
             });
 
             editor.addEventListener('paste', (e) => {
-                e.preventDefault();
                 let pasteData = (e.clipboardData || window.clipboardData).getData('text');
-                const tempoMatch = pasteData.match(/Tempo:(\d+)\s*/);
-                if (tempoMatch) {
-                    tempoInput.value = tempoMatch[1];
-                    pasteData = pasteData.replace(tempoMatch[0], '');
+                const tempoMatch = pasteData.match(/^Tempo:(\d+)/);
+                if (!tempoMatch) {
+                    return;
                 }
+                e.preventDefault();
+                tempoInput.value = tempoMatch[1];
+                pasteData = pasteData.replace(tempoMatch[0], '').trim();
                 const lines = pasteData.split('\n');
                 editor.value = lines.map(line => line.replace(/^\[[a-z]+\]\s*/, '')).join('\n');
                 updateContent();
