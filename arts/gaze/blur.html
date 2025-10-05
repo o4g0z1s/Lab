@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap" rel="stylesheet">
+    <title>Blur</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            background-color: black;
+            color: white;
+            font-family: "Roboto Mono", monospace;
+            font-size: 2.5vw;
+            font-weight: bold;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            height: 100%;
+        }
+        
+        #text-wrapper {
+            line-height: 1.4;
+        }
+
+        .char {
+            filter: blur(50px);
+            transition-property: filter;
+            transition-timing-function: linear;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="text-wrapper"></div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const wrapper = document.getElementById('text-wrapper');
+        const text = "BlurBlurBlurBlurBlur\n".repeat(7).trim();
+        const chars = text.split('');
+
+        chars.forEach(char => {
+            if (char === '\n') {
+                wrapper.appendChild(document.createElement('br'));
+            } else {
+                const span = document.createElement('span');
+                span.className = 'char';
+                span.textContent = char;
+                span.dataset.isBlurred = 'true';
+                wrapper.appendChild(span);
+            }
+        });
+
+        const charElements = document.querySelectorAll('.char');
+
+        const scheduleAnimation = (char) => {
+            const isBlurred = char.dataset.isBlurred === 'true';
+
+            const duration = Math.random() * 5000 + 2000;
+            const waitTime = Math.random() * 2000 + 1000;
+
+            char.style.transitionDuration = `${duration / 1000}s`;
+
+            if (isBlurred) {
+                char.style.filter = 'blur(0px)';
+                char.dataset.isBlurred = 'false';
+            } else {
+                char.style.filter = 'blur(50px)';
+                char.dataset.isBlurred = 'true';
+            }
+
+            setTimeout(() => {
+                scheduleAnimation(char);
+            }, duration + waitTime);
+        };
+
+        charElements.forEach(char => {
+            const initialDelay = Math.random() * 8000;
+            setTimeout(() => {
+                scheduleAnimation(char);
+            }, initialDelay);
+        });
+    });
+</script>
+
+</body>
+</html>
