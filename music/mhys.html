@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <title>Mhysics</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --sidebar-bg: #2a2a2a;
+            --canvas-container-bg: #202020;
+            --canvas-bg: #000000;
+            --primary-text: #f0f0f0;
+            --secondary-text: #a0a0a0;
+            --border-color: #444;
+            --accent-color: #DD7700;
+            --hover-color: #555;
+            --input-bg: #333;
+        }
+
+        body {
+            font-family: "Inter", sans-serif;
+            margin: 0; padding: 0; background-color: var(--bg-color); color: var(--primary-text);
+            display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden;
+        }
+        button{ font-family: "Inter", sans-serif; }
+
+        #start-screen { text-align: center; padding: 2rem; margin-bottom: 60px; }
+        #start-screen h1 { font-size: 5rem; color: var(--primary-text); margin-bottom: 3rem; }
+        #start-screen button {
+            font-size: 1.2rem; padding: 12px 24px; margin: 10px; cursor: pointer; border: 1px solid var(--accent-color);
+            background-color: transparent; color: var(--accent-color); border-radius: 5px; transition: background-color 0.2s, color 0.2s;
+        }
+        #start-screen button:hover { background-color: var(--accent-color); color: var(--primary-text); }
+        #import-area { margin-top: 2rem; }
+        #import-data {
+            width: 90%; max-width: 500px; height: 100px; margin-top: 10px; background-color: var(--input-bg);
+            border: 1px solid var(--border-color); color: var(--primary-text); border-radius: 5px; padding: 10px;
+        }
+
+        #main-screen { display: none; flex-direction: row; width: 100%; height: 100%; }
+        #sidebar {
+            width: 280px; padding: 20px; background-color: var(--sidebar-bg); overflow-y: auto;
+            border-right: 1px solid var(--border-color); box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+        }
+        #canvas-container {
+            flex-grow: 1; display: flex; justify-content: center; align-items: center;
+            background-color: var(--canvas-container-bg); padding: 20px;
+        }
+        canvas { background-color: var(--canvas-bg); cursor: default; }
+
+        .control-group { margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; }
+        .control-group:last-child { border-bottom: none; padding-bottom: 0; }
+        .control-group h3 {
+            margin-top: 0; font-size: 1.1rem; color: var(--primary-text); border-left: 3px solid var(--accent-color);
+            padding-left: 10px; margin-bottom: 15px;
+        }
+        .mode-buttons { display: flex; gap: 10px; }
+
+        #sidebar button, #sidebar select, #sidebar input[type="number"] {
+            width: 100%; padding: 10px; margin-bottom: 10px; box-sizing: border-box; background-color: var(--input-bg);
+            color: var(--primary-text); border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.9rem;
+        }
+        #sidebar button { cursor: pointer; background-color: #444; transition: background-color 0.2s; }
+        #sidebar button:hover { background-color: var(--hover-color); }
+        #sidebar button.active { background-color: var(--accent-color); border-color: var(--accent-color); color: white; }
+        #sidebar label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: var(--secondary-text); }
+
+        #grid-options { display: flex; align-items: center; gap: 10px; }
+        #grid-options input[type="checkbox"] { margin: 0 0 10px; width: auto; }
+        
+        #string-settings { display: none; }
+        #string-settings.visible { display: block; }
+    </style>
+</head>
+<body>
+    <div id="start-screen">
+        <h1>Mhysics</h1>
+        <button id="new-project-btn">New Project</button>
+        <div id="import-area">
+            <textarea id="import-data" placeholder="Paste your project data here..."></textarea>
+        </div>
+        <button id="start-btn" style="margin-top: 40px;">Start</button>
+    </div>
+    <div id="main-screen">
+        <div id="sidebar">
+            <div class="control-group">
+                <h3>Controls</h3>
+                <div class="mode-buttons">
+                <button id="play-btn">Play</button>
+                <button id="pause-btn">Pause</button>
+                <button id="stop-btn">Reset</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <h3>Mode</h3>
+                <div class="mode-buttons">
+                    <button id="string-mode-btn">String</button>
+                    <button id="ball-mode-btn">Sphere</button>
+                    <button id="select-mode-btn" class="active">Select</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <h3>Canvas</h3>
+                <div id="grid-options">
+                    <label for="grid-toggle">Grid</label>
+                    <input type="checkbox" id="grid-toggle">
+                </div>
+                <label for="grid-size-input">Grid Size (2-100)</label>
+                <input type="number" id="grid-size-input" value="20" min="2" max="100">
+            </div>
+             <div class="control-group">
+                <h3>Global Settings</h3>
+                <label for="speed-slider">Playback Speed: <span id="speed-value">10</span>x</label>
+                <input type="range" id="speed-slider" min="1" max="30" step="0.1" value="10">
+                <label for="volume-slider">Master Volume: <span id="volume-value">50</span>%</label>
+                <input type="range" id="volume-slider" min="0" max="100" step="1" value="50">
+            </div>
+            <div id="string-settings" class="control-group">
+                <h3>Selected String Group</h3>
+                <label for="instrument-select">Instrument</label>
+                <select id="instrument-select">
+                    <option value="sine">Sine Wave</option> <option value="glockenspiel">Glockenspiel</option>
+                    <option value="xylophone">Xylophone</option> <option value="pluck">Pluck</option>
+                    <option value="bassdrum">Bass Drum</option> <option value="snare">Snare Drum</option>
+                </select>
+                <div id="tone-controls">
+                    <label for="note-select">Note</label>
+                    <select id="note-select">
+                        <option value="0">C</option><option value="1">C#</option><option value="2">D</option><option value="3">D#</option><option value="4">E</option><option value="5">F</option>
+                        <option value="6">F#</option><option value="7">G</option><option value="8">G#</option><option value="9">A</option><option value="10">A#</option><option value="11">B</option>
+                    </select>
+                    <label for="octave-select">Octave</label>
+                    <select id="octave-select">
+                        <option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6</option>
+                    </select>
+                </div>
+                <label for="string-volume-slider">Volume: <span id="string-volume-value">80</span>%</label>
+                <input type="range" id="string-volume-slider" min="0" max="100" value="80">
+            </div>
+            <div class="control-group">
+                <h3>Project Data</h3>
+                <button id="export-btn">Export to Clipboard</button>
+            </div>
+        </div>
+        <div id="canvas-container">
+            <canvas id="canvas"></canvas>
+        </div>
+    </div>
+
+    <script>
+    window.addEventListener('DOMContentLoaded', () => {
+        const getEl = (id) => document.getElementById(id);
+        const startScreen = getEl('start-screen'), mainScreen = getEl('main-screen'), newProjectBtn = getEl('new-project-btn'),
+              startBtn = getEl('start-btn'), importDataEl = getEl('import-data'), canvas = getEl('canvas'),
+              ctx = canvas.getContext('2d'), canvasContainer = getEl('canvas-container'), playBtn = getEl('play-btn'),
+              pauseBtn = getEl('pause-btn'), stopBtn = getEl('stop-btn'), stringModeBtn = getEl('string-mode-btn'),
+              ballModeBtn = getEl('ball-mode-btn'), selectModeBtn = getEl('select-mode-btn'), gridToggle = getEl('grid-toggle'),
+              gridSizeInput = getEl('grid-size-input'), speedSlider = getEl('speed-slider'), speedValue = getEl('speed-value'),
+              volumeSlider = getEl('volume-slider'), volumeValue = getEl('volume-value'), exportBtn = getEl('export-btn'),
+              stringSettings = getEl('string-settings'), instrumentSelect = getEl('instrument-select'), noteSelect = getEl('note-select'),
+              octaveSelect = getEl('octave-select'), stringVolumeSlider = getEl('string-volume-slider'),
+              stringVolumeValue = getEl('string-volume-value'), toneControls = getEl('tone-controls');
+
+        let gameState = 'stopped', currentMode = 'select', canvasSize = 600, isGridEnabled = false, gridSize = 20,
+            animationSpeed = 10.0, globalVolume = 0.5, stringGroups = [], balls = [], selectedObject = null,
+            isDrawing = false, tempPoints = [], mousePos = { x: 0, y: 0 };
+        let audioCtx, mainGainNode;
+
+        function init() {
+            resizeCanvas(); 
+            setupEventListeners(); 
+            animationLoop();
+        }
+
+        function scaleCoords(coords, scaleFactor) {
+            coords.x *= scaleFactor;
+            coords.y *= scaleFactor;
+        }
+
+        function resizeCanvas() {
+            const oldCanvasSize = canvasSize;
+            const newSize = Math.min(canvasContainer.clientWidth, canvasContainer.clientHeight) - 40;
+            
+            canvasSize = newSize > 100 ? newSize : 100;
+            canvas.width = canvasSize;
+            canvas.height = canvasSize;
+
+            if (!oldCanvasSize || oldCanvasSize === canvasSize) {
+                return;
+            }
+
+            const scaleFactor = canvasSize / oldCanvasSize;
+
+            stringGroups.forEach(group => {
+                const uniquePoints = new Set();
+                group.segments.forEach(seg => {
+                    uniquePoints.add(seg.p1);
+                    uniquePoints.add(seg.p2);
+                });
+
+                uniquePoints.forEach(point => {
+                    scaleCoords(point, scaleFactor);
+                });
+            });
+
+            balls.forEach(ball => {
+                ball.x *= scaleFactor;
+                ball.y *= scaleFactor;
+                ball.vx *= scaleFactor;
+                ball.vy *= scaleFactor;
+                ball.initialX *= scaleFactor;
+                ball.initialY *= scaleFactor;
+                ball.initialVx *= scaleFactor;
+                ball.initialVy *= scaleFactor;
+                ball.radius *= scaleFactor;
+            });
+
+            tempPoints.forEach(p => scaleCoords(p, scaleFactor));
+        }
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                mainGainNode = audioCtx.createGain();
+                mainGainNode.gain.value = globalVolume;
+                mainGainNode.connect(audioCtx.destination);
+            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function setupEventListeners() {
+            const startProject = (importStr) => {
+                if (importStr) importData(importStr);
+                startScreen.style.display = 'none'; mainScreen.style.display = 'flex';
+                initAudio(); resizeCanvas();
+            };
+            newProjectBtn.addEventListener('click', () => startProject());
+            startBtn.addEventListener('click', () => startProject(importDataEl.value));
+            
+            playBtn.addEventListener('click', play); pauseBtn.addEventListener('click', pause); stopBtn.addEventListener('click', stop);
+            stringModeBtn.addEventListener('click', () => setMode('string')); ballModeBtn.addEventListener('click', () => setMode('ball'));
+            selectModeBtn.addEventListener('click', () => setMode('select'));
+            
+            gridToggle.addEventListener('change', (e) => isGridEnabled = e.target.checked);
+            gridSizeInput.addEventListener('change', () => {
+                let val = parseInt(gridSizeInput.value); gridSize = (val >= 2 && val <= 100) ? val : 20; gridSizeInput.value = gridSize;
+            });
+            
+            speedSlider.addEventListener('input', (e) => { animationSpeed = parseFloat(e.target.value); speedValue.textContent = animationSpeed.toFixed(1); });
+            volumeSlider.addEventListener('input', (e) => {
+                globalVolume = parseInt(e.target.value) / 100; volumeValue.textContent = e.target.value;
+                if (mainGainNode) mainGainNode.gain.setValueAtTime(globalVolume, audioCtx.currentTime);
+            });
+            
+            [instrumentSelect, noteSelect, octaveSelect, stringVolumeSlider].forEach(el => el.addEventListener('input', updateSelectedGroupSettings));
+            
+            exportBtn.addEventListener('click', exportData);
+            canvas.addEventListener('mousedown', handleMouseDown);
+            canvas.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('keydown', handleKeyDown);
+            window.addEventListener('resize', resizeCanvas);
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            [stringModeBtn, ballModeBtn, selectModeBtn].forEach(btn => btn.classList.remove('active'));
+            getEl(`${mode}-mode-btn`).classList.add('active');
+            isDrawing = false; tempPoints = []; deselectAll();
+            canvas.style.cursor = mode === 'select' ? 'default' : 'crosshair';
+        }
+
+        function snapToGrid(x, y) {
+            if (!isGridEnabled || gridSize <= 1) return { x, y };
+            const step = canvasSize / gridSize; return { x: Math.round(x / step) * step, y: Math.round(y / step) * step };
+        }
+
+        function handleMouseDown(e) {
+            if (gameState === 'playing') return;
+            initAudio();
+            const rect = canvas.getBoundingClientRect(), pos = snapToGrid(e.clientX - rect.left, e.clientY - rect.top);
+            
+            if (currentMode === 'string') {
+                if (!isDrawing) { isDrawing = true; deselectAll(); }
+                tempPoints.push(pos);
+            } else if (currentMode === 'ball') {
+                 if (!isDrawing) { isDrawing = true; deselectAll(); tempPoints.push(pos); }
+                 else { tempPoints.push(pos); createBall(); isDrawing = false; tempPoints = []; }
+            } else if (currentMode === 'select') {
+                const clickedObject = findObjectAt(pos.x, pos.y);
+                if (clickedObject) selectObject(clickedObject); else deselectAll();
+            }
+        }
+
+        function handleMouseMove(e) { const rect = canvas.getBoundingClientRect(); mousePos = { x: e.clientX - rect.left, y: e.clientY - rect.top }; }
+        
+        function handleKeyDown(e) {
+            if (gameState === 'playing') return;
+            if (e.key === 'Enter' && currentMode === 'string' && isDrawing && tempPoints.length >= 2) {
+                createStringGroupFromTempPoints(); isDrawing = false; tempPoints = [];
+            }
+            if (e.key === 'Backspace' && selectedObject) {
+                if (selectedObject.type === 'stringGroup') stringGroups = stringGroups.filter(g => g.id !== selectedObject.object.id);
+                else if (selectedObject.type === 'ball') balls = balls.filter(b => b.id !== selectedObject.object.id);
+                deselectAll();
+            }
+        }
+
+        function createStringGroupFromTempPoints() {
+            const instruments = ['sine', 'glockenspiel', 'xylophone', 'pluck', 'bassdrum', 'snare'];
+            const octaves = ['3', '4', '5', '6'];
+
+            const randomInstrument = instruments[Math.floor(Math.random() * instruments.length)];
+            const randomNote = String(Math.floor(Math.random() * 12));
+            const randomOctave = octaves[Math.floor(Math.random() * octaves.length)];
+
+            const segments = [];
+            for (let i = 0; i < tempPoints.length - 1; i++) {
+                segments.push({ p1: tempPoints[i], p2: tempPoints[i+1] });
+            }
+            
+            const newGroup = {
+                id: Date.now(),
+                segments: segments,
+                instrument: randomInstrument,
+                note: randomNote,
+                octave: randomOctave,
+                volume: 0.8,
+                lastHitTime: 0
+            };
+            stringGroups.push(newGroup);
+            selectObject({ type: 'stringGroup', object: newGroup });
+        }
+        
+        function createBall() {
+            const p1 = tempPoints[0], p2 = tempPoints[1], dx = p2.x - p1.x, dy = p2.y - p1.y;
+            balls.push({
+                id: Date.now() + Math.random(), x: p1.x, y: p1.y, vx: dx / 50, vy: dy / 50, radius: 5, color: '#fff',
+                initialX: p1.x, initialY: p1.y, initialVx: dx / 50, initialVy: dy / 50,
+            });
+        }
+
+        function findObjectAt(x, y) {
+            const tolerance = 10;
+            for (const group of stringGroups) for (const seg of group.segments) if (distToSegment(x, y, seg.p1, seg.p2) < tolerance) return { type: 'stringGroup', object: group };
+            for (const ball of balls) if (Math.sqrt((x - ball.x)**2 + (y - ball.y)**2) < ball.radius + tolerance) return { type: 'ball', object: ball };
+            return null;
+        }
+        
+        function distToSegment(px, py, p1, p2) {
+            const l2 = (p1.x - p2.x)**2 + (p1.y - p2.y)**2; if (l2 === 0) return Math.sqrt((px - p1.x)**2 + (py - p1.y)**2);
+            let t = ((px - p1.x) * (p2.x - p1.x) + (py - p1.y) * (p2.y - p1.y)) / l2; t = Math.max(0, Math.min(1, t));
+            return Math.sqrt((px - (p1.x + t * (p2.x - p1.x)))**2 + (py - (p1.y + t * (p2.y - p1.y)))**2);
+        }
+
+        function selectObject(obj) {
+            selectedObject = obj;
+            if (obj.type === 'stringGroup') {
+                stringSettings.classList.add('visible'); const g = obj.object;
+                instrumentSelect.value = g.instrument; noteSelect.value = g.note; octaveSelect.value = g.octave;
+                stringVolumeSlider.value = g.volume * 100; stringVolumeValue.textContent = stringVolumeSlider.value;
+                toggleToneControls();
+            } else stringSettings.classList.remove('visible');
+        }
+        
+        function deselectAll() { selectedObject = null; stringSettings.classList.remove('visible'); }
+
+        function updateSelectedGroupSettings() {
+            stringVolumeValue.textContent = stringVolumeSlider.value;
+            if (!selectedObject || selectedObject.type !== 'stringGroup') return;
+            const g = selectedObject.object;
+            g.instrument = instrumentSelect.value; g.note = noteSelect.value; g.octave = octaveSelect.value; g.volume = stringVolumeSlider.value / 100;
+            toggleToneControls();
+        }
+
+        function toggleToneControls() { const isDrum = ['bassdrum', 'snare'].includes(instrumentSelect.value); toneControls.style.display = isDrum ? 'none' : 'block'; }
+
+        function play() { if (gameState === 'playing') return; gameState = 'playing'; deselectAll(); }
+        function pause() { if (gameState !== 'playing') return; gameState = 'paused'; }
+        function stop() { gameState = 'stopped'; balls.forEach(b => { b.x = b.initialX; b.y = b.initialY; b.vx = b.initialVx; b.vy = b.initialVy; }); }
+        
+        function update(deltaTime) {
+            if (gameState !== 'playing') return;
+            const effectiveDT = Math.min(deltaTime, 0.1) * animationSpeed;
+
+            balls.forEach(ball => {
+                const speed = Math.sqrt(ball.vx**2 + ball.vy**2);
+                const steps = Math.ceil((speed * effectiveDT) / (ball.radius * 0.5));
+                const subDT = effectiveDT / steps;
+
+                for (let i = 0; i < steps; i++) {
+                    if (ball.x + ball.vx * subDT > canvasSize - ball.radius) { ball.x = canvasSize - ball.radius; ball.vx *= -1; }
+                    if (ball.x + ball.vx * subDT < ball.radius) { ball.x = ball.radius; ball.vx *= -1; }
+                    if (ball.y + ball.vy * subDT > canvasSize - ball.radius) { ball.y = canvasSize - ball.radius; ball.vy *= -1; }
+                    if (ball.y + ball.vy * subDT < ball.radius) { ball.y = ball.radius; ball.vy *= -1; }
+
+                    let hasCollidedInStep = false;
+                    for (const group of stringGroups) {
+                        for (const segment of group.segments) {
+                            const collisionInfo = checkCollision(segment, ball, subDT);
+                            if (collisionInfo.collided && (audioCtx.currentTime - group.lastHitTime > 0.05)) {
+                                group.lastHitTime = audioCtx.currentTime;
+                                playSound(group);
+                                ball.x += collisionInfo.normal.x * collisionInfo.penetration;
+                                ball.y += collisionInfo.normal.y * collisionInfo.penetration;
+                                const dot = ball.vx * collisionInfo.normal.x + ball.vy * collisionInfo.normal.y;
+                                ball.vx -= 2 * dot * collisionInfo.normal.x; ball.vy -= 2 * dot * collisionInfo.normal.y;
+                                hasCollidedInStep = true; break;
+                            }
+                        }
+                        if (hasCollidedInStep) break;
+                    }
+                    ball.x += ball.vx * subDT; ball.y += ball.vy * subDT;
+                }
+            });
+        }
+        
+        function checkCollision(line, circle, dt) {
+            const { p1, p2 } = line; const { x, y, radius, vx, vy } = circle;
+            const nextX = x + vx * dt, nextY = y + vy * dt;
+            const dx = p2.x - p1.x, dy = p2.y - p1.y;
+            const lenSq = dx*dx + dy*dy;
+            const t = lenSq === 0 ? 0 : Math.max(0, Math.min(1, ((nextX - p1.x) * dx + (nextY - p1.y) * dy) / lenSq));
+            const closestX = p1.x + t * dx, closestY = p1.y + t * dy;
+            const distVec = { x: nextX - closestX, y: nextY - closestY }, dist = Math.sqrt(distVec.x**2 + distVec.y**2);
+            
+            if (dist <= radius) {
+                const penetration = radius - dist;
+                const normal = dist === 0 ? {x: -dy, y: dx} : { x: distVec.x / dist, y: distVec.y / dist };
+                if (vx * normal.x + vy * normal.y < 0) return { collided: true, normal, penetration };
+            }
+            return { collided: false };
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvasSize, canvasSize);
+            if (isGridEnabled) drawGrid();
+            
+            stringGroups.forEach(g => drawStringGroup(g));
+            balls.forEach(b => drawBall(b));
+            
+            if (gameState === 'stopped') balls.forEach(b => drawInitialArrow(b));
+            if (isDrawing) {
+                if (currentMode === 'string') drawTempString(); if (currentMode === 'ball') drawTempArrow();
+            }
+        }
+
+        function drawGrid() {
+            ctx.strokeStyle = '#222'; ctx.lineWidth = 1; const step = canvasSize / gridSize;
+            for (let i = 1; i < gridSize; i++) {
+                ctx.beginPath(); ctx.moveTo(i * step, 0); ctx.lineTo(i * step, canvasSize); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, i * step); ctx.lineTo(canvasSize, i * step); ctx.stroke();
+            }
+        }
+        
+        function drawStringGroup(group) {
+            const isSelected = selectedObject && selectedObject.type === 'stringGroup' && selectedObject.object.id === group.id;
+            const isVibrating = group.vibrationStartTime && (audioCtx.currentTime - group.vibrationStartTime < 0.2);
+            
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = isSelected ? 3 : 2;
+            if (isVibrating) { ctx.shadowBlur = 5; ctx.shadowColor = ctx.strokeStyle; }
+
+            ctx.beginPath();
+            if (group.segments.length > 0) {
+                ctx.moveTo(group.segments[0].p1.x, group.segments[0].p1.y);
+                group.segments.forEach(seg => ctx.lineTo(seg.p2.x, seg.p2.y));
+            }
+            ctx.stroke();
+            if (isVibrating) ctx.shadowBlur = 0;
+        }
+
+        function drawBall(b) {
+            const isSelected = selectedObject && selectedObject.type === 'ball' && selectedObject.object.id === b.id;
+            ctx.beginPath(); ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+            ctx.fillStyle = b.color; ctx.fill();
+            if (isSelected) { 
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2; 
+                ctx.stroke(); 
+            }
+        }
+        
+        function drawInitialArrow(ball) {
+            const p1 = { x: ball.initialX, y: ball.initialY }, p2 = { x: ball.initialX + ball.initialVx * 50, y: ball.initialY + ball.initialVy * 50 };
+            drawArrow(p1, p2, '#666');
+        }
+
+        function drawTempString() {
+            const currentPos = snapToGrid(mousePos.x, mousePos.y);
+            tempPoints.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill(); });
+            if(tempPoints.length > 0) {
+                ctx.beginPath(); ctx.moveTo(tempPoints[0].x, tempPoints[0].y);
+                for(let i = 1; i < tempPoints.length; i++) ctx.lineTo(tempPoints[i].x, tempPoints[i].y);
+                ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(tempPoints[tempPoints.length - 1].x, tempPoints[tempPoints.length - 1].y);
+                ctx.lineTo(currentPos.x, currentPos.y); ctx.strokeStyle = '#aaa';
+                ctx.setLineDash([5, 5]); ctx.stroke(); ctx.setLineDash([]);
+            }
+        }
+
+        function drawTempArrow() {
+            if (tempPoints.length !== 1) return;
+            const p1 = tempPoints[0], p2 = snapToGrid(mousePos.x, mousePos.y);
+            ctx.beginPath(); ctx.arc(p1.x, p1.y, 5, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill();
+            drawArrow(p1, p2, '#fff');
+        }
+
+        function drawArrow(p1, p2, color) {
+            const headlen = 10, dx = p2.x - p1.x, dy = p2.y - p1.y; if (dx === 0 && dy === 0) return;
+            const angle = Math.atan2(dy, dx);
+            ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y);
+            ctx.lineTo(p2.x - headlen * Math.cos(angle - Math.PI / 6), p2.y - headlen * Math.sin(angle - Math.PI / 6));
+            ctx.moveTo(p2.x, p2.y); ctx.lineTo(p2.x - headlen * Math.cos(angle + Math.PI / 6), p2.y - headlen * Math.sin(angle + Math.PI / 6));
+            ctx.strokeStyle = color; ctx.lineWidth = 1; ctx.stroke();
+        }
+
+        function playSound(group) {
+            if (!audioCtx) return;
+            group.vibrationStartTime = audioCtx.currentTime;
+            const time = audioCtx.currentTime, instrument = group.instrument,
+                  noteFreq = 440 * Math.pow(2, (parseInt(group.octave) - 4) + (parseInt(group.note) - 9) / 12),
+                  mainGain = audioCtx.createGain();
+            mainGain.connect(mainGainNode);
+            
+            if (instrument === 'bassdrum') {
+                const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+                osc.type = 'sine';
+                gain.connect(mainGain); osc.connect(gain);
+                const attackTime = 0.01, decayTime = 0.3;
+                
+                osc.frequency.setValueAtTime(160, time);
+                osc.frequency.exponentialRampToValueAtTime(40, time + decayTime);
+                
+                gain.gain.setValueAtTime(0, time);
+                gain.gain.linearRampToValueAtTime(group.volume * 2.5, time + attackTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, time + decayTime);
+                
+                osc.start(time); osc.stop(time + decayTime + 0.1);
+
+            } else if (instrument === 'snare') {
+                const noise = audioCtx.createBufferSource(), buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.2, audioCtx.sampleRate);
+                for (let i=0,d=buffer.getChannelData(0); i<buffer.length; i++) d[i] = Math.random() * 2 - 1;
+                noise.buffer = buffer;
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'highpass'; filter.frequency.value = 1000;
+                const gain = audioCtx.createGain();
+                noise.connect(filter); filter.connect(gain); gain.connect(mainGain);
+                gain.gain.setValueAtTime(group.volume, time); gain.gain.exponentialRampToValueAtTime(0.001, time + 0.2);
+                noise.start(time); noise.stop(time + 0.2);
+
+            } else if (instrument === 'pluck') {
+                const osc = audioCtx.createOscillator(), filter = audioCtx.createBiquadFilter(), gain = audioCtx.createGain();
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(noteFreq, time);
+                filter.type = 'lowpass';
+                osc.connect(filter); filter.connect(gain); gain.connect(mainGain);
+                filter.frequency.setValueAtTime(5000, time); filter.frequency.exponentialRampToValueAtTime(200, time + 0.8);
+                gain.gain.setValueAtTime(0, time); gain.gain.linearRampToValueAtTime(group.volume * 0.8, time + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.001, time + 0.8);
+                osc.start(time); osc.stop(time + 1.0);
+
+            } else if (instrument === 'glockenspiel') {
+                const osc1 = audioCtx.createOscillator(), osc2 = audioCtx.createOscillator(),
+                      gain1 = audioCtx.createGain(), gain2 = audioCtx.createGain();
+                osc1.type = osc2.type = 'sine';
+                osc1.frequency.setValueAtTime(noteFreq, time); osc2.frequency.setValueAtTime(noteFreq * 2.58, time);
+                osc1.connect(gain1); osc2.connect(gain2); gain1.connect(mainGain); gain2.connect(mainGain);
+                gain1.gain.setValueAtTime(group.volume, time); gain1.gain.exponentialRampToValueAtTime(0.001, time + 1.5);
+                gain2.gain.setValueAtTime(group.volume * 0.6, time); gain2.gain.exponentialRampToValueAtTime(0.001, time + 1.5);
+                osc1.start(time); osc2.start(time); osc1.stop(time + 1.5); osc2.stop(time + 1.5);
+
+            } else if (instrument === 'xylophone') {
+                const osc = audioCtx.createOscillator(), osc2 = audioCtx.createOscillator(),
+                      gain1 = audioCtx.createGain(), gain2 = audioCtx.createGain();
+                osc.type = osc2.type = 'sine';
+                osc.frequency.setValueAtTime(noteFreq, time); osc2.frequency.setValueAtTime(noteFreq * 3, time);
+                osc.connect(gain1); osc2.connect(gain2); gain1.connect(mainGain); gain2.connect(mainGain);
+                gain1.gain.setValueAtTime(group.volume * 0.8, time); gain1.gain.exponentialRampToValueAtTime(0.001, time + 0.2);
+                gain2.gain.setValueAtTime(group.volume * 0.2, time); gain2.gain.exponentialRampToValueAtTime(0.001, time + 0.2);
+                osc.start(time); osc2.start(time); osc.stop(time + 0.25); osc2.stop(time + 0.25);
+
+            } else {
+                const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+                osc.type = 'sine'; osc.frequency.setValueAtTime(noteFreq, time);
+                osc.connect(gain); gain.connect(mainGain);
+                gain.gain.setValueAtTime(group.volume, time); gain.gain.exponentialRampToValueAtTime(0.001, time + 0.5);
+                osc.start(time); osc.stop(time + 0.5);
+            }
+        }
+        
+        let lastTime = 0;
+        function animationLoop(timestamp) {
+            const deltaTime = (timestamp - lastTime) / 1000;
+            lastTime = timestamp;
+            if(!isNaN(deltaTime)) update(deltaTime);
+            draw(); 
+            requestAnimationFrame(animationLoop);
+        }
+
+        function exportData() {
+            const data = {
+                canvasSizeOnExport: canvasSize, 
+                stringGroups, 
+                balls, 
+                settings: { isGridEnabled, gridSize, animationSpeed, globalVolume } 
+            };
+            navigator.clipboard.writeText(JSON.stringify(data))
+                .then(() => alert('Project data copied to clipboard!'))
+                .catch(() => alert('Failed to copy data to clipboard.'));
+        }
+
+        function importData(jsonString) {
+             try {
+                const data = JSON.parse(jsonString);
+                
+                const savedCanvasSize = data.canvasSizeOnExport || canvasSize;
+                const scaleFactor = canvasSize / savedCanvasSize;
+
+                stringGroups = data.stringGroups || [];
+                stringGroups.forEach(group => {
+                    group.lastHitTime = 0;
+                    group.vibrationStartTime = 0;
+                    const uniquePoints = new Set();
+                    group.segments.forEach(seg => {
+                        uniquePoints.add(seg.p1);
+                        uniquePoints.add(seg.p2);
+                    });
+                    uniquePoints.forEach(point => scaleCoords(point, scaleFactor));
+                });
+                
+                balls = data.balls || [];
+                balls.forEach(ball => {
+                    ball.x *= scaleFactor;
+                    ball.y *= scaleFactor;
+                    ball.vx *= scaleFactor;
+                    ball.vy *= scaleFactor;
+                    ball.initialX *= scaleFactor;
+                    ball.initialY *= scaleFactor;
+                    ball.initialVx *= scaleFactor;
+                    ball.initialVy *= scaleFactor;
+                    ball.radius *= scaleFactor;
+                });
+
+                const s = data.settings || {};
+                isGridEnabled = s.isGridEnabled || false;
+                gridSize = s.gridSize || 20;
+                animationSpeed = s.animationSpeed || 10.0;
+                globalVolume = s.globalVolume || 0.5;
+                
+                gridToggle.checked = isGridEnabled;
+                gridSizeInput.value = gridSize;
+                speedSlider.value = animationSpeed;
+                speedValue.textContent = animationSpeed.toFixed(1);
+                volumeSlider.value = globalVolume * 100;
+                volumeValue.textContent = volumeSlider.value;
+                if(mainGainNode) mainGainNode.gain.value = globalVolume;
+
+            } catch (e) { 
+                console.error("Import failed:", e);
+                alert('Failed to import data. The format might be incorrect.'); 
+            }
+        }
+        init();
+    });
+    </script>
+</body>
+</html>
