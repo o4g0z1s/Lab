@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="https://www.gstatic.com/images/icons/material/apps/fonts/1x/catalog/v5/favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Maven+Pro:wght@400..900&display=swap" rel="stylesheet">
+    <title>Fonttery</title>
+    <style>
+        /* ----------------------------------------------------
+           CSS: Neumorphism Design
+        ---------------------------------------------------- */
+        :root {
+            /* Base Colors */
+            --bg-color: #e5e5e5;
+            --text-main: #000;
+            --text-sub: #666;
+            
+            /* Neumorphism Shadows */
+            --shadow-out: 
+                9px 9px 16px rgb(163, 177, 198, 0.6), 
+                -9px -9px 16px rgba(255, 255, 255, 0.5);
+            
+            --shadow-in: 
+                inset 6px 6px 10px 0 rgba(163, 177, 198, 0.7), 
+                inset -6px -6px 10px 0 rgba(255, 255, 255, 0.8);
+            
+            --shadow-btn-hover:
+                6px 6px 10px rgb(163, 177, 198, 0.6), 
+                -6px -6px 10px rgba(255, 255, 255, 0.5);
+
+            --radius-main: 24px;
+            --radius-btn: 50px;
+            
+            --transition: all 0.3s ease;
+            --panel-transition: max-height 0.6s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Maven Pro', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 60px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            color: var(--text-main);
+            text-shadow: 1px 1px 1px rgba(255,255,255,0.5);
+        }
+
+        /* Neumorphic Button (Refresh / Link) */
+        .neumorph-btn {
+            font-family: 'Maven Pro', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            border: none;
+            padding: 14px 28px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 24px;
+            box-shadow: var(--shadow-out);
+            transition: var(--transition);
+            outline: none;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .neumorph-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-btn-hover);
+        }
+
+        .neumorph-btn:active {
+            transform: translateY(0);
+            box-shadow: var(--shadow-in);
+        }
+
+        .neumorph-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        #loader {
+            display: none;
+            font-size: 1.1rem;
+            color: var(--text-sub);
+            margin-top: 20px;
+        }
+
+        #font-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 40px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        /* Neumorphic Card */
+        .font-card {
+            background-color: var(--bg-color);
+            border-radius: var(--radius-main);
+            box-shadow: var(--shadow-out);
+            border: 1px solid rgba(255,255,255,0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .card-main {
+            padding: 60px 40px 40px 40px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 240px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .font-preview {
+            font-size: 4.5rem;
+            text-align: center;
+            margin-bottom: 0;
+            word-break: break-word;
+            line-height: 1.1;
+            color: var(--text-main);
+            transition: font-weight 0.2s ease, font-style 0.2s ease;
+        }
+
+        .copy-hint {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .card-main:hover .copy-hint {
+            opacity: 1;
+        }
+
+        /* Footer & Details Button */
+        .card-footer {
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            background-color: var(--bg-color);
+            z-index: 2;
+            padding-bottom: 20px;
+        }
+        
+        /* Updated Details Button: Small & Concave (Engraved) */
+        .details-btn {
+            background: none;
+            border: none;
+            box-shadow: none;
+            width: auto;
+            height: auto;
+            font-size: 1.5rem;
+            line-height: 1;
+            cursor: pointer;
+            padding: 10px 40px;
+            transition: var(--transition);
+            
+            /* Letterpress / Engraved Effect (Concave) */
+            color: rgba(0,0,0,0.3); 
+            text-shadow: 1px 1px 0 rgba(255,255,255, 0.8);
+        }
+
+        .details-btn:hover {
+            color: rgba(0,0,0,0.5);
+        }
+
+        .details-btn:active, .font-card.details-open .details-btn {
+            color: var(--text-main);
+            text-shadow: 0 0 0 rgba(0,0,0,0);
+        }
+
+        /* Details Panel */
+        .details-panel {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            padding: 0 40px;
+            background-color: var(--bg-color);
+            transition: var(--panel-transition);
+        }
+
+        .font-card.details-open .details-panel {
+            max-height: 1500px;
+            opacity: 1;
+            padding-bottom: 50px;
+        }
+
+        .panel-section {
+            margin-top: 35px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.4s ease 0.1s, transform 0.4s ease 0.1s;
+        }
+
+        .font-card.details-open .panel-section {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .panel-label {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            margin-bottom: 15px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-shadow: 1px 1px 0 #fff;
+        }
+
+        /* Test Drive Textarea */
+        .test-textarea {
+            width: 100%;
+            padding: 25px;
+            border: none;
+            border-radius: var(--radius-main);
+            font-size: 1.4rem;
+            resize: vertical;
+            min-height: 250px;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: inherit;
+            line-height: 1.5;
+            box-shadow: var(--shadow-in);
+            outline: none;
+            transition: box-shadow 0.2s;
+        }
+        
+        .test-textarea:focus {
+            box-shadow: inset 5px 5px 9px rgba(163,177,198, 0.8), inset -5px -5px 9px rgba(255,255,255, 0.9);
+        }
+
+        /* Variant Chips */
+        .variant-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .variant-chip {
+            font-size: 0.85rem;
+            padding: 8px 18px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            background-color: var(--bg-color);
+            color: var(--text-sub);
+            box-shadow: var(--shadow-out);
+            transition: var(--transition);
+            font-weight: 600;
+        }
+
+        .variant-chip:hover {
+            color: var(--text-main);
+            transform: translateY(-1px);
+        }
+
+        .variant-chip.active {
+            box-shadow: var(--shadow-in);
+            color: #444;
+            transform: translateY(0);
+        }
+
+        .subsets-list {
+            font-size: 0.9rem;
+            color: var(--text-sub);
+            line-height: 1.6;
+        }
+
+        /* Google Link Button */
+        .google-link-container {
+            text-align: left;
+        }
+        
+        .external-link-btn {
+            font-size: 0.9rem;
+            padding: 12px 24px;
+        }
+
+        /* Toast Notification */
+        #toast {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 16px 32px;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: 600;
+            opacity: 0;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease;
+            z-index: 1000;
+            box-shadow: var(--shadow-out);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        #toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        @media (max-width: 600px) {
+            .font-preview {
+                font-size: 2.8rem;
+            }
+            header {
+                flex-direction: column;
+                gap: 20px;
+            }
+            .card-main {
+                padding: 40px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Fonttery</h1>
+        <button id="refresh-btn" class="neumorph-btn">Refresh</button>
+    </header>
+
+    <div id="loader">Loading fonts...</div>
+    <main id="font-list"></main>
+
+    <div id="toast">Code copied!</div>
+
+    <script>
+        /* ----------------------------------------------------
+           JavaScript
+        ---------------------------------------------------- */
+        
+        const API_KEY = 'AIzaSyAW8eNXU_2rMxcstFUzwjw85fK-uJ2rRqk';
+        const API_URL = `https://www.googleapis.com/webfonts/v1/webfonts?key=${API_KEY}&sort=popularity`;
+        
+        const DEFAULT_TEXT = `ABCDEFGHIJKLMNOPQRSTUVWXYZ
+abcdefghijklmnopqrstuvwxyz
+1234567890!?&@%$#'*^"(){}[]<>~.,:;
+The quick brown fox jumps over the lazy dog.`;
+
+        let allFonts = [];
+        const fontListEl = document.getElementById('font-list');
+        const refreshBtn = document.getElementById('refresh-btn');
+        const loader = document.getElementById('loader');
+        const toast = document.getElementById('toast');
+
+        // アプリケーションの初期化
+        async function init() {
+            try {
+                toggleLoader(true);
+                const response = await fetch(API_URL);
+                if (!response.ok) throw new Error('API Error');
+                
+                const data = await response.json();
+                
+                // Notoフォントを除外
+                allFonts = data.items.filter(font => !font.family.includes('Noto'));
+                
+                renderRandomFonts();
+            } catch (error) {
+                console.error('Error fetching fonts:', error);
+                fontListEl.innerHTML = '<p style="text-align:center; color:red;">Failed to load fonts. Please try again later.</p>';
+            } finally {
+                toggleLoader(false);
+            }
+        }
+
+        function toggleLoader(show) {
+            loader.style.display = show ? 'block' : 'none';
+            refreshBtn.disabled = show;
+        }
+
+        function renderRandomFonts() {
+            if (allFonts.length === 0) return;
+
+            fontListEl.innerHTML = '';
+
+            const randomIndices = new Set();
+            while(randomIndices.size < 10) {
+                const r = Math.floor(Math.random() * allFonts.length);
+                randomIndices.add(r);
+            }
+
+            const selectedFonts = Array.from(randomIndices).map(i => allFonts[i]);
+            loadFontsToPage(selectedFonts);
+
+            selectedFonts.forEach(font => {
+                const card = createFontCard(font);
+                fontListEl.appendChild(card);
+            });
+        }
+
+        function loadFontsToPage(fonts) {
+            const existingLink = document.getElementById('dynamic-font-link');
+            if (existingLink) existingLink.remove();
+
+            const families = fonts.map(f => {
+                const hasRegular = f.variants.includes('regular') || f.variants.includes('400');
+                const weight = hasRegular ? '400' : '400'; 
+                return f.family.replace(/ /g, '+') + ':wght@' + weight;
+            });
+            
+            const href = `https://fonts.googleapis.com/css2?family=${families.join('&family=')}&display=swap`;
+
+            const link = document.createElement('link');
+            link.id = 'dynamic-font-link';
+            link.rel = 'stylesheet';
+            link.href = href;
+            document.head.appendChild(link);
+        }
+
+        function loadSpecificFontVariant(family, variant) {
+            const familyName = family.replace(/ /g, '+');
+            let axisParam = '';
+            
+            let weight = '400';
+            let isItalic = variant.includes('italic');
+            
+            const numMatch = variant.match(/\d+/);
+            if (numMatch) {
+                weight = numMatch[0];
+            } else {
+                weight = '400';
+            }
+
+            if (isItalic) {
+                axisParam = `:ital,wght@1,${weight}`;
+            } else {
+                axisParam = `:wght@${weight}`;
+            }
+
+            const id = `font-${familyName}-${variant}`;
+            if (!document.getElementById(id)) {
+                const link = document.createElement('link');
+                link.id = id;
+                link.rel = 'stylesheet';
+                link.href = `https://fonts.googleapis.com/css2?family=${familyName}${axisParam}&display=swap`;
+                document.head.appendChild(link);
+            }
+        }
+
+        function createFontCard(font) {
+            const card = document.createElement('div');
+            card.className = 'font-card';
+            
+            // --- Main ---
+            const main = document.createElement('div');
+            main.className = 'card-main';
+            main.onclick = () => copyEmbedCode(font);
+
+            const hint = document.createElement('div');
+            hint.className = 'copy-hint';
+            hint.innerText = 'Click to Copy Link';
+
+            const preview = document.createElement('div');
+            preview.className = 'font-preview';
+            preview.style.fontFamily = `'${font.family}', sans-serif`;
+            preview.innerText = font.family;
+
+            main.appendChild(hint);
+            main.appendChild(preview);
+
+            // --- Footer (Button) ---
+            const footer = document.createElement('div');
+            footer.className = 'card-footer';
+            
+            const detailsBtn = document.createElement('button');
+            detailsBtn.className = 'details-btn';
+            detailsBtn.innerHTML = '•••'; 
+            detailsBtn.onclick = (e) => {
+                e.stopPropagation(); 
+                card.classList.toggle('details-open');
+            };
+            footer.appendChild(detailsBtn);
+
+            // --- Panel ---
+            const panel = document.createElement('div');
+            panel.className = 'details-panel';
+
+            // 1. Test Drive
+            const textAreaSection = document.createElement('div');
+            textAreaSection.className = 'panel-section';
+            const textAreaLabel = document.createElement('div');
+            textAreaLabel.className = 'panel-label';
+            textAreaLabel.innerText = 'TEST DRIVE';
+            
+            const textarea = document.createElement('textarea');
+            textarea.className = 'test-textarea';
+            textarea.value = DEFAULT_TEXT; 
+            textarea.style.fontFamily = `'${font.family}', sans-serif`;
+            
+            textAreaSection.appendChild(textAreaLabel);
+            textAreaSection.appendChild(textarea);
+
+            // 2. Variants
+            const variantsSection = document.createElement('div');
+            variantsSection.className = 'panel-section';
+            const variantsLabel = document.createElement('div');
+            variantsLabel.className = 'panel-label';
+            variantsLabel.innerText = 'VARIANTS';
+            const variantsList = document.createElement('div');
+            variantsList.className = 'variant-list';
+
+            font.variants.forEach(variant => {
+                const chip = document.createElement('div');
+                chip.className = 'variant-chip';
+                chip.innerText = variant;
+                if (variant === 'regular' || variant === '400') chip.classList.add('active');
+
+                chip.onclick = (e) => {
+                    e.stopPropagation();
+                    const siblings = variantsList.querySelectorAll('.variant-chip');
+                    siblings.forEach(s => s.classList.remove('active'));
+                    chip.classList.add('active');
+
+                    loadSpecificFontVariant(font.family, variant);
+
+                    const isItalic = variant.includes('italic');
+                    const weightMatch = variant.match(/\d+/);
+                    const weight = weightMatch ? weightMatch[0] : '400';
+                    
+                    const styleObj = {
+                        fontWeight: weight,
+                        fontStyle: isItalic ? 'italic' : 'normal'
+                    };
+
+                    Object.assign(preview.style, styleObj);
+                    Object.assign(textarea.style, styleObj);
+                };
+                variantsList.appendChild(chip);
+            });
+            variantsSection.appendChild(variantsLabel);
+            variantsSection.appendChild(variantsList);
+
+            // 3. Category
+            const categorySection = document.createElement('div');
+            categorySection.className = 'panel-section';
+            const categoryLabel = document.createElement('div');
+            categoryLabel.className = 'panel-label';
+            categoryLabel.innerText = 'CATEGORY';
+            const categoryText = document.createElement('div');
+            categoryText.className = 'subsets-list';
+            categoryText.innerText = font.category;
+            categorySection.appendChild(categoryLabel);
+            categorySection.appendChild(categoryText);
+
+            // 4. Subsets
+            const subsetsSection = document.createElement('div');
+            subsetsSection.className = 'panel-section';
+            const subsetsLabel = document.createElement('div');
+            subsetsLabel.className = 'panel-label';
+            subsetsLabel.innerText = 'SUBSETS';
+            const subsetsDiv = document.createElement('div');
+            subsetsDiv.className = 'subsets-list';
+            subsetsDiv.innerText = font.subsets.join(', ');
+            subsetsSection.appendChild(subsetsLabel);
+            subsetsSection.appendChild(subsetsDiv);
+
+            // 5. Google Fonts Link
+            const linkSection = document.createElement('div');
+            linkSection.className = 'panel-section google-link-container';
+            
+            const linkBtn = document.createElement('a');
+            linkBtn.className = 'neumorph-btn external-link-btn';
+            linkBtn.innerText = 'View on Google Fonts ↗';
+            linkBtn.href = `https://fonts.google.com/specimen/${font.family.replace(/ /g, '+')}`;
+            linkBtn.target = '_blank';
+            linkBtn.rel = 'noopener noreferrer';
+            
+            linkSection.appendChild(linkBtn);
+
+
+            panel.appendChild(textAreaSection);
+            panel.appendChild(variantsSection);
+            panel.appendChild(categorySection);
+            panel.appendChild(subsetsSection);
+            panel.appendChild(linkSection);
+
+            panel.onclick = (e) => e.stopPropagation();
+
+            card.appendChild(main);
+            card.appendChild(panel);
+            card.appendChild(footer);
+
+            return card;
+        }
+
+        function copyEmbedCode(font) {
+            const familyNameUrl = font.family.replace(/ /g, '+');
+            const embedCode = `<link href="https://fonts.googleapis.com/css2?family=${familyNameUrl}&display=swap" rel="stylesheet">`;
+
+            navigator.clipboard.writeText(embedCode).then(() => {
+                showToast(`<link> for "${font.family}" copied!`);
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
+        }
+
+        function showToast(message) {
+            toast.innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        refreshBtn.addEventListener('click', renderRandomFonts);
+
+        init();
+
+    </script>
+</body>
+</html>
