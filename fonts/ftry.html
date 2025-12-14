@@ -7,26 +7,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Maven+Pro:wght@400..900&display=swap" rel="stylesheet">
     <title>Fonttery</title>
     <style>
-        /* ----------------------------------------------------
-           CSS: Neumorphism Design
-        ---------------------------------------------------- */
         :root {
             /* Base Colors */
-            --bg-color: #e5e5e5;
+            --bg-color: #e5e5e3;
             --text-main: #000;
             --text-sub: #666;
             
             /* Neumorphism Shadows */
             --shadow-out: 
-                9px 9px 16px rgb(163, 177, 198, 0.6), 
+                9px 9px 16px rgb(180, 180, 170, 0.6), 
                 -9px -9px 16px rgba(255, 255, 255, 0.5);
             
             --shadow-in: 
-                inset 6px 6px 10px 0 rgba(163, 177, 198, 0.7), 
+                inset 6px 6px 10px 0 rgba(180, 180, 170, 0.7), 
                 inset -6px -6px 10px 0 rgba(255, 255, 255, 0.8);
             
             --shadow-btn-hover:
-                6px 6px 10px rgb(163, 177, 198, 0.6), 
+                6px 6px 10px rgb(180, 180, 170, 0.6), 
                 -6px -6px 10px rgba(255, 255, 255, 0.5);
 
             --radius-main: 24px;
@@ -118,6 +115,7 @@
             gap: 40px;
             width: 100%;
             max-width: 900px;
+	    margin-bottom: 40px;
         }
 
         /* Neumorphic Card */
@@ -125,7 +123,7 @@
             background-color: var(--bg-color);
             border-radius: var(--radius-main);
             box-shadow: var(--shadow-out);
-            border: 1px solid rgba(255,255,255,0.2);
+            border: none;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -343,8 +341,15 @@
                 flex-direction: column;
                 gap: 20px;
             }
+	    h1 {
+		font-size: 3rem;
+		margin-bottom: 20px;
+	    }
             .card-main {
                 padding: 40px 20px;
+            }
+       	    .google-link-container {
+                text-align: center;
             }
         }
     </style>
@@ -362,10 +367,6 @@
     <div id="toast">Code copied!</div>
 
     <script>
-        /* ----------------------------------------------------
-           JavaScript
-        ---------------------------------------------------- */
-        
         const API_KEY = 'AIzaSyAW8eNXU_2rMxcstFUzwjw85fK-uJ2rRqk';
         const API_URL = `https://www.googleapis.com/webfonts/v1/webfonts?key=${API_KEY}&sort=popularity`;
         
