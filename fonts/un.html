@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unreadable</title>
+    <link href="https://fonts.googleapis.com/css2?family=Flow+Block&family=Flow+Circular&family=Flow+Rounded&family=Libre+Barcode+128&family=Libre+Barcode+39&family=Libre+Barcode+39+Extended&family=Linefont&family=Redacted&family=Redacted+Script&family=Wavefont:wght,ROND@700,100&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            margin: 0;
+            padding: 40px;
+            min-height: 100vh;
+            overflow-wrap: break-word;
+        }
+
+        #text-container {
+            font-size: 3rem;
+            line-height: 1.4;
+            opacity: 0;
+            transition: opacity 0.1s ease-in;
+        }
+
+        @media (max-width: 600px) {
+            #text-container {
+                font-size: 1.8rem;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="text-container"></div>
+
+    <script>
+        const rawText = `Whereas recognition of the inherent dignity and of the equal and inalienable rights of all members of the human family is the foundation of freedom, justice and peace in the world, Whereas disregard and contempt for human rights have resulted in barbarous acts which have outraged the conscience of mankind, and the advent of a world in which human beings shall enjoy freedom of speech and belief and freedom from fear and want has been proclaimed as the highest aspiration of the common people, Whereas it is essential, if man is not to be compelled to have recourse, as a last resort, to rebellion against tyranny and oppression, that human rights should be protected by the rule of law, Whereas it is essential to promote the development of friendly relations between nations, Whereas the peoples of the United Nations have in the Charter reaffirmed their faith in fundamental human rights, in the dignity and worth of the human person and in the equal rights of men and women and have determined to promote social progress and better standards of life in larger freedom, Whereas Member States have pledged themselves to achieve, in cooperation with the United Nations, the promotion of universal respect for and observance of human rights and fundamental freedoms, Whereas a common understanding of these rights and freedoms is of the greatest importance for the full realization of this pledge, Now, therefore, The General Assembly, Proclaims this Universal Declaration of Human Rights as a common standard of achievement for all peoples and all nations, to the end that every individual and every organ of society, keeping this Declaration constantly in mind, shall strive by teaching and education to promote respect for these rights and freedoms and by progressive measures, national and international, to secure their universal and effective recognition and observance, both among the peoples of Member States themselves and among the peoples of territories under their jurisdiction.`;
+
+        const fontConfig = [
+            { family: '"Linefont"', weight: 30 },
+            { family: '"Wavefont"', weight: 40 },
+            { family: '"Redacted Script"', weight: 10 },
+            { family: '"Flow Block"', weight: 3 },
+            { family: '"Flow Circular"', weight: 5 },
+            { family: '"Flow Rounded"', weight: 3 },
+            { family: '"Libre Barcode 128"', weight: 1 },
+            { family: '"Libre Barcode 39"', weight: 1 },
+            { family: '"Libre Barcode 39 Extended"', weight: 1 },
+            { family: '"Redacted"', weight: 10 }
+        ];
+
+        function getWeightedRandomFont() {
+            const totalWeight = fontConfig.reduce((sum, font) => sum + font.weight, 0);
+            let randomNum = Math.random() * totalWeight;
+
+            for (const font of fontConfig) {
+                if (randomNum < font.weight) {
+                    return font.family;
+                }
+                randomNum -= font.weight;
+            }
+            return fontConfig[0].family;
+        }
+
+        function generateContent() {
+            const container = document.getElementById('text-container');
+            const words = rawText.split(' ');
+            let currentIndex = 0;
+
+            while (currentIndex < words.length) {
+                const randomFont = getWeightedRandomFont();
+                let minSize, maxSize;
+
+                if (randomFont.includes('Linefont')) {
+                    minSize = 3;
+                    maxSize = 5;
+                } else {
+                    minSize = 1;
+                    maxSize = 3;
+                }
+
+                const chunkSize = Math.floor(Math.random() * (maxSize - minSize + 1)) + minSize;
+                const chunkWords = words.slice(currentIndex, currentIndex + chunkSize);
+                const chunkText = chunkWords.join(' ') + ' '; 
+
+                const span = document.createElement('span');
+                span.textContent = chunkText;
+                span.style.fontFamily = randomFont;
+                
+                container.appendChild(span);
+
+                currentIndex += chunkSize;
+            }
+        }
+
+        generateContent();
+
+        document.fonts.ready.then(function() {
+            const container = document.getElementById('text-container');
+            container.style.opacity = 1;
+        });
+    </script>
+</body>
+</html>

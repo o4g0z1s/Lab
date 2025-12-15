@@ -497,14 +497,16 @@ The quick brown fox jumps over the lazy dog.`;
             const card = document.createElement('div');
             card.className = 'font-card';
             
+            let currentVariant = font.variants.find(v => v === 'regular' || v === '400') || font.variants[0];
+
             // --- Main ---
             const main = document.createElement('div');
             main.className = 'card-main';
-            main.onclick = () => copyEmbedCode(font);
+            main.onclick = () => copyEmbedCode(font, currentVariant);
 
             const hint = document.createElement('div');
             hint.className = 'copy-hint';
-            hint.innerText = 'Copy Embed Code';
+            hint.innerText = 'Click to Copy Link';
 
             const preview = document.createElement('div');
             preview.className = 'font-preview';
@@ -536,7 +538,7 @@ The quick brown fox jumps over the lazy dog.`;
             textAreaSection.className = 'panel-section';
             const textAreaLabel = document.createElement('div');
             textAreaLabel.className = 'panel-label';
-            textAreaLabel.innerText = 'TESTER';
+            textAreaLabel.innerText = 'TEST DRIVE';
             
             const textarea = document.createElement('textarea');
             textarea.className = 'test-textarea';
@@ -559,13 +561,16 @@ The quick brown fox jumps over the lazy dog.`;
                 const chip = document.createElement('div');
                 chip.className = 'variant-chip';
                 chip.innerText = variant;
-                if (variant === 'regular' || variant === '400') chip.classList.add('active');
+                
+                if (variant === currentVariant) chip.classList.add('active');
 
                 chip.onclick = (e) => {
                     e.stopPropagation();
                     const siblings = variantsList.querySelectorAll('.variant-chip');
                     siblings.forEach(s => s.classList.remove('active'));
                     chip.classList.add('active');
+
+                    currentVariant = variant;
 
                     loadSpecificFontVariant(font.family, variant);
 
@@ -639,12 +644,32 @@ The quick brown fox jumps over the lazy dog.`;
             return card;
         }
 
-        function copyEmbedCode(font) {
+        function copyEmbedCode(font, variant = 'regular') {
             const familyNameUrl = font.family.replace(/ /g, '+');
-            const embedCode = `<link href="https://fonts.googleapis.com/css2?family=${familyNameUrl}&display=swap" rel="stylesheet">`;
+            let axisParam = '';
+
+            if (variant === 'regular' || variant === '400') {
+                axisParam = '';
+            } else {
+                let weight = '400';
+                let isItalic = variant.includes('italic');
+                
+                const numMatch = variant.match(/\d+/);
+                if (numMatch) {
+                    weight = numMatch[0];
+                }
+
+                if (isItalic) {
+                    axisParam = `:ital,wght@1,${weight}`;
+                } else {
+                    axisParam = `:wght@${weight}`;
+                }
+            }
+
+            const embedCode = `<link href="https://fonts.googleapis.com/css2?family=${familyNameUrl}${axisParam}&display=swap" rel="stylesheet">`;
 
             navigator.clipboard.writeText(embedCode).then(() => {
-                showToast(`<link> for "${font.family}" copied!`);
+                showToast(`<link> for ${font.family} (${variant}) copied!`);
             }).catch(err => {
                 console.error('Failed to copy text: ', err);
             });
