@@ -408,7 +408,10 @@ The quick brown fox jumps over the lazy dog.`;
                 
                 const data = await response.json();
                 
-                allFonts = data.items.filter(font => !font.family.includes('Noto'));
+                allFonts = data.items.filter(font => 
+                    !font.family.includes('Noto') && 
+                    !font.family.includes('Material Icons')
+                );
                 
                 renderRandomFonts();
             } catch (error) {

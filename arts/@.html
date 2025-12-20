@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="../icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Ojuju&display=swap" rel="stylesheet">
+    <script>
+        history.scrollRestoration = "manual";
+        window.addEventListener('load', function() {
+            window.scrollTo(0, 0);
+        });
+    </script>
+    <title>Metronautilus - Arts</title>
+    
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #fff;
+            font-family: sans-serif;
+            overflow-x: hidden;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        a, div {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        #page-wrapper {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            padding: 15vh 0 10vh 0; 
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- Cursor Follower (Overlay Method) --- */
+        #cursor-follower,
+        #cursor-follower-symmetric {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 15vw;
+            height: 15vw;
+            background-color: #008080;
+            border-radius: 50%;
+            filter: blur(40px); 
+            mix-blend-mode: difference;
+            pointer-events: none;
+            z-index: 9999; 
+            margin-left: -7.5vw;
+            margin-top: -7.5vw;
+            opacity: 0;
+            transition: opacity 2s ease;
+            will-change: transform;
+        }
+        
+        #cursor-follower.active,
+        #cursor-follower-symmetric.active {
+            opacity: 1;
+        }
+
+        /* --- Page Title --- */
+        .page-title {
+            font-family: "Ojuju", serif;
+            font-size: 13vw;
+            color: #ffffff;
+            margin: 0 0 8vh 0;
+            text-align: center;
+            line-height: 1;
+            
+            opacity: 0;
+            filter: blur(200px);
+            
+            transition: 
+                opacity 2s ease-out,
+                filter 2.5s cubic-bezier(0.8, 1, 0.01, 1),
+                transform 2s;
+        }
+
+        .page-title.show {
+            opacity: 1;
+            filter: blur(0px);
+        }
+
+        /* --- List Container --- */
+        .list-container {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .item-wrapper {
+            margin: 2vh 0;
+            text-align: center;
+            position: relative;
+            width: 100%;
+        }
+
+        /* --- Main Item --- */
+        .main-item {
+            font-family: "Ojuju", serif;
+            font-size: 8vw;
+            color: #ffffff;
+            text-decoration: none;
+            cursor: pointer;
+            display: inline-block;
+            position: relative;
+            
+            opacity: 0;
+            filter: blur(200px);
+            transform: scale(0.95);
+            pointer-events: none;
+            cursor: default;
+
+            transition: 
+                opacity 2s ease-out,
+                filter 2.5s cubic-bezier(0.8, 1, 0.01, 1),
+                transform 2s;
+        }
+
+        .main-item.show {
+            opacity: 1;
+            filter: blur(0px);
+            transform: scale(1);
+            pointer-events: auto;
+            cursor: pointer;
+        }
+
+        .main-item:hover {
+            filter: blur(0px) !important;
+        }
+
+        .main-item.blurred {
+            filter: blur(10px) !important;
+            opacity: 0.7;
+        }
+
+        /* --- Sub Items --- */
+        .submenu-container {
+            height: 0;
+            overflow: hidden;
+            transition: height 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .sub-item {
+            font-family: "Ojuju", serif;
+            font-size: 5vw; 
+            color: #ffffff;
+            text-decoration: none;
+            margin: 1.5vh 0;
+            display: inline-block;
+
+            opacity: 0;
+            filter: blur(200px);
+            transform: scale(0.95);
+            pointer-events: none;
+
+            transition: 
+                opacity 0.5s ease,
+                filter 0s linear 0.5s,
+                transform 0s linear 0.5s;
+        }
+
+        .sub-item.visible {
+            opacity: 1;
+            filter: blur(0px);
+            transform: scale(1);
+            pointer-events: auto;
+
+            transition: 
+                opacity 2s ease-out,
+                filter 2.5s cubic-bezier(0.8, 1, 0.01, 1),
+                transform 2s;
+        }
+
+        @media (max-width: 768px) {
+            .page-title { font-size: 20vw; margin-bottom: 5vh; }
+            .main-item { font-size: 12vw; }
+            .sub-item { font-size: 9vw; margin: 2vh 0; }
+            #cursor-follower, #cursor-follower-symmetric { 
+                width: 40vw; height: 40vw; 
+                margin-left: -20vw; margin-top: -20vw; 
+                filter: blur(40px); 
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="cursor-follower"></div>
+    <div id="cursor-follower-symmetric"></div>
+
+    <div id="page-wrapper">
+        
+        <h1 class="page-title">Ar&hairsp;ts</h1>
+
+        <div class="list-container">
+
+            <div class="item-wrapper">
+                <div class="main-item category">Entropy</div>
+                <div class="submenu-container">
+                    <a href="entropy/entropy.html" class="sub-item">2D</a>
+                    <a href="entropy/entropy-3d.html" class="sub-item">3D</a>
+                    <a href="entropy/entropy-4d.html" class="sub-item">4D</a>
+                    <a href="entropy/kld.html" class="sub-item">Kaleidoscope</a>
+                    <a href="entropy/kld-ja.html" class="sub-item">Kaleidoscope-ja</a>
+                    <a href="entropy/kld-cjk.html" class="sub-item">Kaleidoscope-CJK</a>
+                    <a href="entropy/flwr.html" class="sub-item">Flower</a>
+                    <a href="entropy/glass.html" class="sub-item">StainedGlass</a>
+                    <a href="entropy/sn.html" class="sub-item">Supernova</a>
+                    <a href="entropy/sym.html" class="sub-item">Symmetry</a>
+                    <a href="entropy/xor.html" class="sub-item">XOR</a>
+                    <a href="entropy/dffr.html" class="sub-item">Difference</a>
+                </div>
+            </div>
+
+            <div class="item-wrapper">
+                <div class="main-item category">Gaze</div>
+                <div class="submenu-container">
+                    <a href="gaze/gaze.html" class="sub-item">Gaze</a>
+                    <a href="gaze/dmnsn.html" class="sub-item">Dimension</a>
+                    <a href="gaze/colonies.html" class="sub-item">Colonies</a>
+                    <a href="gaze/bleeds.html" class="sub-item">Bleeds</a>
+                    <a href="gaze/siesta.html" class="sub-item">Siesta</a>
+                    <a href="gaze/cjk.html" class="sub-item">CJK</a>
+                    <a href="gaze/blur.html" class="sub-item">Blur</a>
+                    <a href="gaze/wave.html" class="sub-item">Wave</a>
+                </div>
+            </div>
+
+            <div class="item-wrapper">
+                <div class="main-item category">Elements</div>
+                <div class="submenu-container">
+                    <a href="elem/input.html" class="sub-item">Input</a>
+                    <a href="elem/crsr.html" class="sub-item">Cursor</a>
+                    <a href="elem/check.html" class="sub-item">Checkbox</a>
+                </div>
+            </div>
+
+            <div class="item-wrapper">
+                <a href="latex/latex-1.html" class="main-item link">LaTeX</a>
+            </div>
+
+            <div class="item-wrapper">
+                <a href="maps/e-map.html" class="main-item link">Maps</a>
+            </div>
+
+            <div class="item-wrapper">
+                <a href="tables/table.html" class="main-item link">Tables</a>
+            </div>
+
+        </div>
+    </div>
+
+<script>
+    const follower = document.getElementById('cursor-follower');
+    const followerSym = document.getElementById('cursor-follower-symmetric');
+    
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
+    let followerX = window.innerWidth / 2;
+    let followerY = window.innerHeight / 2;
+
+    window.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+    });
+
+    function animateFollower() {
+        followerX += (mouseX - followerX) * 0.08;
+        followerY += (mouseY - followerY) * 0.08;
+
+        follower.style.transform = `translate(${followerX}px, ${followerY}px)`;
+
+        const symX = window.innerWidth - followerX;
+        const symY = window.innerHeight - followerY;
+        followerSym.style.transform = `translate(${symX}px, ${symY}px)`;
+
+        requestAnimationFrame(animateFollower);
+    }
+    animateFollower();
+
+    /**
+     * Entry Animation
+     */
+/**
+     * Entry Animation
+     */
+    window.addEventListener('load', () => {
+        const pageTitle = document.querySelector('.page-title');
+        const mainItems = document.querySelectorAll('.main-item');
+        
+        // 1. まず見出しを表示 (500ms)
+        setTimeout(() => {
+            pageTitle.classList.add('show');
+        }, 1);
+
+        // 2. 次にリストを順番に表示 (見出しから少し遅れて 900ms〜)
+        setTimeout(() => {
+            mainItems.forEach((item, index) => {
+                setTimeout(() => {
+                    item.classList.add('show');
+                }, 350 * index); 
+            });
+        }, 500);
+
+        // 3. 最後に円を表示 (2000ms)
+        setTimeout(() => {
+            follower.classList.add('active');
+            followerSym.classList.add('active');
+        }, 3000);
+    });
+
+    /**
+     * Accordion Logic
+     */
+    const categories = document.querySelectorAll('.category');
+
+    categories.forEach(category => {
+        category.addEventListener('click', function() {
+            const wrapper = this.parentElement;
+            const submenu = wrapper.querySelector('.submenu-container');
+            const subItems = submenu.querySelectorAll('.sub-item');
+            
+            const isOpen = this.classList.contains('blurred');
+
+            if (isOpen) {
+                // Close
+                this.classList.remove('blurred');
+                submenu.style.height = '0px';
+                subItems.forEach(item => item.classList.remove('visible'));
+            } else {
+                // Open
+                this.classList.add('blurred');
+
+                const height = submenu.scrollHeight;
+                submenu.style.height = height + 'px';
+
+                subItems.forEach((item, i) => {
+                    setTimeout(() => {
+                        item.classList.add('visible');
+                    }, 200 + (i * 200)); 
+                });
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
