@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <!-- QRコード生成ライブラリ (qrcode-generator) -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <title>UniQRcode</title>
+    
+    <style>
+        :root {
+            --p: #009;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #f4f7f6;
+            color: var(--p);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 650px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            text-align: center;
+            color: var(--p);
+            margin-bottom: 1.5rem;
+        }
+
+        .label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .label {
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+
+        textarea {
+            width: 100%;
+            border: 2px solid #eaeeef;
+            border-radius: 6px;
+            padding: 10px;
+            box-sizing: border-box;
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 1rem;
+            resize: vertical;
+        }
+
+        #inputText {
+            height: 80px;
+            margin-bottom: 1rem;
+        }
+
+        .slider-container {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        input[type="range"] {
+            flex-grow: 1;
+            cursor: pointer;
+            accent-color: var(--p);
+        }
+
+        .font-size-display {
+            font-weight: bold;
+            min-width: 45px;
+            color: var(--p);
+        }
+
+        #outputText {
+            height: 400px;
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 10px;
+            line-height: 1.0;
+            letter-spacing: 0;
+            white-space: pre;
+            background: #fdfdfd;
+            text-align: center;
+            padding: 20px;
+            word-break: break-all;
+            overflow: auto;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            color: white;
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: var(--p);
+        }
+
+        button:hover { opacity: 0.8; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>UniQRcode</h1>
+
+    <div class="label-row">
+        <label class="label">Input</label>
+    </div>
+    <textarea id="inputText"></textarea>
+    
+    <div class="controls">
+        <button class="btn-generate" onclick="generateQR()">Generate</button>
+        <button class="btn-copy" onclick="copyToClipboard()">Copy</button>
+    </div>
+
+    <div class="slider-container">
+        <span class="label">Font size:</span>
+        <input type="range" id="fontSizeSlider" min="1" max="20" value="10">
+        <span class="font-size-display" id="fontSizeVal">10px</span>
+    </div>
+
+    <div class="label-row">
+        <label class="label">Output</label>
+    </div>
+    <textarea id="outputText" spellcheck="false"></textarea>
+
+</div>
+
+<script>
+    // --- スライダーのリアルタイム反映処理 ---
+    const slider = document.getElementById('fontSizeSlider');
+    const outputText = document.getElementById('outputText');
+    const sizeDisplay = document.getElementById('fontSizeVal');
+
+    slider.addEventListener('input', (e) => {
+        const size = e.target.value;
+        outputText.style.fontSize = size + 'px';
+        sizeDisplay.textContent = size + 'px';
+    });
+
+    // --- QRコード生成メインロジック ---
+    function generateQR() {
+        const text = document.getElementById('inputText').value;
+        if (!text) {
+            alert("Null");
+            return;
+        }
+
+        try {
+            // 日本語（UTF-8）対応の設定
+            qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
+            
+            // typeNumber: 0 (自動), errorCorrectionLevel: 'M' (標準)
+            const qr = qrcode(0, 'M');
+            qr.addData(text, 'Byte'); 
+            qr.make();
+
+            const moduleCount = qr.getModuleCount();
+            const quietZone = 1; 
+            const white = "　";
+            const black = "█";
+
+            let result = "";
+
+            // 上余白
+            for (let i = 0; i < quietZone; i++) {
+                result += white.repeat(moduleCount + quietZone * 2) + "\n";
+            }
+
+            for (let row = 0; row < moduleCount; row++) {
+                result += white.repeat(quietZone); // 左余白
+                for (let col = 0; col < moduleCount; col++) {
+                    result += qr.isDark(row, col) ? black : white;
+                }
+                result += white.repeat(quietZone) + "\n"; // 右余白
+            }
+
+            // 下余白
+            for (let i = 0; i < quietZone; i++) {
+                result += white.repeat(moduleCount + quietZone * 2);
+            }
+
+            outputText.value = result;
+
+        } catch (e) {
+            console.error(e);
+            alert("Error");
+        }
+    }
+
+    // コピー機能
+    async function copyToClipboard() {
+        const content = outputText.value;
+        if (!content) return;
+        try {
+            await navigator.clipboard.writeText(content);
+            alert("Copied");
+        } catch (err) {
+            alert("Error");
+        }
+    }
+</script>
+
+</body>
+</html>
