@@ -17,6 +17,7 @@
             overflow: hidden;
             width: 100%;
             height: 100vh;
+            filter: saturate(120%);
         }
 
         #main-wrapper {
@@ -193,7 +194,7 @@
             const canvases = document.querySelectorAll("canvas");
             canvases.forEach(c => {
               if (getComputedStyle(c).position === "fixed") {
-                c.style.filter = "invert(50%) sepia(87%) saturate(1500%) hue-rotate(137deg) brightness(62%) contrast(101%) opacity(0.8)";
+                c.style.filter = "invert(50%) sepia(87%) saturate(1500%) hue-rotate(137deg) brightness(65%) contrast(101%) opacity(0.8)";
                 c.style.transition = "opacity 0.1s ease-out";
                 c.setAttribute("data-cursor-canvas", "true");
               }
