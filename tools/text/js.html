@@ -557,6 +557,7 @@
 
             // --- Grid Resizing Logic ---
             function handleResize() {
+                if (document.activeElement.tagName.toLowerCase().includes('textarea')) return;
                 const oldTotalCellWidth = columnWidths.reduce((a, b) => a + b, 0);
                 const oldTotalCellHeight = rowHeights.reduce((a, b) => a + b, 0);
                 const gap = 5;
