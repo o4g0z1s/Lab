@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Locus</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: block;
+        }
+        #pointCanvas {
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="traceCanvas"></canvas>
+    <canvas id="pointCanvas"></canvas>
+
+    <script>
+        const traceCanvas = document.getElementById('traceCanvas');
+        const traceCtx = traceCanvas.getContext('2d');
+        const pointCanvas = document.getElementById('pointCanvas');
+        const pointCtx = pointCanvas.getContext('2d');
+
+        let width, height;
+        const points = [];
+        const speedMultiplier = 3;
+        const minSpeed = 1;
+        const traceInterval = 50;
+        let lastTraceTime = 0;
+        let isPaused = false;
+
+        function init() {
+            resize();
+            for (let i = 0; i < 2; i++) {
+                const vx = (Math.random() > 0.5 ? 1 : -1) * (minSpeed + Math.random() * speedMultiplier);
+                const vy = (Math.random() > 0.5 ? 1 : -1) * (minSpeed + Math.random() * speedMultiplier);
+                points.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    vx: vx,
+                    vy: vy
+                });
+            }
+            traceCtx.fillStyle = '#000';
+            traceCtx.fillRect(0, 0, width, height);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                isPaused = !isPaused;
+                if (isPaused) {
+                    pointCtx.clearRect(0, 0, width, height);
+                }
+            }
+        });
+
+        function resize() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            
+            const tempImageData = traceCtx.getImageData(0, 0, traceCanvas.width || width, traceCanvas.height || height);
+            
+            [traceCanvas, pointCanvas].forEach(canv => {
+                canv.width = width;
+                canv.height = height;
+            });
+
+            traceCtx.fillStyle = '#000';
+            traceCtx.fillRect(0, 0, width, height);
+            traceCtx.putImageData(tempImageData, 0, 0);
+        }
+
+        window.addEventListener('resize', resize);
+
+        function update(timestamp) {
+            if (!isPaused) {
+                points.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    if (p.x <= 0 || p.x >= width) {
+                        p.vx *= -1;
+                        p.x = Math.max(0, Math.min(width, p.x));
+                    }
+                    if (p.y <= 0 || p.y >= height) {
+                        p.vy *= -1;
+                        p.y = Math.max(0, Math.min(height, p.y));
+                    }
+                });
+
+                if (timestamp - lastTraceTime >= traceInterval) {
+                    traceCtx.beginPath();
+                    traceCtx.moveTo(points[0].x, points[0].y);
+                    traceCtx.lineTo(points[1].x, points[1].y);
+                    traceCtx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+                    traceCtx.lineWidth = 0.8;
+                    traceCtx.stroke();
+                    lastTraceTime = timestamp;
+                }
+
+                pointCtx.clearRect(0, 0, width, height);
+                points.forEach(p => {
+                    pointCtx.beginPath();
+                    pointCtx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+                    pointCtx.fillStyle = '#fff';
+                    pointCtx.fill();
+                });
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        init();
+        requestAnimationFrame(update);
+    </script>
+</body>
+</html>

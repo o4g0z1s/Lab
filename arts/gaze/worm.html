@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🪱</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="artCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('artCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // キャンバスを画面いっぱいに広げ、背景を黒にする関数
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // 描画モードを通常に戻して黒で塗りつぶす（差の絶対値の計算ベースを作るため）
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 描画モードを「差の絶対値 (Difference)」に設定
+            ctx.globalCompositeOperation = 'difference';
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // ランダムな色を生成する関数
+        function getRandomColor() {
+            const r = Math.floor(Math.random() * 256);
+            const g = Math.floor(Math.random() * 256);
+            const b = Math.floor(Math.random() * 256);
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        // 円を描画する関数
+        function drawCircle(x, y) {
+            ctx.beginPath();
+            ctx.arc(x, y, 100, 0, Math.PI * 2); // 半径40の円（サイズはお好みで調整可能です）
+            ctx.fillStyle = getRandomColor();
+            ctx.fill();
+        }
+
+        // 直前の座標を記憶する変数（ミミズのようにつなげるため）
+        let lastX = null;
+        let lastY = null;
+
+        // カーソル移動時の処理（補間処理をして隙間なく円を敷き詰める）
+        function handleMove(currentX, currentY) {
+            if (lastX !== null && lastY !== null) {
+                // 前回と今回の座標の距離を計算
+                const dx = currentX - lastX;
+                const dy = currentY - lastY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                // マウスを早く動かしても途切れないよう、間隔を埋めるように円を生成
+                const step = 3; // 円を生成する間隔
+                if (distance > step) {
+                    const steps = Math.floor(distance / step);
+                    for (let i = 1; i <= steps; i++) {
+                        const interpX = lastX + (dx * i) / steps;
+                        const interpY = lastY + (dy * i) / steps;
+                        drawCircle(interpX, interpY);
+                    }
+                } else {
+                    drawCircle(currentX, currentY);
+                }
+            } else {
+                drawCircle(currentX, currentY);
+            }
+
+            lastX = currentX;
+            lastY = currentY;
+        }
+
+        // PCのマウス操作
+        window.addEventListener('mousemove', (e) => {
+            handleMove(e.clientX, e.clientY);
+        });
+
+        // 画面外にカーソルが出たら軌跡をリセット
+        window.addEventListener('mouseout', () => {
+            lastX = null;
+            lastY = null;
+        });
+
+        // スマホやタブレットのタッチ操作
+        window.addEventListener('touchmove', (e) => {
+            e.preventDefault(); // 画面がスクロールしてしまうのを防ぐ
+            const touch = e.touches[0];
+            handleMove(touch.clientX, touch.clientY);
+        }, { passive: false });
+
+        window.addEventListener('touchend', () => {
+            lastX = null;
+            lastY = null;
+        });
+    </script>
+</body>
+</html>
