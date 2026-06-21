@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>廾亼几</title>
+    <style>
+            body {
+            font-family: serif;
+            text-align: center;
+            }
+
+            textarea {
+            padding: 20px;
+            padding-left: 50px;
+            padding-right: 50px;
+            font-size: 30px;
+            width: 70%;
+            height: 300px;
+            border-radius: 50px;
+            resize: none;
+            background: #ccc;
+            border: none;
+            text-align: center;
+            }
+
+            button {
+            font-family: serif;
+            padding: 20px;
+            padding-left: 50px;
+            padding-right: 50px;
+            font-size: 30px;
+            color: white;
+            max-width: 70%;
+            max-height: 50%;
+            border-radius: 50px;
+            background: #f00;
+            border: none;
+            text-align: center;
+            }
+
+            p.title {font-size: 150px;}
+            
+            textarea {
+                font-family: Serif;
+                width: 70%;
+            }
+    
+            button {
+                font-size: 30px;
+            }
+            
+            @media only screen and (max-width:500px) 
+            {
+            p.title {
+            font-size: 50px;
+            line-height: 90px;
+            }
+            textarea {
+                width: 60%;
+            }
+            button {
+                font-size: 25px;
+            }
+            }
+
+    </style>
+    <script>
+        function replaceStrings() {
+
+            const str1 = [".",",","!","?","1","2","3","4","5","6","7","8","9","0","１","２","３","４","５","６","７","８","９","０","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","Ａ","Ｂ","Ｃ","Ｄ","Ｅ","Ｆ","Ｇ","Ｈ","Ｉ","Ｊ","Ｋ","Ｌ","Ｍ","Ｎ","Ｏ","Ｐ","Ｑ","Ｒ","Ｓ","Ｔ","Ｕ","Ｖ","Ｗ","Ｘ","Ｙ","Ｚ","ａ","ｂ","ｃ","ｄ","ｅ","ｆ","ｇ","ｈ","ｉ","ｊ","ｋ","ｌ","ｍ","ｎ","ｏ","ｐ","ｑ","ｒ","ｓ","ｔ","ｕ","ｖ","ｗ","ｘ","ｙ","ｚ"];
+            const str2 = ["。","、","！","？","丨","己","弓","丩","丂","占","⼓","呂","夕","口","丨","己","弓","丩","丂","占","⼓","呂","夕","口","亼","㠯","匚","囙","巨","下","㔾","廾","工","亅","长","乚","爪","几","囗","尸","卪","尺","丂","丁","凵","㇢","山","乂","丫","乙","亼","㠯","匚","囙","巨","下","㔾","廾","工","亅","长","乚","爪","几","囗","尸","卪","尺","丂","丁","凵","㇢","山","乂","丫","乙","亼","㠯","匚","囙","巨","下","㔾","廾","工","亅","长","乚","爪","几","囗","尸","卪","尺","丂","丁","凵","㇢","山","乂","丫","乙","亼","㠯","匚","囙","巨","下","㔾","廾","工","亅","长","乚","爪","几","囗","尸","卪","尺","丂","丁","凵","㇢","山","乂","丫","乙"];
+
+            const userInput = document.getElementById("input").value;
+            let output = userInput;
+
+            for (let i = 0; i < str1.length; i++) {
+                const charToReplace = str1[i];
+                const replacementChar = str2[i] || '';
+
+                output = output.split(charToReplace).join(replacementChar);
+            }
+
+            document.getElementById("output").value = output;
+        }
+    </script>
+</head>
+<body>
+<p class="title" style="font-weight: 700; text-decoration: underline; text-decoration-color: #f00; text-decoration-thickness: 20px; margin-top: 70px; margin-bottom: 70px;">廾亼几</p>
+    <textarea id="input" placeholder="巨几丁巨尺 丁廾巨 丁巨乂丁"></textarea>
+    <br>
+    <button onclick="replaceStrings()" style="margin: 40px;">匚囗几㇢巨尺丁</button>
+    <br>
+    <textarea id="output" readonly></textarea>
+    <br>
+    <button style="margin-top: 30px; margin-bottom: 32px;" onClick="cp()">匚囗尸丫</button>
+    <script>
+        function cp(){
+            var txt = document.getElementById("output");
+            txt.select();
+            document.execCommand("Copy");
+        }
+    </script>
+    <br><br><br>
+</body>
+</html>
