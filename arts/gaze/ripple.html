@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ripple</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: black;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    let ripples = [];
+    let isDragging = false;
+    let lastRippleTime = 0;
+    
+    const RIPPLE_INTERVAL = 100; // 1秒間に10個
+    const EXPANSION_SPEED = 10;  // 波紋の広がる速さ
+    const FADE_SPEED = 0.001;    // 消えていく速さ（小さいほど長く残る）
+    const LINE_WIDTH = 1.2;      // 波紋の線の細さ
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    class Ripple {
+        constructor(x, y) {
+            this.originX = x;
+            this.originY = y;
+            this.r = 1; 
+            this.opacity = 1.0; // 最初は不透明
+            this.alive = true;
+        }
+
+        update() {
+            this.r += EXPANSION_SPEED;
+            this.opacity -= FADE_SPEED; // 徐々に透明にする
+            
+            if (this.opacity <= 0) {
+                this.alive = false;
+            }
+        }
+
+        draw() {
+            if (!this.alive) return;
+
+            ctx.beginPath();
+            ctx.lineWidth = LINE_WIDTH;
+            ctx.strokeStyle = `rgba(255, 255, 255, ${this.opacity})`;
+
+            const w = canvas.width;
+            const h = canvas.height;
+
+            // 反射（エコー）の描画ロジック
+            // 上下左右に鏡像を作成することで、画面端での折り返しを表現
+            for (let dx = -1; dx <= 1; dx++) {
+                for (let dy = -1; dy <= 1; dy++) {
+                    let centerX, centerY;
+
+                    // X方向の反転(0:中央, -1:左側鏡像, 1:右側鏡像)
+                    if (dx === 0) centerX = this.originX;
+                    else if (dx === -1) centerX = -this.originX;
+                    else centerX = 2 * w - this.originX;
+
+                    // Y方向の反転(0:中央, -1:上側鏡像, 1:下側鏡像)
+                    if (dy === 0) centerY = this.originY;
+                    else if (dy === -1) centerY = -this.originY;
+                    else centerY = 2 * h - this.originY;
+
+                    // 円を描画（各鏡像ポイントから）
+                    ctx.moveTo(centerX + this.r, centerY);
+                    ctx.arc(centerX, centerY, this.r, 0, Math.PI * 2);
+                }
+            }
+            ctx.stroke();
+        }
+    }
+
+    function createRipple(x, y) {
+        ripples.push(new Ripple(x, y));
+    }
+
+    // 入力イベント
+    function handleStart(e) {
+        isDragging = true;
+        const pos = getPos(e);
+        createRipple(pos.x, pos.y);
+        lastRippleTime = Date.now();
+    }
+
+    function handleMove(e) {
+        if (!isDragging) return;
+        const now = Date.now();
+        if (now - lastRippleTime >= RIPPLE_INTERVAL) {
+            const pos = getPos(e);
+            createRipple(pos.x, pos.y);
+            lastRippleTime = now;
+        }
+    }
+
+    function handleEnd() {
+        isDragging = false;
+    }
+
+    function getPos(e) {
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: clientX, y: clientY };
+    }
+
+    canvas.addEventListener('mousedown', handleStart);
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleEnd);
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleStart(e); }, { passive: false });
+    window.addEventListener('touchmove', (e) => { handleMove(e); }, { passive: false });
+    window.addEventListener('touchend', handleEnd);
+
+    function animate() {
+        // 画面リセット
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 配列を後ろからループして更新・描画
+        for (let i = ripples.length - 1; i >= 0; i--) {
+            ripples[i].update();
+            if (ripples[i].alive) {
+                ripples[i].draw();
+            } else {
+                // 透明度が0になったら配列から削除
+                ripples.splice(i, 1);
+            }
+        }
+
+        requestAnimationFrame(animate);
+    }
+
+    animate();
+</script>
+
+</body>
+</html>
