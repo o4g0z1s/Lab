@@ -4,14 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><text x='16' y='24' font-size='25' text-anchor='middle' fill='black'>🎶</text></svg>">
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-E675FYQ3DK"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-    
-      gtag('config', 'G-E675FYQ3DK');
-    </script>
     <title>Random Melody Generator</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -168,28 +160,31 @@
         
         let tempo, instrumentType, baseFrequency, percussionEnabled, bassEnabled, activeScale;
 
-        // State for each part
-        let nextNoteTime = 0.0, lastNoteIndex = null, lastDirection = 'none', currentPattern = [], rhythmIndex = 0;
-        let nextPercussionTime = 0.0;
-        let nextBassTime = 0.0, lastBassNoteIndex = null, currentBassPattern = [], bassRhythmIndex = 0;
-
         const C_MAJOR_SCALE_SEMITONES = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19, 21, 23];
         const C_MINOR_SCALE_SEMITONES = [0, 2, 3, 5, 7, 8, 10, 12, 14, 15, 17, 19, 20, 22];
         const BASE_FREQUENCIES = { sub: 65.41, low: 130.81, mid: 261.63, high: 523.25 };
         
-        const MELODY_PATTERNS_UPBEAT = [[0.5, 0.5, 1, 0.5, 0.5, 1], [1, 1, 0.5, 0.5, 1]];
-        const MELODY_PATTERNS_ENERGETIC = [[0.25, 0.25, 0.5, 0.5, 0.5, 1], [0.5, 0.5, 0.5, 0.5, 1, 1]];
-        const MELODY_PATTERNS_RELAXING = [[4], [2, 2], [3, -1]];
-        const MELODY_PATTERNS_SENTIMENTAL = [[2, 1, 1], [1.5, 0.5, 2]];
+        // ベースのパターンも増やしました
+        const BASS_PATTERNS = [[2, 2], [1.5, 0.5, 2], [1, 1, 2], [4], [1, 1, 1, 1], [0.5, 1.5, 2], [2.5, 1.5]];
         
-        const BASS_PATTERNS = [[2, 2], [1, 1, 2], [4], [1, 1, 1, 1]];
-        
+        // 改善点: 固定リズムパターンを削除し、動的生成にしました
         const MOOD_PRESETS = {
-            upbeat: { tempo: 120, scale: C_MAJOR_SCALE_SEMITONES, patterns: MELODY_PATTERNS_UPBEAT, instrument: 'pluck' },
-            energetic: { tempo: 155, scale: C_MINOR_SCALE_SEMITONES, patterns: MELODY_PATTERNS_ENERGETIC, instrument: 'synth' },
-            relaxing: { tempo: 70, scale: C_MAJOR_SCALE_SEMITONES, patterns: MELODY_PATTERNS_RELAXING, instrument: 'sine' },
-            sentimental: { tempo: 85, scale: C_MINOR_SCALE_SEMITONES, patterns: MELODY_PATTERNS_SENTIMENTAL, instrument: 'piano' }
+            upbeat: { tempo: 120, scale: C_MAJOR_SCALE_SEMITONES, instrument: 'pluck' },
+            energetic: { tempo: 155, scale: C_MINOR_SCALE_SEMITONES, instrument: 'synth' },
+            relaxing: { tempo: 70, scale: C_MAJOR_SCALE_SEMITONES, instrument: 'sine' },
+            sentimental: { tempo: 85, scale: C_MINOR_SCALE_SEMITONES, instrument: 'piano' }
         };
+
+        // --- 音楽構造のための状態変数 ---
+        let nextNoteTime = 0.0, lastNoteIndex = null;
+        let currentPhrase = [];      
+        let basePhrase = [];         
+        let phrasePlayCount = 0;     // 0:A, 1:A(リピート), 2:A'(変形), 3:A'(リピート)
+        let rhythmIndex = 0;
+        let chordProgressionStep = 0; 
+
+        let nextPercussionTime = 0.0;
+        let nextBassTime = 0.0, currentBassPattern = [], bassRhythmIndex = 0;
 
         const setupView = document.getElementById('setup-view'), setupBtn = document.getElementById('setup-btn'), playPauseBtn = document.getElementById('play-pause-btn');
         const moodSelect = document.getElementById('mood'), tempoInput = document.getElementById('tempo'), instrumentSelect = document.getElementById('instrument');
@@ -201,16 +196,13 @@
         });
 
         setupBtn.addEventListener('click', () => {
-            const mood = moodSelect.value;
-            const preset = MOOD_PRESETS[mood];
-            
+            const preset = MOOD_PRESETS[moodSelect.value];
             tempo = parseInt(tempoInput.value, 10);
             instrumentType = instrumentSelect.value;
             baseFrequency = BASE_FREQUENCIES[document.getElementById('tone').value];
             percussionEnabled = document.getElementById('percussion').checked;
             bassEnabled = document.getElementById('bass').checked;
             activeScale = preset.scale;
-            currentPattern = []; // Reset pattern to force new selection based on mood
             
             if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)();
             setupView.style.display = 'none'; playPauseBtn.style.display = 'block';
@@ -223,17 +215,15 @@
         function playMusic() {
             if (audioContext.state === 'suspended') audioContext.resume();
             
-            if (currentPattern.length === 0) pickNextPattern(true);
+            if (currentPhrase.length === 0) advancePhraseSequence(true);
+            
             nextNoteTime = audioContext.currentTime + 0.1;
             melodyScheduler = setInterval(scheduleNotes, 50);
 
             if (percussionEnabled) { nextPercussionTime = audioContext.currentTime + 0.1; percussionScheduler = setInterval(schedulePercussion, 50); }
-            if (bassEnabled) { if (currentBassPattern.length === 0) pickNextBassPattern(true); nextBassTime = audioContext.currentTime + 0.1; bassScheduler = setInterval(scheduleBass, 50); }
+            if (bassEnabled) { nextBassTime = audioContext.currentTime + 0.1; bassScheduler = setInterval(scheduleBass, 50); }
         }
         function pauseMusic() { clearInterval(melodyScheduler); if (percussionScheduler) clearInterval(percussionScheduler); if (bassScheduler) clearInterval(bassScheduler); melodyScheduler = percussionScheduler = bassScheduler = null; }
-
-        // --- All sound synthesis and scheduling functions below this line ---
-        // (These are kept identical to the previous version for brevity and functionality)
 
         function playNote(frequency, time, durationInBeats) {
             const durationInSeconds = (60.0 / tempo) * durationInBeats;
@@ -241,6 +231,8 @@
             const generator = soundGenerators[instrumentType] || ((...args) => createBasicWaveSound(instrumentType, ...args));
             generator(frequency, time, durationInSeconds);
         }
+
+        // --- 音源合成モジュール ---
         function createBasicWaveSound(type, freq, time, dur) { const osc = audioContext.createOscillator(); const gain = audioContext.createGain(); osc.type = type; osc.frequency.setValueAtTime(freq, time); gain.gain.setValueAtTime(0, time); gain.gain.linearRampToValueAtTime(0.4, time + 0.05); gain.gain.exponentialRampToValueAtTime(0.0001, time + dur * 0.9); osc.connect(gain); gain.connect(audioContext.destination); osc.start(time); osc.stop(time + dur); }
         function createPianoSound(freq, time, dur) { const attackTime = 0.01, decayTime = dur * 0.5; const osc1 = audioContext.createOscillator(); osc1.type = 'triangle'; osc1.frequency.setValueAtTime(freq, time); const osc2 = audioContext.createOscillator(); osc2.type = 'square'; osc2.frequency.setValueAtTime(freq * 2, time); const gain1 = audioContext.createGain(); gain1.gain.setValueAtTime(0, time); gain1.gain.linearRampToValueAtTime(0.5, time + attackTime); gain1.gain.exponentialRampToValueAtTime(0.0001, time + decayTime); const gain2 = audioContext.createGain(); gain2.gain.setValueAtTime(0, time); gain2.gain.linearRampToValueAtTime(0.3, time + attackTime); gain2.gain.exponentialRampToValueAtTime(0.0001, time + decayTime * 0.5); osc1.connect(gain1); gain1.connect(audioContext.destination); osc2.connect(gain2); gain2.connect(audioContext.destination); osc1.start(time); osc2.start(time); osc1.stop(time + decayTime + 0.1); osc2.stop(time + decayTime + 0.1); }
         function createGuitarSound(freq, time, dur) { const attackTime = 0.02, decayTime = dur * 0.8; const osc1 = audioContext.createOscillator(); osc1.type = 'triangle'; osc1.frequency.setValueAtTime(freq, time); const osc2 = audioContext.createOscillator(); osc2.type = 'sawtooth'; osc2.frequency.setValueAtTime(freq * 1.005, time); const gain = audioContext.createGain(); gain.gain.setValueAtTime(0, time); gain.gain.linearRampToValueAtTime(0.4, time + attackTime); gain.gain.exponentialRampToValueAtTime(0.0001, time + decayTime); osc1.connect(gain); osc2.connect(gain); gain.connect(audioContext.destination); osc1.start(time); osc2.start(time); osc1.stop(time + decayTime + 0.1); osc2.stop(time + decayTime + 0.1); }
@@ -248,13 +240,217 @@
         function createSynthSound(freq, time, dur) { const filter = audioContext.createBiquadFilter(); filter.type = 'lowpass'; filter.Q.value = 2; filter.frequency.setValueAtTime(freq, time); filter.frequency.linearRampToValueAtTime(freq * 2.5, time + dur * 0.5); const osc1 = audioContext.createOscillator(); osc1.type = 'sawtooth'; osc1.frequency.setValueAtTime(freq, time); const osc2 = audioContext.createOscillator(); osc2.type = 'sawtooth'; osc2.frequency.setValueAtTime(freq * 0.995, time); const gain = audioContext.createGain(); gain.gain.setValueAtTime(0, time); gain.gain.linearRampToValueAtTime(0.4, time + 0.05); gain.gain.linearRampToValueAtTime(0, time + dur); osc1.connect(gain); osc2.connect(gain); gain.connect(filter); filter.connect(audioContext.destination); osc1.start(time); osc2.start(time); osc1.stop(time + dur); osc2.stop(time + dur); }
         function createBassSound(frequency, time, duration) { const osc = audioContext.createOscillator(); osc.type = 'sawtooth'; osc.frequency.setValueAtTime(frequency, time); const filter = audioContext.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.setValueAtTime(400, time); filter.Q.value = 1; const gain = audioContext.createGain(); gain.gain.setValueAtTime(0, time); gain.gain.linearRampToValueAtTime(0.7, time + 0.02); gain.gain.linearRampToValueAtTime(0.0001, time + duration * 0.95); osc.connect(filter); filter.connect(gain); gain.connect(audioContext.destination); osc.start(time); osc.stop(time + duration); }
         function createXylophoneSound(frequency, time) { const masterGain = audioContext.createGain(); masterGain.gain.setValueAtTime(0, time); masterGain.gain.linearRampToValueAtTime(0.6, time + 0.01); masterGain.gain.exponentialRampToValueAtTime(0.0001, time + 0.5); masterGain.connect(audioContext.destination); const osc1 = audioContext.createOscillator(); osc1.type = 'sine'; osc1.frequency.value = frequency; const osc2 = audioContext.createOscillator(); osc2.type = 'sine'; osc2.frequency.value = frequency * 3.01; const gain2 = audioContext.createGain(); gain2.gain.value = 0.2; osc1.connect(masterGain); osc2.connect(gain2); gain2.connect(masterGain); osc1.start(time); osc2.start(time); osc1.stop(time + 0.5); osc2.stop(time + 0.5); }
-        function scheduleBass() { const lookaheadTime = 0.1; while (nextBassTime < audioContext.currentTime + lookaheadTime) { const noteDurationInBeats = currentBassPattern[bassRhythmIndex]; const isRest = noteDurationInBeats < 0; const absDuration = Math.abs(noteDurationInBeats); if (!isRest) { const nextBassIndex = selectNextBassNoteIndex(); const isMinor = activeScale === C_MINOR_SCALE_SEMITONES; const bassScale = isMinor ? [0, 3, 7, 12] : [0, 4, 7, 12]; const semitones = bassScale[nextBassIndex]; const frequency = BASE_FREQUENCIES.low * Math.pow(2, (semitones - 12) / 12); createBassSound(frequency, nextBassTime, (60.0 / tempo) * absDuration); lastBassNoteIndex = nextBassIndex; } nextBassTime += (60.0 / tempo) * absDuration; bassRhythmIndex++; if (bassRhythmIndex >= currentBassPattern.length) pickNextBassPattern(); } }
-        function scheduleNotes() { const lookaheadTime = 0.1; while (nextNoteTime < audioContext.currentTime + lookaheadTime) { const noteDurationInBeats = currentPattern[rhythmIndex]; const isRest = noteDurationInBeats < 0; const absDuration = Math.abs(noteDurationInBeats); if (!isRest) { const nextIndex = selectNextNoteIndex(); const semitones = activeScale[nextIndex]; let frequency = baseFrequency * Math.pow(2, semitones / 12); if (Math.random() < 0.1) frequency *= Math.pow(2, (Math.random() < 0.5 ? 1 : -1) / 12); playNote(frequency, nextNoteTime, absDuration); lastDirection = (lastNoteIndex !== null) ? ((nextIndex > lastNoteIndex) ? 'up' : (nextIndex < lastNoteIndex) ? 'down' : 'stay') : 'none'; lastNoteIndex = nextIndex; } nextNoteTime += (60.0 / tempo) * absDuration; rhythmIndex++; if (rhythmIndex >= currentPattern.length) pickNextPattern(); } }
-        function schedulePercussion() { const lookaheadTime = 0.1; const sixteenthNoteTime = (60.0 / tempo) / 4; while (nextPercussionTime < audioContext.currentTime + lookaheadTime) { if (Math.random() < 0.3) { const noteIndex = Math.floor(Math.random() * activeScale.length); const semitones = activeScale[noteIndex]; const frequency = baseFrequency * Math.pow(2, (semitones + 12) / 12); createXylophoneSound(frequency, nextPercussionTime); } nextPercussionTime += sixteenthNoteTime; } }
-        function pickNextPattern(forceNew = false) { if (!forceNew && Math.random() < 0.3 && currentPattern.length > 0) { rhythmIndex = 0; return; } const mood = moodSelect.value; currentPattern = MOOD_PRESETS[mood].patterns[Math.floor(Math.random() * MOOD_PRESETS[mood].patterns.length)]; rhythmIndex = 0; }
-        function pickNextBassPattern(forceNew = false) { if (!forceNew && Math.random() < 0.25 && currentBassPattern.length > 0) { bassRhythmIndex = 0; return; } currentBassPattern = BASS_PATTERNS[Math.floor(Math.random() * BASS_PATTERNS.length)]; bassRhythmIndex = 0; }
-        function selectNextNoteIndex() { if (lastNoteIndex === null) return Math.floor(Math.random() * activeScale.length); if (Math.random() < 0.20) return lastNoteIndex; const weights = activeScale.map((_, i) => { if (i === lastNoteIndex) return 0; const distance = Math.abs(i - lastNoteIndex); let weight = 1.0; if (distance === 1) weight = 1.5; if (distance >= 2 && distance <= 3) weight = 3.0; if (distance >= 4 && distance <= 5) weight = 0.5; if (distance > 5) weight = 0.2; if (lastDirection === 'up' && i > lastNoteIndex) weight *= 2.0; if (lastDirection === 'down' && i < lastNoteIndex) weight *= 2.0; return weight; }); const totalWeight = weights.reduce((sum, w) => sum + w, 0); if (totalWeight === 0) return Math.floor(Math.random() * activeScale.length); let random = Math.random() * totalWeight; for (let i = 0; i < weights.length; i++) { if ((random -= weights[i]) <= 0) return i; } return activeScale.length - 1; }
-        function selectNextBassNoteIndex() { if (lastBassNoteIndex === null || Math.random() < 0.1) return Math.floor(Math.random() * 4); let nextIndex = lastBassNoteIndex + (Math.random() < 0.5 ? 1 : -1); return (nextIndex + 4) % 4; }
+        
+        // --- ★NEW: リズムの無限ランダム生成モジュール ---
+        function generateRandomRhythmPattern(mood) {
+            const totalBeats = 4; // 1小節 = 4拍
+            let pattern = [];
+            let currentBeats = 0;
+            
+            // 音符(正)と休符(負)の選択肢（確率は配列内の個数で調整）
+            const noteChoices = {
+                upbeat:      [0.5, 0.5, 0.5, 0.5, 1, 1, 1.5, 0.25, 0.25, -0.5], // 軽快に跳ねる
+                energetic:   [0.25, 0.25, 0.25, 0.25, 0.5, 0.5, 0.5, 0.75, 1, -0.25, -0.5], // 細かいパッセージ
+                relaxing:    [0.5, 1, 1, 1, 1.5, 2, 2, -1], // ゆったり長い音
+                sentimental: [0.5, 0.5, 1, 1, 1.5, 2, -0.5, -1] // 感情を込める間合い
+            };
+            
+            let choices = noteChoices[mood] || noteChoices.upbeat;
+            
+            while (currentBeats < totalBeats) {
+                let remaining = totalBeats - currentBeats;
+                
+                // 残り拍数に収まる音価だけをフィルタリング
+                let validChoices = choices.filter(c => Math.abs(c) <= remaining);
+                
+                // 拍の裏（0.25の端数）にいるときは、パズルがハマるように端数の音価を選びやすくする
+                if (currentBeats % 0.5 !== 0) {
+                    let fractionalChoices = validChoices.filter(c => Math.abs(c) % 0.5 !== 0);
+                    if (fractionalChoices.length > 0) {
+                        validChoices = fractionalChoices;
+                    }
+                }
+
+                if (validChoices.length === 0) {
+                    pattern.push(remaining); // どうしようもない場合は残りの長さを1つの音で埋める
+                    break;
+                }
+                
+                let val = validChoices[Math.floor(Math.random() * validChoices.length)];
+                
+                // 休符が連続しすぎないようにする（連続したら音符に反転）
+                if (val < 0 && pattern.length > 0 && pattern[pattern.length - 1] < 0) {
+                    val = Math.abs(val); 
+                }
+                
+                pattern.push(val);
+                currentBeats += Math.abs(val);
+            }
+            
+            // フレーズの終わりは必ず「息継ぎ（休符）」を作る
+            let lastIndex = pattern.length - 1;
+            let lastVal = pattern[lastIndex];
+            if (lastVal > 0) {
+                if (lastVal > 0.5) {
+                    pattern[lastIndex] = lastVal - 0.5; // 音を短くして
+                    pattern.push(-0.5);                 // 休符を足す
+                } else if (lastVal === 0.5) {
+                    pattern[lastIndex] = -0.5;
+                }
+            }
+            
+            return pattern;
+        }
+
+        function advancePhraseSequence(forceNew = false) {
+            if (forceNew) {
+                phrasePlayCount = 0;
+                currentBassPattern = BASS_PATTERNS[Math.floor(Math.random() * BASS_PATTERNS.length)];
+            }
+
+            chordProgressionStep = phrasePlayCount;
+
+            if (phrasePlayCount === 0) {
+                basePhrase = generateNewPhrase();
+                currentPhrase = basePhrase; // A
+            } else if (phrasePlayCount === 1) {
+                currentPhrase = basePhrase; // Aをリピート
+            } else if (phrasePlayCount === 2) {
+                currentPhrase = mutatePhrase(basePhrase); // 少し変化させた A' を作る
+                basePhrase = currentPhrase; 
+            } else if (phrasePlayCount === 3) {
+                currentPhrase = basePhrase; // A'をリピート
+            }
+            
+            phrasePlayCount++;
+            if (phrasePlayCount >= 4) {
+                // 4回終わったら次は全く新しい B フレーズへ
+                phrasePlayCount = 0;
+                currentBassPattern = BASS_PATTERNS[Math.floor(Math.random() * BASS_PATTERNS.length)];
+            }
+            rhythmIndex = 0;
+        }
+
+        function generateNewPhrase() {
+            const mood = moodSelect.value;
+            // 固定パターンではなく、ここで無限のバリエーションを生成！
+            const pattern = generateRandomRhythmPattern(mood); 
+            let phrase = [];
+            
+            for (let i = 0; i < pattern.length; i++) {
+                const duration = pattern[i];
+                const isRest = duration < 0;
+                const absDuration = Math.abs(duration);
+                let pitchIndex = null;
+                
+                if (!isRest) {
+                    if (lastNoteIndex === null) pitchIndex = 0;
+                    else {
+                        const weights = activeScale.map((_, idx) => {
+                            if (idx === lastNoteIndex) return 0.2;
+                            const distance = Math.abs(idx - lastNoteIndex);
+                            let weight = distance === 1 ? 5.0 : distance === 2 ? 2.0 : distance === 3 ? 1.0 : 0.1;
+                            
+                            // 最初の音は安定した音（ルート音など）になりやすくする
+                            if (i === 0) {
+                                const semi = activeScale[idx] % 12;
+                                if (semi === 0 || semi === 7) weight *= 3.0;
+                            }
+                            return weight;
+                        });
+                        
+                        let total = weights.reduce((a,b)=>a+b, 0);
+                        let random = Math.random() * total;
+                        pitchIndex = 0;
+                        for (let j = 0; j < weights.length; j++) {
+                            if ((random -= weights[j]) <= 0) { pitchIndex = j; break; }
+                        }
+                    }
+                    lastNoteIndex = pitchIndex;
+                }
+                phrase.push({ duration: absDuration, isRest: isRest, pitchIndex: pitchIndex });
+            }
+            return phrase;
+        }
+
+        function mutatePhrase(phrase) {
+            let mutated = JSON.parse(JSON.stringify(phrase));
+            let notes = mutated.filter(n => !n.isRest);
+            
+            if (notes.length >= 2) {
+                let shift1 = Math.random() < 0.5 ? 1 : -1;
+                let shift2 = Math.random() < 0.5 ? 1 : -1;
+                notes[notes.length - 1].pitchIndex = Math.max(0, Math.min(activeScale.length - 1, notes[notes.length - 1].pitchIndex + shift1));
+                notes[notes.length - 2].pitchIndex = Math.max(0, Math.min(activeScale.length - 1, notes[notes.length - 2].pitchIndex + shift2));
+            }
+            return mutated;
+        }
+
+        // --- スケジューラー ---
+        function scheduleNotes() { 
+            const lookaheadTime = 0.1; 
+            while (nextNoteTime < audioContext.currentTime + lookaheadTime) { 
+                if (rhythmIndex >= currentPhrase.length) {
+                    advancePhraseSequence();
+                }
+                
+                const noteDef = currentPhrase[rhythmIndex];
+                
+                if (!noteDef.isRest) { 
+                    const semitones = activeScale[noteDef.pitchIndex]; 
+                    const frequency = baseFrequency * Math.pow(2, semitones / 12); 
+                    playNote(frequency, nextNoteTime, noteDef.duration * 0.9); 
+                } 
+                nextNoteTime += (60.0 / tempo) * noteDef.duration; 
+                rhythmIndex++; 
+            } 
+        }
+
+        function scheduleBass() { 
+            const lookaheadTime = 0.1; 
+            while (nextBassTime < audioContext.currentTime + lookaheadTime) { 
+                if (bassRhythmIndex >= currentBassPattern.length) {
+                    bassRhythmIndex = 0; 
+                }
+                
+                const noteDuration = currentBassPattern[bassRhythmIndex]; 
+                const absDuration = Math.abs(noteDuration); 
+                
+                if (noteDuration > 0) { 
+                    const isMinor = activeScale === C_MINOR_SCALE_SEMITONES; 
+                    const prog = isMinor ? [0, 5, 2, 6] : [0, 4, 5, 3]; 
+                    const chordRootScaleIndex = prog[chordProgressionStep]; 
+                    
+                    const semitones = activeScale[chordRootScaleIndex]; 
+                    const frequency = BASE_FREQUENCIES.low * Math.pow(2, (semitones - 12) / 12); 
+                    createBassSound(frequency, nextBassTime, (60.0 / tempo) * absDuration); 
+                } 
+                nextBassTime += (60.0 / tempo) * absDuration; 
+                bassRhythmIndex++; 
+            } 
+        }
+
+        function schedulePercussion() { 
+            const lookaheadTime = 0.1; 
+            const sixteenthNoteTime = (60.0 / tempo) / 4; 
+            while (nextPercussionTime < audioContext.currentTime + lookaheadTime) { 
+                if (Math.random() < 0.5) { 
+                    const isMinor = activeScale === C_MINOR_SCALE_SEMITONES; 
+                    const prog = isMinor ? [0, 5, 2, 6] : [0, 4, 5, 3];
+                    const chordRootScaleIndex = prog[chordProgressionStep]; 
+                    
+                    const arpeggioOffsets = [0, 2, 4]; // コードトーン
+                    const randomOffset = arpeggioOffsets[Math.floor(Math.random() * arpeggioOffsets.length)];
+                    let noteIndex = chordRootScaleIndex + randomOffset;
+                    if (noteIndex >= activeScale.length) noteIndex -= 7; 
+                    
+                    const semitones = activeScale[noteIndex]; 
+                    const frequency = BASE_FREQUENCIES.mid * Math.pow(2, (semitones + 12) / 12); 
+                    createXylophoneSound(frequency, nextPercussionTime); 
+                } 
+                nextPercussionTime += sixteenthNoteTime; 
+            } 
+        }
     </script>
 </body>
 </html>
