@@ -338,7 +338,9 @@
                     <button id="next-page" class="page-btn">▶</button>
                 </div>
                 <div id="info">
-                    <span id="char-count"></span>&nbsp;&nbsp;|&nbsp;&nbsp;<span id="codepoint-range"></span>
+                    <span id="info-details">
+                        <span id="char-count"></span>&nbsp;&nbsp;|&nbsp;&nbsp;<span id="codepoint-range"></span>
+                    </span>
                     <span id="search-message"></span>
                 </div>
             </div>
@@ -698,6 +700,7 @@
         const charCountSpan = document.getElementById('char-count');
         const codepointRangeSpan = document.getElementById('codepoint-range');
         const searchMessageSpan = document.getElementById('search-message');
+        const infoDetailsSpan = document.getElementById('info-details');
         const dropdownHeader = document.getElementById('dropdown-header');
         const dropdownBody = document.getElementById('dropdown-body');
         const dropdownTitle = document.getElementById('dropdown-title');
@@ -818,7 +821,6 @@
                         const textAfter = outputTextbox.value.substring(outputTextbox.selectionEnd, outputTextbox.value.length);
                         outputTextbox.value = textBefore + char + textAfter;
                         outputTextbox.selectionStart = outputTextbox.selectionEnd = cursorPos + char.length;
-                        outputTextbox.focus();
                     });
                     if (currentSearchedCodePoint === i) {
                         key.classList.add('highlighted');
@@ -892,9 +894,15 @@
                 renderKeyboard();
                 searchMessageSpan.textContent = '';
             } else {
-                searchMessageSpan.textContent = `Not found.`;
-                setTimeout(() => { searchMessageSpan.textContent = ""; }, 3000);
-                currentSearchedCodePoint = null;
+                infoDetailsSpan.style.display = 'none'; // 通常の情報を隠す
+                searchMessageSpan.textContent = `Not found.　`;
+                
+                setTimeout(() => { 
+                    searchMessageSpan.textContent = ""; 
+                    infoDetailsSpan.style.display = 'inline'; // 3秒後に通常の情報を再表示
+                }, 3000);
+                
+                currentSearchedCodePoint = null; 
                 if (highlightedKeyElement) {
                     highlightedKeyElement.classList.remove('highlighted');
                     highlightedKeyElement = null;
@@ -910,8 +918,8 @@
         });
         renderDropdownList();
         if (unicodeBlocks.length > 0) {
-            const defaultIndex = unicodeBlocks.findIndex(b => b.name.includes("基本ラテン文字")) !== -1
-                ? unicodeBlocks.findIndex(b => b.name.includes("基本ラテン文字")) : 0;
+            const defaultIndex = unicodeBlocks.findIndex(b => b.name.includes("Basic Latin")) !== -1
+                ? unicodeBlocks.findIndex(b => b.name.includes("Basic Latin")) : 0;
             currentBlock = unicodeBlocks[defaultIndex];
             currentPageIndex = 0;
             currentSearchedCodePoint = null;
