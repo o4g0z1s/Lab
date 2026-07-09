@@ -894,12 +894,12 @@
                 renderKeyboard();
                 searchMessageSpan.textContent = '';
             } else {
-                infoDetailsSpan.style.display = 'none'; // 通常の情報を隠す
+                infoDetailsSpan.style.display = 'none';
                 searchMessageSpan.textContent = `Not found.　`;
                 
                 setTimeout(() => { 
                     searchMessageSpan.textContent = ""; 
-                    infoDetailsSpan.style.display = 'inline'; // 3秒後に通常の情報を再表示
+                    infoDetailsSpan.style.display = 'inline';
                 }, 3000);
                 
                 currentSearchedCodePoint = null; 
